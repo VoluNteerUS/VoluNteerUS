@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import image from "../images/helping-hand.jpg";
+import image from "../assets/images/helping-hand.jpg";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
     const [state, setState] = useState(
@@ -11,6 +13,8 @@ function Login() {
             error: "",
         }
     );
+    
+    const navigate = useNavigate();
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -24,7 +28,7 @@ function Login() {
         await axios.post("http://localhost:5000/auth/login", requestBody).then((response) => {
             console.log(response.data);
             // Go to home page
-            window.location.href = "/";
+            navigate("/");
         }).catch((error) => {
             console.log(error.response.data.message);
             setState({ ...state, error: error.response.data.message });
@@ -64,16 +68,16 @@ function Login() {
                                 </div>
                                 <div className="flex items-center justify-center mt-8 p-8">
                                     <span>Don’t have an account yet?&nbsp;</span>
-                                    <a href="#" className="text-marine-500 hover:underline">Sign up!</a>
+                                    <Link to="/register" className="text-marine-500 hover:underline">Sign up!</Link>
                                 </div>
                             </form>
                         </div>
                         <div className="hidden md:block md:visible md:col-span-4">
                             <div className="relative h-full">
                                 <img src={image} alt="asthetic" className="h-full rounded-r-lg"/>
-                                <a href="#" className="absolute top-4 right-4 p-4 rounded-full bg-white/70 hover:bg-slate-500">
+                                <Link to="/" className="absolute top-4 right-4 p-4 rounded-full bg-white/70 hover:bg-slate-500">
                                     <XMarkIcon className="w-6 h-6 text-gray-700" />
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     </div>
