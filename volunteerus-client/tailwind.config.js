@@ -48,10 +48,12 @@ module.exports = {
         'darkblue' : {
           "900": "#111C52",
         },
+        'grey' : {
+          "100": "#F0F0F0",
+          "500": "#D9D9D9",
+        }
       }
     },
   },
   plugins: [],
 }
-
-
