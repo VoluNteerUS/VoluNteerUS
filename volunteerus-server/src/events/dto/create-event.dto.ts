@@ -6,4 +6,5 @@ export class CreateEventDto {
   category: string[]
   sign_up_by: Date
   description: string
+  image_url: string
 }

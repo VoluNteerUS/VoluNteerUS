@@ -4,6 +4,8 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser } from "../actions/userActions";
 
 function Login() {
     const [state, setState] = useState(
@@ -15,6 +17,7 @@ function Login() {
     );
     
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -25,10 +28,29 @@ function Login() {
             password : state.password 
         };
 
+
         await axios.post("http://localhost:5000/auth/login", requestBody).then((response) => {
-            console.log(response.data);
-            // Go to home page
-            navigate("/");
+            // Save token to local storage
+            localStorage.setItem("token", response.data["access_token"]);
+            // Get user from token
+            axios.get("http://localhost:5000/auth/profile", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((response) => {
+                // Save user to redux store
+                console.log(response.data);
+                localStorage.setItem("full_name", response.data["full_name"]);
+                let user = response.data;
+                dispatch(setUser({
+                    email: user.email,
+                    full_name: user.full_name,
+                    id: user._id,
+                    role: user.role,
+                    registered_on: user.registered_on
+                }));
+                navigate("/");
+            })
+            .catch((error) => {
+                console.log(error.response.data.message);
+                setState({ ...state, error: error.response.data.message });
+            });
         }).catch((error) => {
             console.log(error.response.data.message);
             setState({ ...state, error: error.response.data.message });
@@ -63,7 +85,7 @@ function Login() {
                                 </div>
                                 { errorMessage }
                                 <div className="flex items-center justify-between mt-4">
-                                    <a href="#" className="text-marine-500 hover:underline">Forgot Password?</a>
+                                    <Link to="#" className="text-marine-500 hover:underline">Forgot Password?</Link>
                                     <button className="block w-1/4 px-4 py-2 mt-4 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-800">Log in</button>
                                 </div>
                                 <div className="flex items-center justify-center mt-8 p-8">

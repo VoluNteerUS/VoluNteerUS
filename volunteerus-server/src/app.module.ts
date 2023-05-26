@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
+import { FirebasestorageModule } from './firebasestorage/firebasestorage.module';
 
 const mongo_credentials = fs.readFileSync('./credentials/mongo_credentials.json', 'utf8');
 const mongo_credentials_json = JSON.parse(mongo_credentials);
@@ -18,6 +19,7 @@ const mongo_credentials_json = JSON.parse(mongo_credentials);
     AuthModule,
     UsersModule,
     EventsModule,
+    FirebasestorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

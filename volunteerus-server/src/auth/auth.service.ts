@@ -41,4 +41,9 @@ export class AuthService {
       throw new HttpException(err, 401);
     }
   }
+
+  // Decode JWT token
+  async getProfile(user: any) {
+    return this.usersService.findOneByEmail(user.email);
+  }
 }
