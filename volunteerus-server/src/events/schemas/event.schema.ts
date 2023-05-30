@@ -1,5 +1,7 @@
+import { Type } from "@nestjs/class-transformer";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { Document } from "mongoose"
+import mongoose, { Document } from "mongoose"
+import { Organization } from "src/organizations/schemas/organization.schema"
 
 export type EventDocument = Event & Document;
 
@@ -14,8 +16,9 @@ export class Event {
     @Prop()
     location: string
 
-    @Prop()
-    organized_by: string
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Organization.name })
+    @Type(() => Organization)
+    organized_by: Organization
 
     @Prop()
     signup_by: Date

@@ -21,6 +21,14 @@ export class UsersService {
       const salt = await bcrypt.genSalt(10);
       // Get password plaintext
       const password = createUserDto.password;
+      // Check password length
+      if (password.length < 10) {
+        throw new HttpException('Password must be at least 10 characters long.', 403);
+      }
+      // Check if password contains uppercase letter, lowercase letter, and number
+      if (!password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{10,}$/)) {
+        throw new HttpException('Password must contain at least one uppercase letter, one lowercase letter, and one number.', 403);
+      }
       // Hash password
       const password_hash = await bcrypt.hash(password, salt);
       // Set user password as hashed password
@@ -49,4 +57,5 @@ export class UsersService {
   public async delete(_id: string): Promise<User> {
     return this.usersModel.findByIdAndDelete(_id);
   }
+  
 }

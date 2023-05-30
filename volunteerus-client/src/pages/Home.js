@@ -84,7 +84,7 @@ function Home() {
                             </div>
                             <div className="flex flex-row space-x-2 mx-3">
                                 <img src={imageOrganization} alt="organization icon" className="w-5 h-5" />
-                                <p>{event.organized_by.length <= 20 ? event.organized_by : event.organized_by.substring(0, 20) + '...'}</p>
+                                <p>{event.organized_by["name"].length <= 30 ? event.organized_by["name"] : event.organized_by["name"].substring(0, 30) + '...'}</p>
                             </div>
                         </a>
                     ))}

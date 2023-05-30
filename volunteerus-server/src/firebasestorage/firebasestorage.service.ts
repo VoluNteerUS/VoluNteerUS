@@ -1,20 +1,39 @@
 
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import * as path from 'path';
 
 @Injectable()
 export class FirebasestorageService {
     private readonly storage: admin.storage.Storage;
 
     constructor() {
-        // Service account credentials
-        const serviceAccount = require(path.resolve('./credentials/firebase_credentials.json'));
+        // if (path.resolve('./credentials/firebase_credentials.json') === undefined) {
+        //     // Initialize Firebase from environment variables
+        //     admin.initializeApp({
+        //         credential: admin.credential.cert({
+        //             projectId: process.env.PROJECT_ID,
+        //             privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
+        //             clientEmail: process.env.CLIENT_EMAIL,
+        //         }),
+        //         storageBucket: "volunteerus-3a56d.appspot.com"
+        //     });
+        // } else {
+        //     // Service account credentials
+        //     const serviceAccount = require(path.resolve('./credentials/firebase_credentials.json'));
 
-        // Initialize Firebase
+        //     // Initialize Firebase
+        //     admin.initializeApp({
+        //         credential: admin.credential.cert(serviceAccount),
+        //         storageBucket: "volunteerus-3a56d.appspot.com"
+        //     });
+        // }
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            storageBucket: "volunteerus-3a56d.appspot.com"
+            credential: admin.credential.cert({
+                projectId : process.env.PROJECT_ID,
+                privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
+                clientEmail: process.env.CLIENT_EMAIL,
+            }),
+            storageBucket: process.env.BUCKET_URL
         });
 
         // Get a reference to the storage service, which is used to create references in your storage bucket

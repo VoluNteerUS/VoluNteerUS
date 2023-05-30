@@ -7,9 +7,13 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import OrganizationsPage from './pages/organizations';
+import CreateOrganizationPage from './pages/organizations/Create';
+import AdminDashboard from './pages/admin';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react'
 import { store, persistor } from './store';
+import OrganizationDetails from './pages/organizations/Details';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -23,6 +27,12 @@ root.render(
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="organizations">
+              <Route index element={<OrganizationsPage />} />
+              <Route path=":id" element={<OrganizationDetails />} />
+              <Route path="create" element={<CreateOrganizationPage />} />
+            </Route>
+            <Route path="admin" element={<AdminDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>
