@@ -11,7 +11,7 @@ import { removeUser } from '../../actions/userActions'
 
 const navigation = [
   { name: 'Home', href: '/', icon: HomeIcon, current: true },
-  { name: 'Events', href: '#', icon: CalendarDaysIcon, current: false },
+  { name: 'Events', href: '/events', icon: CalendarDaysIcon, current: false },
   { name: 'Organizations', href: '#', icon: UserGroupIcon, current: false },
   { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
 ]
