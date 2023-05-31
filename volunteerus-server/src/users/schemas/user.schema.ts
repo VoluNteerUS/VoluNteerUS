@@ -1,17 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Exclude } from '@nestjs/class-transformer';
 
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-    @Prop()
+    @Prop({ required: true })
     full_name: string;
 
-    @Prop()
+    @Prop({ required: true })
     email: string;
 
-    @Prop()
+    @Prop({ required: true })
+    @Exclude()
     password: string;
 
     @Prop({ default: Date.now() })

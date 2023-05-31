@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Patch, Post, Param, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Param, UploadedFile, UseInterceptors, Query } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { Event } from './schemas/event.schema';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import mongoose from 'mongoose';
 
 @Controller('events')
 export class EventsController {
@@ -16,32 +17,45 @@ export class EventsController {
     @Post()
     @UseInterceptors(FileInterceptor('file'))
     async create(@Body() createEventDto: CreateEventDto, @UploadedFile() file: Express.Multer.File): Promise<Event> {
+      // console.log(createEventDto);
+      // Convert createEventDto to json
+      const event = JSON.parse(createEventDto["createEventDto"]);
+      // console.log(event);
+
       const destination = 'events';
       if (file) {
-        console.log(file.filename);
         const url = await this.uploadService.uploadFile(file, destination);
-        createEventDto.image_url = url;
+        // createEventDto.image_url = url;
+        event.image_url = url;
       }
-      return this.eventService.create(createEventDto);
+      // Find organization by name
+      // const organization = await this.organizationService.findOne(createEventDto.organized_by);
+      // createEventDto.organized_by = organization;
+      // Update event's organizer
+      // return this.eventService.create(createEventDto);
+      return this.eventService.create(event);
     }
     
     @Get(':id')
-    findOne(@Param('id') id: string): Promise<Event> {
-      return this.eventService.findOne(+id);
+    findOne(@Param('id') id: mongoose.Types.ObjectId): Promise<Event> {
+      return this.eventService.findOne(id);
     }
     
     @Get()
-    findAll(): Promise<Event[]> {
+    findAll(@Query('organization_id') organization_id: mongoose.Types.ObjectId): Promise<Event[]> {
+      if (organization_id) {
+        return this.eventService.getEventsByOrganization(organization_id);
+      }
       return this.eventService.findAll();
     }
     
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto): Promise<Event> {
-      return this.eventService.update(+id, updateEventDto);
+    update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateEventDto: UpdateEventDto): Promise<Event> {
+      return this.eventService.update(id, updateEventDto);
     }
     
     @Delete(':id')
-    remove(@Param('id') id: string): Promise<Event> {
-      return this.eventService.remove(+id);
+    remove(@Param('id') id: mongoose.Types.ObjectId): Promise<Event> {
+      return this.eventService.remove(id);
     }
 }
