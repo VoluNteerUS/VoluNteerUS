@@ -192,7 +192,7 @@ function Events() {
                     </div>
                     <div className="flex flex-row space-x-3">
                       <img src={imageOrganization} alt="Organization icon" className="w-5 h-5" />
-                      <p>{event.organized_by}</p>
+                      <p>{event.organized_by["name"]}</p>
                     </div>
                     <div className="flex flex-row space-x-3">
                       <TagIcon className="w-5 h-5" />

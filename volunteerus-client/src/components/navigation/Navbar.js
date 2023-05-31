@@ -9,7 +9,7 @@ import ProfileDropdown from './ProfileDropdown'
 
 const navigation = [
   { name: 'Home', href: '/', icon: HomeIcon },
-  { name: 'Events', href: '#', icon: CalendarDaysIcon },
+  { name: 'Events', href: '/events', icon: CalendarDaysIcon },
   { name: 'Organizations', href: '/organizations', icon: UserGroupIcon },
   { name: 'Calendar', href: '#', icon: CalendarIcon },
 ]
