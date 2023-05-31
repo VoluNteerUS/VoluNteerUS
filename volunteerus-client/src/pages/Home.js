@@ -8,8 +8,6 @@ import imageCalender from "../assets/images/calender-icon.png";
 import imageLocation from "../assets/images/location-icon.png";
 // temporary image for organizations
 import imageOrganization from "../assets/images/organization-icon.png";
-// temporary image for events
-import imageEvent from "../assets/images/event-icon.png"
 import axios from "axios";
 
 function Home() {
@@ -22,7 +20,7 @@ function Home() {
         },
         {
             img: imageExploreEvents,
-            link: "#",
+            link: "/Events",
             title: "Explore Events",
             description: "Discover volunteering events on campus or in your neighbourhood"
         },
@@ -72,11 +70,11 @@ function Home() {
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:mx-20 md:mx-10 mx-20 my-5">
                     {featuredEvents.map((event, key) => (
                         <a href='#' className="border border-black" key={key}>
-                            <img src={event.image_url} alt="event-image" className="flex backdrop-invert h-60 md:h-72  xl:h-80 w-full object-contain" />
+                            <img src={event.image_url} alt="event" className="h-60 md:h-72 xl:h-80 w-full object-cover" />
                             <p className="mx-3 font-semibold my-2">{event.title}</p>
                             <div className="flex flex-row space-x-2 mx-3">
                                 <img src={imageCalender} alt="calender icon" className="w-5 h-5" />
-                                <p>{event.date[0] == event.date[1] ? event.date[0] : event.date[0] + ' to ' + event.date[1]}</p>
+                                <p>{event.date[0] === event.date[1] ? event.date[0] : event.date[0] + ' to ' + event.date[1]}</p>
                             </div>
                             <div className="flex flex-row space-x-2 mx-3">
                                 <img src={imageLocation} alt="location icon" className="w-5 h-5" />

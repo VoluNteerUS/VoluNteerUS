@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import OrganizationsPage from './pages/organizations';
 import CreateOrganizationPage from './pages/organizations/Create';
 import AdminDashboard from './pages/admin';
+import Events from './pages/Events';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react'
 import { store, persistor } from './store';
@@ -33,6 +34,7 @@ root.render(
               <Route path="create" element={<CreateOrganizationPage />} />
             </Route>
             <Route path="admin" element={<AdminDashboard />} />
+            <Route path="events" element={<Events />} />
           </Route>
         </Routes>
       </BrowserRouter>
