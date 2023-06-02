@@ -31,7 +31,6 @@ export default function ProfileDropdown({ isAuthenticated }) {
   }
 
   if (isAuthenticated) {
-    console.log(persistedUserState);
     return (
       <>
         <button

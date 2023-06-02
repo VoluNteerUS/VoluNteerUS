@@ -55,9 +55,12 @@ function Register() {
             password : state.password
         };
 
-        await axios.post("http://localhost:5000/users", requestBody).then((response) => {
+        // Endpoint for registering a user
+        const registerURL = new URL("/users", process.env.REACT_APP_BACKEND_API);
+
+        await axios.post(registerURL, requestBody).then((response) => {
             console.log(response.data);
-            navigate("/");
+            navigate("/login");
         }).catch((error) => {
             console.log(error);
             setState({ ...state, error: error.response.data.message });

@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import OrganizationsPage from './pages/organizations';
-import CreateOrganizationPage from './pages/organizations/Create';
-import AdminDashboard from './pages/admin';
-import Events from './pages/Events';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react'
 import { store, persistor } from './store';
-import OrganizationDetails from './pages/organizations/Details';
+
+// Code splitting of routes
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const OrganizationsPage = lazy(() => import('./pages/organizations'));
+const OrganizationDetailsPage = lazy(() => import('./pages/organizations/Details'));  
+const CreateOrganizationPage = lazy(() => import('./pages/organizations/Create'));
+const OrganizationDashboard = lazy(() => import('./pages/organizations/Dashboard'));
+const AdminDashboard = lazy(() => import('./pages/admin'));
+const Events = lazy(() => import('./pages/Events'));
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -23,6 +26,7 @@ root.render(
     <PersistGate loading={null} persistor={persistor}>
     <React.StrictMode>
       <BrowserRouter>
+        <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<App />}>
             <Route index element={<Home />} />
@@ -30,13 +34,17 @@ root.render(
             <Route path="register" element={<Register />} />
             <Route path="organizations">
               <Route index element={<OrganizationsPage />} />
-              <Route path=":id" element={<OrganizationDetails />} />
+              <Route path=":id">
+                <Route index element={<OrganizationDetailsPage />} />
+                <Route path="dashboard" element={<OrganizationDashboard />} />
+              </Route>
               <Route path="create" element={<CreateOrganizationPage />} />
             </Route>
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="events" element={<Events />} />
           </Route>
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </React.StrictMode>
     </PersistGate>

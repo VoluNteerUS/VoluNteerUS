@@ -20,7 +20,7 @@ function Home() {
         },
         {
             img: imageExploreEvents,
-            link: "/Events",
+            link: "/events",
             title: "Explore Events",
             description: "Discover volunteering events on campus or in your neighbourhood"
         },
@@ -39,7 +39,8 @@ function Home() {
     }, []);
 
     const getAllEvents = () => {
-        axios.get('http://localhost:5000/events')
+        const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+        axios.get(eventsURL)
             .then((res) => {
                 const events = res.data;
                 setAllEvents(events);

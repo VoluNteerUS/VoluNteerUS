@@ -20,7 +20,8 @@ function Events() {
   }, []);
 
   const getAllEvents = () => {
-    axios.get('http://localhost:5000/events')
+    const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+    axios.get(eventsURL)
       .then((res) => {
         const events = res.data;
         setAllEvents(events);
@@ -191,7 +192,7 @@ function Events() {
                       <p>{event.location}</p>
                     </div>
                     <div className="flex flex-row space-x-3">
-                      <img src={imageOrganization} alt="Organization icon" className="w-5 h-5" />
+                      <img src={ imageOrganization } alt="Organization icon" className="w-5 h-5" />
                       <p>{event.organized_by["name"]}</p>
                     </div>
                     <div className="flex flex-row space-x-3">

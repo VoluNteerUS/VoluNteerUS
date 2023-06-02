@@ -28,12 +28,16 @@ function Login() {
             password : state.password 
         };
 
+        // Endpoint for logging in a user
+        const loginURL = new URL("/auth/login", process.env.REACT_APP_BACKEND_API);
+        // Endpoint for getting user profile
+        const profileURL = new URL("/auth/profile", process.env.REACT_APP_BACKEND_API);
 
-        await axios.post("http://localhost:5000/auth/login", requestBody).then((response) => {
+        await axios.post(loginURL, requestBody).then((response) => {
             // Save token to local storage
             localStorage.setItem("token", response.data["access_token"]);
             // Get user from token
-            axios.get("http://localhost:5000/auth/profile", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((response) => {
+            axios.get(profileURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((response) => {
                 // Save user to redux store
                 console.log(response.data);
                 localStorage.setItem("full_name", response.data["full_name"]);

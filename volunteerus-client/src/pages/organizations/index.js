@@ -3,16 +3,22 @@ import Navbar from "../../components/navigation/Navbar";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useDispatch, useSelector } from "react-redux";
+import { setOrganizations } from "../../actions/organizationActions";
 
 function OrganizationsPage() {
-    const [organizations, setOrganizations] = useState([]);
+    const dispatch = useDispatch();
+    const organizationsReducer = useSelector((state) => state.organizations);
+    const organizations = organizationsReducer.organizations;
+    const [queryOrganizations, setQueryOrganizations] = useState(organizations);
 
     useEffect(() => {
         const getOrganizations = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/organizations');
+                const organizationsURL = new URL('/organizations', process.env.REACT_APP_BACKEND_API);
+                const res = await axios.get(organizationsURL);
                 const organizations = res.data;
-                setOrganizations(organizations);
+                dispatch(setOrganizations(organizations));
             } catch (err) {
                 console.error({ err });
             }
@@ -31,11 +37,23 @@ function OrganizationsPage() {
                         <div className="grid grid-cols-2">
                             <div className="relative col-span-1">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-                                    <button type="submit" className="p-1 focus:outline-none focus:shadow-outline">
+                                    <div className="p-1">
                                         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
-                                    </button>
+                                    </div>
                                 </span>
-                                <input type="text" placeholder="Search Organizations" className="h-10 px-3 pl-10 text-base placeholder-gray-600 border rounded-lg focus:shadow-outline w-4/5" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search Organizations" 
+                                    className="h-10 px-3 pl-10 text-base placeholder-gray-600 border rounded-lg focus:shadow-outline w-4/5"
+                                    onChange={(e) => {
+                                        const searchQuery = e.target.value;
+                                        const filteredOrganizations = searchQuery 
+                                            ? organizations.filter((organization) => {
+                                                return organization.name.toLowerCase().includes(searchQuery.toLowerCase());
+                                            }) : organizations;
+                                        setQueryOrganizations(filteredOrganizations);
+                                    }}
+                                />
                             </div>
                             {/* Sort By */}
                             <div className="col-span-1">
@@ -50,7 +68,7 @@ function OrganizationsPage() {
                 </div>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 pt-4">
                     {/* Organization Card */}
-                    {organizations.map((organization) => (
+                    {queryOrganizations.map((organization) => (
                         <div className="bg-grey-100 rounded-lg shadow-lg">
                             <Link to={`/organizations/${organization._id}`} key={organization._id}>
                                 <div className="flex flex-col justify-center items-center">
