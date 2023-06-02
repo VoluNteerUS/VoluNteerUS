@@ -1,11 +1,11 @@
-import Navbar from "../components/navigation/Navbar";
+import Navbar from "../../components/navigation/Navbar";
 import React, { useEffect, useState } from "react";
-import imageHandHoldingHeart from "../assets/images/hand-holding-heart.png"
-import imagePerson from "../assets/images/person.png"
-import imageCalender from "../assets/images/calender-icon.png";
-import imageLocation from "../assets/images/location-icon.png";
+import imageHandHoldingHeart from "../../assets/images/hand-holding-heart.png"
+import imagePerson from "../../assets/images/person.png"
+import imageCalender from "../../assets/images/calender-icon.png";
+import imageLocation from "../../assets/images/location-icon.png";
 // temporary image for organizations
-import imageOrganization from "../assets/images/organization-icon.png";
+import imageOrganization from "../../assets/images/organization-icon.png";
 import axios from "axios";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, TagIcon, LockClosedIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
