@@ -12,7 +12,7 @@ import twitterIcon from "../../assets/social_media_icons/twitter.ico"
 import websiteIcon from "../../assets/social_media_icons/website.ico"
 import youtubeIcon from "../../assets/social_media_icons/youtube.ico"
 
-function OrganizationDetails(){
+function OrganizationDetailsPage(){
     const { id } = useParams();
     const dispatch = useDispatch();
     const organizationsReducer = useSelector((state) => state.organizations);
@@ -118,4 +118,4 @@ function OrganizationDetails(){
     )
 }
 
-export default OrganizationDetails;
+export default OrganizationDetailsPage;

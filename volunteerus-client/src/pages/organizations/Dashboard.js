@@ -79,7 +79,7 @@ function OrganizationDashboard() {
   return (
     <>
       <Navbar />
-      <div className="bg-pink-300 fixed min-h-screen">
+      <div className="bg-pink-300 py-2 min-h-screen h-full">
         {/* Organizational Profile */}
         <div className="bg-neutral-100 rounded-lg shadow-lg px-10 py-6 m-10 w-screen lg:w-3/4 block mx-auto">
           <div className="flex flex-row items-center justify-between pb-6">
@@ -95,7 +95,7 @@ function OrganizationDashboard() {
             </div>
             {/* Edit Organizational Profile */}
             <div className="flex flex-col items-center">
-              <Link to={`/organizations/${organization._id}/edit`} className="bg-primary-600 hover:bg-primary-800 text-white py-2 px-4 rounded-lg mr-0">
+              <Link to={`/organizations/${organization._id}/edit`} className="bg-primary-600 hover:bg-primary-800 text-white py-2 px-4 rounded-lg mr-0 text-sm lg:text-base">
                 Edit Profile
               </Link>
             </div>
@@ -118,134 +118,138 @@ function OrganizationDashboard() {
             </Tab.List>
             <Tab.Panels className="mt-2">
               <Tab.Panel className="rounded-lg bg-neutral-100 p-3 ring-white ring-opacity-60 ring-offset-blue-400 focus:outline-none focus:ring-2">
-                <div className="flex flex-row items-center justify-between px-6 py-3">
-                  <div className="flex flex-col">
-                    <h1 className="text-xl font-bold">Upcoming Events</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 py-3">
+                  <div className="flex flex-col col-span-1">
+                    <h1 className="text-lg lg:text-xl font-bold">Upcoming Events</h1>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <form>
+                  <div className="flex flex-col col-span-1">
+                    <form className="mr-auto md:mr-0 md:ml-auto">
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-2">
                           <div className="p-1">
                             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
                           </div>
                         </span>
-                        <input 
-                          type="text" 
-                          placeholder="Search Upcoming Events" 
-                          className="h-10 pl-10 lg:w-96 placeholder-gray-500 border rounded-lg focus:shadow-outline" 
+                        <input
+                          type="text"
+                          placeholder="Search Upcoming Events"
+                          className="h-10 pl-10 w-80 xl:w-96 placeholder-gray-500 border rounded-lg focus:shadow-outline text-sm lg:text-base"
                           onChange={(e) => {
                             const keyword = e.target.value;
                             const results = keyword ? upcomingEvents.filter(event => event.title.toLowerCase().includes(keyword.toLowerCase())) : upcomingEvents;
                             setQueryUpcomingEvents(results);
-                          }}                        
+                          }}
                         />
                       </div>
                     </form>
                   </div>
                 </div>
-                <table className="min-w-full divide-y divide-neutral-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start Date & Time</th>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End Date & Time</th>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-200">
-                    {
-                      queryUpcomingEvents.length === 0 ? (
-                        <tr>
-                          <td className="px-6 py-4 text-sm md:text-base text-neutral-600" colSpan="4">No upcoming events</td>
-                        </tr>
-                      ) : (queryUpcomingEvents.map((event) => (
-                        <tr key={event._id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{event.title}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm A')}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('MMMM Do YYYY, h:mm A')}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                            <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
-                              Edit
-                            </Link>
-                            <span className="px-2">|</span>
-                            <button type="button" className="text-primary-600 hover:text-primary-800">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      )))
-                    }
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-neutral-200">
+                    <thead>
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start Date & Time</th>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End Date & Time</th>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200">
+                      {
+                        queryUpcomingEvents.length === 0 ? (
+                          <tr>
+                            <td className="px-6 py-4 text-sm md:text-base text-neutral-600" colSpan="4">No upcoming events</td>
+                          </tr>
+                        ) : (queryUpcomingEvents.map((event) => (
+                          <tr key={event._id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{event.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                              <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
+                                Edit
+                              </Link>
+                              <span className="px-2">|</span>
+                              <button type="button" className="text-primary-600 hover:text-primary-800">
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        )))
+                      }
+                    </tbody>
+                  </table>
+                </div>
                 {/* Floating Action Button */}
-                <div className="bottom-0 right-0 mb-4 mr-4 px-3 float-right -translate-y-14">
-                  <Link to="/events/create" className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white">
+                <div className="bottom-0 right-0 my-2 mr-4 px-3">
+                  <Link to="/events/create" className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
                     <PlusIcon className="h-7 w-7 text-white mx-auto block" aria-hidden="true" />
                   </Link>
                 </div>
               </Tab.Panel>
               <Tab.Panel className="rounded-lg bg-neutral-100 p-3 ring-white ring-opacity-60 ring-offset-blue-400 focus:outline-none focus:ring-2">
-                <div className="flex flex-row items-center justify-between px-6 py-3">
-                  <div className="flex flex-col">
-                    <h1 className="text-xl font-bold">Past Events</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 py-3">
+                  <div className="flex flex-col col-span-1">
+                    <h1 className="text-lg lg:text-xl font-bold">Past Events</h1>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <form>
+                  <div className="flex flex-col col-span-1">
+                    <form className="mr-auto md:mr-0 md:ml-auto">
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-2">
                           <div className="p-1">
                             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
                           </div>
                         </span>
-                        <input 
-                          type="text" 
-                          placeholder="Search Past Events" 
-                          className="h-10 pl-10 lg:w-96 placeholder-gray-500 border rounded-lg focus:shadow-outline"
+                        <input
+                          type="text"
+                          placeholder="Search Past Events"
+                          className="h-10 pl-10 w-80 xl:w-96 placeholder-gray-500 border rounded-lg focus:shadow-outline"
                           onChange={(e) => {
                             const keyword = e.target.value;
                             const results = keyword ? pastEvents.filter(event => event.title.toLowerCase().includes(keyword.toLowerCase())) : pastEvents;
                             setQueryPastEvents(results);
-                          }} 
+                          }}
                         />
                       </div>
                     </form>
                   </div>
                 </div>
-                <table className="min-w-full divide-y divide-neutral-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start Date & Time</th>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End Date & Time</th>
-                      <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-200">
-                    {
-                      queryPastEvents.length === 0 ? (
-                        <tr>
-                          <td className="px-6 py-4 text-sm md:text-base text-neutral-600" colSpan="4">No past events</td>
-                        </tr>
-                      ) : (queryPastEvents.map((event) => (
-                        <tr key={event._id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{event.title}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm a')}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('MMMM Do YYYY, h:mm a')}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                            <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
-                              Edit
-                            </Link>
-                            <span className="px-2">|</span>
-                            <button type="button" className="text-primary-600 hover:text-primary-800">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      )))
-                    }
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-neutral-200">
+                    <thead>
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start Date & Time</th>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End Date & Time</th>
+                        <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200">
+                      {
+                        queryPastEvents.length === 0 ? (
+                          <tr>
+                            <td className="px-6 py-4 text-sm md:text-base text-neutral-600" colSpan="4">No past events</td>
+                          </tr>
+                        ) : (queryPastEvents.map((event) => (
+                          <tr key={event._id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{event.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm a')}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('MMMM Do YYYY, h:mm a')}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                              <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
+                                Edit
+                              </Link>
+                              <span className="px-2">|</span>
+                              <button type="button" className="text-primary-600 hover:text-primary-800">
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        )))
+                      }
+                    </tbody>
+                  </table>
+                </div>
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>

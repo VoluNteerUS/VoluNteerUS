@@ -45,8 +45,19 @@ export class OrganizationsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateOrganizationDto: UpdateOrganizationDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  async update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateOrganizationDto: UpdateOrganizationDto, @UploadedFile() file: Express.Multer.File) {
+    if (file) {
+      const destination = 'organizations';
+      const url = await this.uploadService.uploadFile(file, destination);
+      updateOrganizationDto.image_url = url;
+    }
     return this.organizationsService.update(id, updateOrganizationDto);
+  }
+
+  @Patch(':id/contacts')
+  async updateContact(@Param('id') organizationId: mongoose.Types.ObjectId, @Body() contactData: any) {
+    return this.organizationsService.updateContact(organizationId, contactData);
   }
 
   @Delete(':id')

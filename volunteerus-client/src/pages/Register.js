@@ -1,4 +1,4 @@
-import React, { useState }  from "react";
+import React, { useEffect, useState }  from "react";
 import image from "../assets/illustrations/standing_human.svg";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import axios from "axios";

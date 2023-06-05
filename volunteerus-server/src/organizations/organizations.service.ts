@@ -42,6 +42,17 @@ export class OrganizationsService {
     return this.organizationsModel.findByIdAndUpdate(id, updateOrganizationDto).exec();
   }
 
+  async updateContact(organizationId: mongoose.Types.ObjectId, contactData: any) {
+    const organization = await this.organizationsModel.findById(organizationId).exec();
+    if (!organization) {
+      throw new HttpException('Organization not found', 404);
+    }
+    const contact = await this.contactsModel.findByIdAndUpdate(organization.contact, contactData).exec();
+    organization.contact = contact;
+    await organization.save();
+    return organization;
+  }
+
   remove(id: mongoose.Types.ObjectId) {
     return this.organizationsModel.findByIdAndDelete(id).exec();
   }

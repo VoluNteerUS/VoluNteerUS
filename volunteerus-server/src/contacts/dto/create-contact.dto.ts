@@ -1,4 +1,4 @@
 export class CreateContactDto {
     email: string;
-    socialMedia: any[];
+    social_media: any[];
 }
