@@ -10,6 +10,8 @@ import { FirebasestorageModule } from './firebasestorage/firebasestorage.module'
 import { OrganizationsModule } from './organizations/organizations.module';
 import * as dotenv from 'dotenv';
 import { ContactsModule } from './contacts/contacts.module';
+import { QuestionsModule } from './questions/questions.module';
+import { ResponsesModule } from './responses/responses.module';
 
 dotenv.config();
 // const mongo_credentials = fs.readFileSync('./credentials/mongo_credentials.json', 'utf8');
@@ -29,6 +31,8 @@ dotenv.config();
     FirebasestorageModule,
     OrganizationsModule,
     UsersModule,
+    QuestionsModule,
+    ResponsesModule
   ],
   controllers: [AppController],
   providers: [AppService],

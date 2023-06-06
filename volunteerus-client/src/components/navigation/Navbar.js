@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { 
   Bars3Icon, CalendarDaysIcon, CalendarIcon, 
-  HomeIcon, MagnifyingGlassIcon, UserGroupIcon, XMarkIcon, PencilSquareIcon 
+  HomeIcon, MagnifyingGlassIcon, UserGroupIcon, XMarkIcon 
 } from '@heroicons/react/24/outline'
 import logo from '../../assets/images/logo.png'
 import { Link, useLocation } from 'react-router-dom'
@@ -12,7 +12,6 @@ const navigation = [
   { name: 'Events', href: '/events', icon: CalendarDaysIcon },
   { name: 'Organizations', href: '/organizations', icon: UserGroupIcon },
   { name: 'Calendar', href: '#', icon: CalendarIcon },
-  { name: 'Create event', href: '/create-event', icon: PencilSquareIcon}
 ]
 
 function classNames(...classes) {
