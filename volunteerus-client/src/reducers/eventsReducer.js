@@ -1,9 +1,15 @@
 const initialState = {
+    event: {},
     events: [],
 }
 
 const eventsReducer = (state = initialState, action) => {
     switch (action.type) {
+        case 'FETCH_EVENT':
+            return {
+                ...state,
+                event: action.payload
+            };
         case 'FETCH_EVENTS':
             return {
                 ...state,

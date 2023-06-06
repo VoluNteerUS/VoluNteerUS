@@ -10,6 +10,7 @@ import axios from "axios";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, TagIcon, LockClosedIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
+import moment from "moment";
 
 function Events() {
 
@@ -49,7 +50,9 @@ function Events() {
   const [filteredCategory, setFilteredCategory] = useState(filters);
   const [filteredEvents, setFilteredEvents] = useState(allEvents);
   const [sort, setSort] = useState([...sorts.slice(0, 1)]);
+  const [queryEvents, setQueryEvents] = useState("");
 
+  // sort + filter according to search query
   useEffect(() => {
     let newAllEvents = allEvents.filter(event => toFilter(event));
     sort === 'Event title' ? newAllEvents.sort((a, b) => a.title - b.title)
@@ -60,8 +63,13 @@ function Events() {
       : newAllEvents.sort((a, b) => new Date(a.date[0]).getTime() === new Date(b.date[0]).getTime()
         ? a.date[2] - b.date[2] 
         : new Date(a.date[0]).getTime() - new Date(b.date[0]).getTime());
-    setFilteredEvents(newAllEvents);
-  }, [filteredCategory, allEvents, sort])
+
+    const searchEvents = queryEvents ? newAllEvents.filter((event) => {
+      return event.title.toLowerCase().includes(queryEvents.toLowerCase());
+    }) : newAllEvents;
+    
+    setFilteredEvents(searchEvents);
+  }, [filteredCategory, allEvents, sort, queryEvents])
 
   const toFilter = ((event) => {
     let eventCategoryCopy = event.category.map(cat => filteredCategory.includes(cat));
@@ -85,7 +93,14 @@ function Events() {
                   <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
                 </button>
               </span>
-              <input type="search" name="q" className="h-10 py-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full" placeholder="Search events" />
+              <input 
+                type="search" 
+                className="h-10 py-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full" 
+                placeholder="Search events"
+                onChange={(e) => {
+                  setQueryEvents(e.target.value);
+                }}
+              />
             </div>
           </form>
           <div className="flex flex-row space-x-2">
@@ -183,8 +198,8 @@ function Events() {
                     <div className="flex flex-row space-x-3">
                       <img src={imageCalender} alt="calender icon" className="w-5 h-5" />
                       <div>
-                        <p>{event.date[0] === event.date[1] ? new Date(event.date[0]).toLocaleDateString() : new Date(event.date[0]).toLocaleDateString() + ' - ' + new Date(event.date[1]).toLocaleDateString()}</p>
-                        <p>{event.date[2].replace('+08:00', '')} - {event.date[3].replace('+08:00', '')}</p>
+                        <p>{event.date[0] === event.date[1] ? moment(`${event.date[0]}`).format('LL') : moment(`${event.date[0]}`).format('LL') + ' - ' + moment(`${event.date[1]}`).format('LL')}</p>
+                        <p>{moment(`${event.date[0]} ${event.date[2]}`).format('h:mm A')} - {moment(`${event.date[0]} ${event.date[3]}`).format('h:mm A')}</p>
                       </div>
                     </div>
                     <div className="flex flex-row space-x-3">
@@ -201,12 +216,12 @@ function Events() {
                     </div>
                     <div className="flex flex-row space-x-3">
                       <LockClosedIcon className="w-5 h-5" />
-                      <p>{new Date(event.signup_by).toLocaleString()}</p>
+                      <p>{moment(`${event.signup_by}`).format('LL')}</p>
                     </div>
-                    <Link to="#">
-                    <button className="bg-pink-400 text-white rounded-lg py-1 lg:px-20 px-10 shadow-md">
-                      Sign up
-                    </button>
+                    <Link to={`/events/${ event._id }`}>
+                      <button className="bg-pink-400 text-white rounded-lg py-1 lg:px-20 px-10 shadow-md">
+                        Sign up
+                      </button>
                     </Link>
                   </div>
                 </div>

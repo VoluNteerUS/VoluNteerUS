@@ -1,10 +1,14 @@
-import Navbar from "../../components/navigation/Navbar"; 
+import Navbar from "../../../components/navigation/Navbar"; 
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Link, useNavigate, useLocation } from "react-router-dom"; 
 import { useEffect, useState } from "react";
 
 function CreateEvent() { 
   const navigate = useNavigate()
+  const [error, setError] = useState("");
+
+  // get details from previous page
+  const location = useLocation();
   const [details, setDetails] = useState(
     {
       "title": "",
@@ -14,30 +18,44 @@ function CreateEvent() {
       "category": [],
       "description": "",
       "image_url": "",
+      "file": null,
       "signup_by": ""
     }
   )
-
-  // get details from previous page
-  const location = useLocation();
   let det = null;
   let questions = null;
+  let id = null;
   if (location.state) {
-    det = location.state.det;
-    questions = location.state.form;
+    if (location.state.det) {
+      det = location.state.det;
+    } 
+    if (location.state.form) {
+      questions = location.state.form;
+    }
+    if (location.state.id) {
+      id = location.state.id;
+    }
   }
-  
   
   // restore form details if any
   useEffect(() => {
     if (det != null) {
       setDetails(det);
     }
+    if (id != null) {
+      setDetails({ ...details, organized_by: id });
+    }
   }, [])
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate("/create-event/2", { state: {det: details, form: questions } });
+    setError("");
+
+    if (new Date(details.date[0]).getTime() > new Date(details.date[1]).getTime()) {
+      setError("Start date cannot be later than End date");
+    } else {
+      navigate("/events/create/2", { state: { det: details, form: questions } });
+    }
   }
 
   return ( 
@@ -45,7 +63,7 @@ function CreateEvent() {
       <Navbar /> 
       <div className="bg-pink-100 py-10"> 
         <div className="flex items-center h-screen justify-center"> 
-          <div className="bg-white pb-5 rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2 flex flex-col"> 
+          <div className="bg-white pb-5 rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2 flex flex-col px-3"> 
             <Link to="/" className="p-3 mt-3 mx-3 rounded-full bg-white/70 hover:bg-slate-500 self-end">
               <XMarkIcon className="w-6 h-6 text-gray-700" />
             </Link>
@@ -75,15 +93,14 @@ function CreateEvent() {
                       <textarea required rows={8} value={ details.description } placeholder="Description" className="p-1 border border-grey-600 rounded-md" onChange={ e => {setDetails({...details, description: e.target.value}); }} />
                       <label className="font-semibold">Location</label>
                       <input required type="text" value={ details.location } placeholder="Location of Event" className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, location: e.target.value}); }}/>
-                      <label className="font-semibold">Organization</label>
-                      <select required defaultValue={ details.organization } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, organized_by: e.target.value}); }}>
-                        <option value="NUS Rotaract Club">NUS Rotaract Club</option>
-                        <option value="NUS Students' Community Service Club">NUS Students' Community Service Club</option>
-                      </select>
                     </div>
                     <div className="w-1/2 flex flex-col justify-evenly">
                       <label className="font-semibold">Category (select all that applies)</label>
-                      <select required multiple={ true } value={ details.category } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, category: [e.target.value]}); }}>
+                      <select required multiple={ true } value={ details.category } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {
+                        const options = [...e.target.selectedOptions];
+                        const values = options.map(option => option.value);
+                        setDetails({...details, category: values}); }}
+                      >
                         <option value="Elderly">Elderly</option>
                         <option value="Migrant Workers">Migrant Workers</option>
                         <option value="Patients">Patients</option>
@@ -117,7 +134,8 @@ function CreateEvent() {
                       <label className="font-semibold">Form closing date</label>
                       <input required type="date" value={ details.signup_by } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, signup_by: e.target.value}); }} />
                       <label className="font-semibold">Thumbnail image</label>
-                      <input required type="file" className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, image_url: e.target.value}); }}/>
+                      <input required type="file" accept="image/*" className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => {setDetails({...details, file: e.target.files[0]}); }} />
+                      <p className="text-red-600 text-xs">{ error }</p>
                     </div>
                   </div>
                   <button type="submit" className="bg-pink-400 rounded-lg px-6 py-1 self-end text-white">

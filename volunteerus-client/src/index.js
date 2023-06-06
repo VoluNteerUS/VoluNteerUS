@@ -19,8 +19,8 @@ const EditOrganizationPage = lazy(() => import('./pages/organizations/Edit'));
 const OrganizationDashboard = lazy(() => import('./pages/organizations/Dashboard'));
 const AdminDashboard = lazy(() => import('./pages/admin'));
 const Events = lazy(() => import('./pages/events'));
-const CreateEvent = lazy(() => import('./pages/createEvent'));
-const CreateEvent2 = lazy(() => import('./pages/createEvent/CreateEvent2'));
+const CreateEvent = lazy(() => import('./pages/events/createEvent'));
+const CreateEvent2 = lazy(() => import('./pages/events/createEvent/CreateEvent2'));
 const EventSignup = lazy(() => import('./pages/events/Signup'));
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -51,7 +51,7 @@ root.render(
                   <Route path=":id" element={<EventSignup />} />
                   <Route path="create" element={<CreateEvent />} />
                 </Route>
-                <Route path="create-event">
+                <Route path="create">
                   <Route index element={<CreateEvent />} />
                   <Route path="2" element={<CreateEvent2 />} />
                 </Route>

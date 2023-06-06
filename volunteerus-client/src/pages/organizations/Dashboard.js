@@ -182,7 +182,7 @@ function OrganizationDashboard() {
                 </div>
                 {/* Floating Action Button */}
                 <div className="bottom-0 right-0 my-2 mr-4 px-3">
-                  <Link to="/events/create" className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
+                  <Link to="/events/create" state={{ id: organization._id }} className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
                     <PlusIcon className="h-7 w-7 text-white mx-auto block" aria-hidden="true" />
                   </Link>
                 </div>

@@ -19,8 +19,9 @@ export class EventsController {
     async create(@Body() createEventDto: CreateEventDto, @UploadedFile() file: Express.Multer.File): Promise<Event> {
       // console.log(createEventDto);
       // Convert createEventDto to json
-      const event = JSON.parse(createEventDto["createEventDto"]);
       // console.log(event);
+
+      const event = JSON.parse(JSON.stringify(createEventDto));
 
       const destination = 'events';
       if (file) {
@@ -33,6 +34,12 @@ export class EventsController {
       // createEventDto.organized_by = organization;
       // Update event's organizer
       // return this.eventService.create(createEventDto);
+
+      // split the string into individual array elements
+      event.date = event.date.split(',');
+      event.category = event.category.split(',');
+      event.questions = event.questions.split(',');
+
       return this.eventService.create(event);
     }
     
