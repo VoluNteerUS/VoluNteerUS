@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { setQuestions } from "../../actions/questionsActions";
 import { setEvent } from "../../actions/eventActions";
 
  
@@ -13,11 +12,11 @@ function EventSignup() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const questionsReducer = useSelector((state) => state.questions);
   const eventReducer = useSelector((state) => state.events);
-  const questions = questionsReducer?.questions;
   const event = eventReducer?.event;
 
+  const [questions, setQuestions] = useState([]);
+  
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user;
   const user_id = user?.id;
@@ -59,11 +58,11 @@ function EventSignup() {
         const res = await axios.get(eventURL);
         const event = res.data;
         const questionId = event.questions;
-        const questionsURL = new URL(`/questions/${questionId}`, process.env.REACT_APP_BACKEND_API)
+        const questionsURL = new URL(`/questions/${questionId}`, process.env.REACT_APP_BACKEND_API);
         const response = await axios.get(questionsURL);
         const questions = response.data;
         const finalQuestions = Object.values(questions).filter(q => q.length > 2 && q[1] !== "" && q !== questionId);
-        dispatch(setQuestions(finalQuestions));
+        setQuestions(finalQuestions);
       } catch (err) {
         console.error({ err });
       }
@@ -107,7 +106,6 @@ function EventSignup() {
     const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
 
     await axios.post(responsesURL, requestBody).then((response) => {
-      console.log(response.data);
       navigate('/');
     }).catch((error) => {
       console.log(error);
@@ -127,7 +125,7 @@ function EventSignup() {
               <form onSubmit={ handleSubmit } className="col-span-12 sm:px-12 xl:py-2 mx-0 sm:mx-4">
                 <h1 className="font-bold tracking-tight leading-none text-darkblue-900 sm:text-2xl md:text-3xl xl:text-4xl text-center mb-10">Volunteer for { event?.title }</h1> 
                 {/* form questions */}
-                {Object.values(questions).map((question) => (
+                {questions.map((question) => (
                   <div className="flex flex-col mb-10" key={ question[0] }> 
                     <label className="">{ question[1] }</label> 
                     { inputType(question) }

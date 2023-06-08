@@ -26,7 +26,8 @@ export class QuestionsService {
     return this.questionsModel.findByIdAndUpdate(id, updateQuestionDto).exec();
   }
 
-  remove(id: mongoose.Types.ObjectId) {
-    return this.questionsModel.findByIdAndDelete(id).exec();
+  public async remove(id: mongoose.Types.ObjectId): Promise<Question> {
+    const deletedQuestion = await this.questionsModel.findByIdAndDelete(id);
+    return deletedQuestion;
   }
 }

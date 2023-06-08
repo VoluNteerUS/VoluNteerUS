@@ -38,7 +38,6 @@ export class EventsController {
       // split the string into individual array elements
       event.date = event.date.split(',');
       event.category = event.category.split(',');
-      event.questions = event.questions.split(',');
 
       return this.eventService.create(event);
     }
@@ -57,8 +56,24 @@ export class EventsController {
     }
     
     @Patch(':id')
-    update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateEventDto: UpdateEventDto): Promise<Event> {
-      return this.eventService.update(id, updateEventDto);
+    @UseInterceptors(FileInterceptor('file'))
+    async update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateEventDto: UpdateEventDto, @UploadedFile() file: Express.Multer.File) {
+      const event = JSON.parse(JSON.stringify(updateEventDto));
+
+      if (file) {
+        const destination = 'events';
+        const url = await this.uploadService.uploadFile(file, destination);
+        event.image_url = url;
+      }
+      event.date = event.date.split(',');
+      event.category = event.category.split(',');
+
+      return this.eventService.update(id, event);
+    }
+
+    @Patch(':id/questions')
+    async updateQuestions(@Param('id') eventId: mongoose.Types.ObjectId, @Body() questionsData: any) {
+      return this.eventService.updateQuestions(eventId, questionsData);
     }
     
     @Delete(':id')

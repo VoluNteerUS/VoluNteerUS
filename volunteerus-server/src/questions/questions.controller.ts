@@ -30,7 +30,8 @@ export class QuestionsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: mongoose.Types.ObjectId) {
+  remove(@Param('id') id: mongoose.Types.ObjectId): Promise<Question> {
     return this.questionsService.remove(id);
   }
+
 }
