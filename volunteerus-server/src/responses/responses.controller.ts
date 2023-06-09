@@ -1,17 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { ResponsesService } from './responses.service';
 import { CreateResponseDto } from './dto/create-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { Response } from './schemas/response.schema';
 import mongoose from 'mongoose';
+import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { Query } from '@nestjs/common';
 
 @Controller('responses')
 export class ResponsesController {
-  constructor(private readonly responsesService: ResponsesService) {}
+  constructor(
+    private readonly responsesService: ResponsesService,
+    private caslAbilityFactory: CaslAbilityFactory
+  ) {}
 
   @Post()
-  create(@Body() createResponseDto: CreateResponseDto): Promise<Response> {
-    return this.responsesService.create(createResponseDto);
+  create(@Query('role') role: string, @Body() createResponseDto: CreateResponseDto): Promise<Response> {
+    // Check if user has permission to create a response
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Response)) {
+      return this.responsesService.create(createResponseDto);
+    }
   }
 
   @Get()
@@ -25,12 +34,20 @@ export class ResponsesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateResponseDto: UpdateResponseDto) {
-    return this.responsesService.update(id, updateResponseDto);
+  update(@Param('id') id: mongoose.Types.ObjectId, @Query('role') role: string, @Body() updateResponseDto: UpdateResponseDto) {
+    // Check if user has permission to create an organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Response)) {
+      return this.responsesService.update(id, updateResponseDto);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: mongoose.Types.ObjectId) {
-    return this.responsesService.remove(id);
+  remove(@Param('id') id: mongoose.Types.ObjectId, @Query('role') role: string) {
+    // Check if user has permission to create an organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Response)) {
+      return this.responsesService.remove(id);
+    }
   }
 }

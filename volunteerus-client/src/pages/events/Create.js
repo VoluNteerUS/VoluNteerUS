@@ -3,7 +3,7 @@ import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Link, useLocation, useNavigate } from "react-router-dom"; 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
 
@@ -12,6 +12,9 @@ function CreateEvent() {
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
+
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || 'Unknown';
 
   const [details, setDetails] = useState(
     {
@@ -117,10 +120,15 @@ function CreateEvent() {
       const requestBody = questionObject;
 
       // Endpoint for event questions
-      const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
+      const questionsURL = new URL(`/questions?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 
       await axios.post(questionsURL, requestBody).then((response) => {
           console.log(response.data);
+
+          if (!response.data) {
+            alert('You do not have permission to create an event.');
+            navigate('/');
+          }
           
           // event details
           const eventData = new FormData();
@@ -135,7 +143,7 @@ function CreateEvent() {
           eventData.append('file', details.file);
           eventData.append('questions', response.data._id);
 
-          const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+          const eventsURL = new URL(`/events?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
           axios.post(eventsURL, eventData, {
             headers: {
               'Content-Type': 'multipart/form-data',
@@ -162,7 +170,7 @@ function CreateEvent() {
   return ( 
     <div> 
       <Navbar /> 
-      { page == 1 
+      { page === 1 
         ? <div className="bg-pink-100 py-10"> 
           <div className="flex items-center h-screen justify-center"> 
             <div className="bg-white pb-5 rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2 flex flex-col px-3"> 

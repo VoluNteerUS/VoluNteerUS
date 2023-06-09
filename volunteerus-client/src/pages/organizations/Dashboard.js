@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../../components/navigation/Navbar"
 import axios from "axios";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
 import { Tab } from '@headlessui/react'
-import { PlusIcon } from "@heroicons/react/24/outline"
 import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
 import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
-import { useNavigate } from "react-router-dom";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -38,6 +36,8 @@ function OrganizationDashboard() {
   ]);
   const eventsReducer = useSelector((state) => state.events);
   const events = eventsReducer.events;
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || 'user';
 
   const updateTab = (name) => {
     return () => {
@@ -84,12 +84,16 @@ function OrganizationDashboard() {
 
   const handleDelete = async (e, event) => {
     // Send DELETE request to delete event and sign up form questions
-    const eventURL = new URL(`/events/${event?._id}`, process.env.REACT_APP_BACKEND_API);
-    const questionURL = new URL(`/questions/${event?.questions}`, process.env.REACT_APP_BACKEND_API);
+    const eventURL = new URL(`/events/${event?._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const questionURL = new URL(`/questions/${event?.questions}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 
     await axios.delete(eventURL)
     .then((res) => {
       console.log(res);
+      if (!res.data) {
+        alert('You do not have permission to delete.');
+        navigate('/');
+      }
     }).catch((err) => {
       console.error(err);
     });

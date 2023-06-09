@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvent } from "../../actions/eventActions";
-
  
 function EventSignup() { 
   const { id } = useParams();
@@ -18,7 +17,7 @@ function EventSignup() {
   const [questions, setQuestions] = useState([]);
   
   const persistedUserState = useSelector((state) => state.user);
-  const user = persistedUserState?.user;
+  const user = persistedUserState?.user || "Unknown";
   const user_id = user?.id;
 
   const [response, setResponse] = useState({ "user": user_id });
@@ -35,6 +34,7 @@ function EventSignup() {
         const submittedResponse = userResponse.filter(response => response.event === id);
         if (submittedResponse.length > 0) {
           console.log(submittedResponse);
+          alert("You have already submitted a response.")
           navigate('/');
         }
       } catch (err) {
@@ -103,10 +103,16 @@ function EventSignup() {
     const requestBody = response;
 
     // Endpoint for responses
-    const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
+    const responsesURL = new URL(`/responses?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 
     await axios.post(responsesURL, requestBody).then((response) => {
-      navigate('/');
+      console.log(response.data);
+      // User is not logged in -> redirect to login page
+      if (!response.data) {
+        navigate('/login');
+      } else {
+        navigate('/');
+      }
     }).catch((error) => {
       console.log(error);
     })

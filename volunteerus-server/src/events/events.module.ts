@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { EventsController } from './events.controller';
 import { FirebasestorageModule } from 'src/firebasestorage/firebasestorage.module';
 import { Question, QuestionSchema } from 'src/questions/schemas/question.schema';
+import { CaslModule } from 'src/casl/casl.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { Question, QuestionSchema } from 'src/questions/schemas/question.schema'
       { name: Event.name, schema: EventSchema },
       { name: Question.name, schema: QuestionSchema }
     ]),
-    FirebasestorageModule
+    FirebasestorageModule,
+    CaslModule
   ],
   providers: [EventsService],
   controllers: [EventsController],

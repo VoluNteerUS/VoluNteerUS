@@ -1,6 +1,6 @@
 import Navbar from "../../components/navigation/Navbar";
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import { MinusIcon } from "@heroicons/react/24/outline";
@@ -9,6 +9,9 @@ import { setOrganizations, setCurrentOrganization } from "../../actions/organiza
 
 function EditOrganizationPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || "Unknown";
   const organizationsReducer = useSelector((state) => state.organizations);
   const organization = organizationsReducer.currentOrganization;
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
@@ -44,13 +47,17 @@ function EditOrganizationPage() {
     formData.append("description", profile.description);
 
     // Send PATCH request to update organization
-    const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+    const organizationURL = new URL(`/organizations/${id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     await axios.patch(organizationURL, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     }).then((res) => {
       console.log(res);
+      if (!res.data) {
+        alert('You do not have permission to update profile.');
+        navigate('/');
+      }
     }).catch((err) => {
       console.error(err);
     });
@@ -92,17 +99,24 @@ function EditOrganizationPage() {
 
     if (organization?.contact === null) {
       // Send POST request to create contact
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts`, process.env.REACT_APP_BACKEND_API);
+      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
       await axios.post(organizationContactsURL, contacts).then((res) => {
         console.log(res);
+        if (!res.data) {
+          alert('You do not have permission to create contact.');
+          navigate('/');
+        }
       }).catch((err) => {
         console.error(err);
       });
     } else {
       // Send PATCH request to update organization
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts`, process.env.REACT_APP_BACKEND_API);
+      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
       await axios.patch(organizationContactsURL, contacts).then((res) => {
         console.log(res);
+        if (!res.data) {
+          alert('You do not have permission to update contacts.')
+        }
       }).catch((err) => {
         console.error(err);
       });

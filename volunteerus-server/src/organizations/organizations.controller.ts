@@ -5,33 +5,45 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { FirebasestorageService } from 'src/firebasestorage/firebasestorage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import mongoose from 'mongoose';
+import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { Query } from '@nestjs/common';
+import { Organization } from './schemas/organization.schema';
 
 @Controller('organizations')
 export class OrganizationsController {
   constructor(
     private readonly organizationsService: OrganizationsService,
     private readonly uploadService: FirebasestorageService,
+    private caslAbilityFactory: CaslAbilityFactory
   ) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  async create(@Body() createOrganizationDto: CreateOrganizationDto, @UploadedFile() file: Express.Multer.File) {
-    const destination = 'organizations';
-    const organization = JSON.parse(createOrganizationDto["createOrganizationDto"]);
-    console.log(organization);
+  async create(@Query('role') role: string, @Body() createOrganizationDto: CreateOrganizationDto, @UploadedFile() file: Express.Multer.File) {
+    // Check if user has permission to create an organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Organization)) {
+      const destination = 'organizations';
+      const organization = JSON.parse(createOrganizationDto["createOrganizationDto"]);
+      console.log(organization);
 
-    if (file) {
-      const url = await this.uploadService.uploadFile(file, destination);
-      // createOrganizationDto.image_url = url;
-      organization.image_url = url;
+      if (file) {
+        const url = await this.uploadService.uploadFile(file, destination);
+        // createOrganizationDto.image_url = url;
+        organization.image_url = url;
+      }
+      // return this.organizationsService.create(createOrganizationDto);
+      return this.organizationsService.create(organization);
     }
-    // return this.organizationsService.create(createOrganizationDto);
-    return this.organizationsService.create(organization);
   }
 
   @Post(':id/contacts')
-  async addContactToOrganization(@Param('id') organizationId: mongoose.Types.ObjectId, @Body() contactData: any) {
-    return this.organizationsService.addContactToOrganization(organizationId, contactData);
+  async addContactToOrganization(@Param('id') organizationId: mongoose.Types.ObjectId, @Query('role') role: string, @Body() contactData: any) {
+    // Check if user has permission to create contact for an organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Organization)) {
+      return this.organizationsService.addContactToOrganization(organizationId, contactData);
+    }
   }
 
   @Get()
@@ -46,22 +58,34 @@ export class OrganizationsController {
 
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file'))
-  async update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateOrganizationDto: UpdateOrganizationDto, @UploadedFile() file: Express.Multer.File) {
-    if (file) {
-      const destination = 'organizations';
-      const url = await this.uploadService.uploadFile(file, destination);
-      updateOrganizationDto.image_url = url;
+  async update(@Param('id') id: mongoose.Types.ObjectId, @Query('role') role: string, @Body() updateOrganizationDto: UpdateOrganizationDto, @UploadedFile() file: Express.Multer.File) {
+    // Check if user has permission to update Organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('update', Organization)) {
+      if (file) {
+        const destination = 'organizations';
+        const url = await this.uploadService.uploadFile(file, destination);
+        updateOrganizationDto.image_url = url;
+      }
+      return this.organizationsService.update(id, updateOrganizationDto);
     }
-    return this.organizationsService.update(id, updateOrganizationDto);
   }
 
   @Patch(':id/contacts')
-  async updateContact(@Param('id') organizationId: mongoose.Types.ObjectId, @Body() contactData: any) {
-    return this.organizationsService.updateContact(organizationId, contactData);
+  async updateContact(@Param('id') organizationId: mongoose.Types.ObjectId, @Query('role') role: string, @Body() contactData: any) {
+    // Check if user has permission to update contact for an Organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('update', Organization)) {
+      return this.organizationsService.updateContact(organizationId, contactData);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: mongoose.Types.ObjectId) {
-    return this.organizationsService.remove(id);
+  remove(@Param('id') id: mongoose.Types.ObjectId, @Query('role') role: string) {
+    // Check if user has permission to delete an Organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('delete', Organization)) {
+      return this.organizationsService.remove(id);
+    }
   }
 }

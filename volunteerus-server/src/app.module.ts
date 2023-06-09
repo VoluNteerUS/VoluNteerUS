@@ -12,6 +12,7 @@ import * as dotenv from 'dotenv';
 import { ContactsModule } from './contacts/contacts.module';
 import { QuestionsModule } from './questions/questions.module';
 import { ResponsesModule } from './responses/responses.module';
+import { CaslModule } from './casl/casl.module';
 
 dotenv.config();
 // const mongo_credentials = fs.readFileSync('./credentials/mongo_credentials.json', 'utf8');
@@ -32,7 +33,8 @@ dotenv.config();
     OrganizationsModule,
     UsersModule,
     QuestionsModule,
-    ResponsesModule
+    ResponsesModule,
+    CaslModule
   ],
   controllers: [AppController],
   providers: [AppService],

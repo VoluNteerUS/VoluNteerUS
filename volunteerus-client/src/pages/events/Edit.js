@@ -2,7 +2,7 @@ import Navbar from "../../components/navigation/Navbar";
 import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setEvents } from "../../actions/eventActions";
 import axios from "axios";
 import { setQuestions } from "../../actions/questionsActions";
@@ -13,6 +13,9 @@ function EditEventDetails() {
   const [error, setError] =useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || 'Unknown';
 
   const [formQuestions, setFormQuestions] = useState({});
   const [page, setPage] = useState(1);
@@ -160,14 +163,18 @@ function EditEventDetails() {
     }
 
     // Send PATCH request to update event and sign up form questions
-    const eventURL = new URL(`/events/${id}`, process.env.REACT_APP_BACKEND_API);
-    const questionURL = new URL(`/questions/${details.questions}`, process.env.REACT_APP_BACKEND_API);
+    const eventURL = new URL(`/events/${id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const questionURL = new URL(`/questions/${details.questions}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     await axios.patch(eventURL, eventData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     }).then((res) => {
       console.log(res);
+      if (!res.data) {
+        alert('You do not have permission to edit.');
+        navigate('/');
+      }
     }).catch((err) => {
       console.error(err);
     });
