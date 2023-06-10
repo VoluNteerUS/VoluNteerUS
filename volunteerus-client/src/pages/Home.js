@@ -9,6 +9,7 @@ import imageLocation from "../assets/images/location-icon.png";
 // temporary image for organizations
 import imageOrganization from "../assets/images/organization-icon.png";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 function Home() {
     const navigations = [
@@ -70,7 +71,7 @@ function Home() {
                 <p className="text-xl mx-20 font-bold">Featured Events</p>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:mx-20 md:mx-10 mx-20 my-5">
                     {featuredEvents.map((event, key) => (
-                        <a href='#' className="border border-black" key={key}>
+                        <Link to='/events' state={ event } className="border border-black" key={key}>
                             <img src={event.image_url} alt="event" className="h-60 md:h-72 xl:h-80 w-full object-cover" />
                             <p className="mx-3 font-semibold my-2">{event.title}</p>
                             <div className="flex flex-row space-x-2 mx-3">
@@ -85,7 +86,7 @@ function Home() {
                                 <img src={imageOrganization} alt="organization icon" className="w-5 h-5" />
                                 <p>{event.organized_by["name"].length <= 30 ? event.organized_by["name"] : event.organized_by["name"].substring(0, 30) + '...'}</p>
                             </div>
-                        </a>
+                        </Link>
                     ))}
                 </div>
             </div>
