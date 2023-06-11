@@ -5,6 +5,7 @@ import { Organization, OrganizationSchema } from './schemas/organization.schema'
 import { MongooseModule } from '@nestjs/mongoose';
 import { FirebasestorageModule } from 'src/firebasestorage/firebasestorage.module';
 import { Contact, ContactSchema } from 'src/contacts/schemas/contact.schema';
+import { CaslModule } from 'src/casl/casl.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { Contact, ContactSchema } from 'src/contacts/schemas/contact.schema';
       { name: Organization.name, schema: OrganizationSchema},
       { name: Contact.name, schema: ContactSchema}
     ]),
-    FirebasestorageModule
+    FirebasestorageModule,
+    CaslModule
   ],
   controllers: [OrganizationsController],
   providers: [OrganizationsService]

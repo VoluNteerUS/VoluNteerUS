@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../../components/navigation/Navbar"
 import axios from "axios";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
 import { Tab } from '@headlessui/react'
-import { PlusIcon } from "@heroicons/react/24/outline"
-import { setCurrentOrganization } from "../../actions/organizationActions";
+import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
+import { setEvents } from "../../actions/eventActions";
+import { setQuestions } from "../../actions/questionsActions";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -16,7 +17,10 @@ function classNames(...classes) {
 
 function OrganizationDashboard() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || 'user';
   const organizationsReducer = useSelector((state) => state.organizations);
   const organization = organizationsReducer.currentOrganization;
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -115,6 +119,43 @@ function OrganizationDashboard() {
     getPastEvents();
   }, [id]);
 
+  const handleDelete = async (e, event) => {
+    // Send DELETE request to delete event and sign up form questions
+    const eventURL = new URL(`/events/${event?._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const questionURL = new URL(`/questions/${event?.questions}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+
+    await axios.delete(eventURL)
+    .then((res) => {
+      console.log(res);
+      if (!res.data) {
+        alert('You do not have permission to delete.');
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
+    await axios.delete(questionURL)
+    .then((res) => {
+      console.log(res);
+    }).catch((err) => {
+      console.error(err);
+    });
+            
+    // Send GET request to get updated event details and sign up form questions
+    const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+    const updatedDetails = axios.get(eventsURL).then((res) => res.data);
+    console.log(updatedDetails)
+    const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
+    const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
+    console.log(updatedQuestions);
+
+    // Update event details and sign up form questions in redux store
+    dispatch(setEvents(updatedDetails));
+    dispatch(setQuestions(updatedQuestions));
+
+    window.location.reload();
+  }
+
   return (
     <>
       <Navbar />
@@ -209,7 +250,7 @@ function OrganizationDashboard() {
                                 Edit
                               </Link>
                               <span className="px-2">|</span>
-                              <button type="button" className="text-primary-600 hover:text-primary-800">
+                              <button type="button" onClick={ e => handleDelete(e, event) } className="text-primary-600 hover:text-primary-800">
                                 Delete
                               </button>
                             </td>
@@ -279,7 +320,7 @@ function OrganizationDashboard() {
                                 Edit
                               </Link>
                               <span className="px-2">|</span>
-                              <button type="button" className="text-primary-600 hover:text-primary-800">
+                              <button type="button" onClick={e => handleDelete(e, event) } className="text-primary-600 hover:text-primary-800">
                                 Delete
                               </button>
                             </td>

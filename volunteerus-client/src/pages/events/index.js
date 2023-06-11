@@ -8,7 +8,7 @@ import imageLocation from "../../assets/images/location-icon.png";
 import imageOrganization from "../../assets/images/organization-icon.png";
 import axios from "axios";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, TagIcon, LockClosedIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import moment from "moment";
 import Pagination from "../../components/navigation/Pagination";
@@ -33,6 +33,7 @@ function Events() {
   ]
 
   const [allEvents, setAllEvents] = useState([]);
+  const location = useLocation();
   const [filteredCategory, setFilteredCategory] = useState(filters);
   const [filteredEvents, setFilteredEvents] = useState(allEvents);
   const [sort, setSort] = useState([...sorts.slice(0, 1)]);
@@ -69,6 +70,14 @@ function Events() {
     .catch(err => console.error({ err }));
   }
 
+  useEffect(() => {
+    getAllEvents();
+    // if user clicked on an event to navigate to detailed event
+    if (location?.state) {
+      setQueryEvents(location.state.title);
+    }
+  }, []);
+
   // sort + filter according to search query
   useEffect(() => {
     let newAllEvents = allEvents.filter(event => toFilter(event));
@@ -81,6 +90,7 @@ function Events() {
         ? a.date[2] - b.date[2] 
         : new Date(a.date[0]).getTime() - new Date(b.date[0]).getTime());
 
+    console.log(queryEvents);
     const searchEvents = queryEvents ? newAllEvents.filter((event) => {
       return event.title.toLowerCase().includes(queryEvents.toLowerCase());
     }) : newAllEvents;
@@ -126,6 +136,7 @@ function Events() {
                 type="search" 
                 className="h-10 py-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full" 
                 placeholder="Search events"
+                value= { queryEvents }
                 onChange={(e) => {
                   setQueryEvents(e.target.value);
                 }}

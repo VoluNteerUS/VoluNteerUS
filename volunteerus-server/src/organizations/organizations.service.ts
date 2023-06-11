@@ -55,6 +55,16 @@ export class OrganizationsService {
     return new PaginationResult<Organization>(data, totalItems, totalPages);
   }
 
+  async search(page: number, limit: number, query: string) {
+    const skip = (page - 1) * limit;
+    const [data, totalItems] = await Promise.all([
+      this.organizationsModel.find({ name: { $regex: query, $options: 'i' } }).skip(skip).limit(limit).exec(),
+      this.organizationsModel.countDocuments({ name: { $regex: query, $options: 'i' } }).exec()
+    ]);
+    const totalPages = Math.ceil(totalItems / limit);
+    return new PaginationResult<Organization>(data, totalItems, totalPages);
+  }
+
   findOne(id: mongoose.Types.ObjectId) {
     return this.organizationsModel.findById(id).populate("contact").exec();
   }

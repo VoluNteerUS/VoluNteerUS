@@ -1,9 +1,15 @@
 const initialState = {
-    questions: {},
+    question: null,
+    questions: []
 }
 
 const questionsReducer = (state = initialState, action) => {
     switch (action.type) {
+        case 'FETCH_QUESTION':
+            return {
+                ...state,
+                question: action.payload
+            };
         case 'FETCH_QUESTIONS':
             return {
                 ...state,

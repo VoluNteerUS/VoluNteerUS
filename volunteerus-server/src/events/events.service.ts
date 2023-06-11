@@ -6,10 +6,15 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PaginationResult } from 'src/types/pagination';
 import * as moment from 'moment';
+import { HttpException } from '@nestjs/common';
+import { Question, QuestionDocument } from 'src/questions/schemas/question.schema';
 
 @Injectable()
 export class EventsService {
-  constructor(@InjectModel(Event.name) private eventsModel: Model<EventDocument>) { }
+  constructor(
+    @InjectModel(Event.name) private eventsModel: Model<EventDocument>,
+    @InjectModel(Question.name) private questionsModel: Model<QuestionDocument>)
+  { }
 
   public async create(@Body() createEventDto: CreateEventDto): Promise<Event> {
     const newEvent = new this.eventsModel(createEventDto);
@@ -81,9 +86,19 @@ export class EventsService {
     return new PaginationResult<Event>(pastEvents, totalItems, totalPages);
   }
 
-  public async update(id: mongoose.Types.ObjectId, @Body() updateEventDto: UpdateEventDto): Promise<Event> {
-    const editedEvent = await this.eventsModel.findByIdAndUpdate(id, updateEventDto);
-    return editedEvent;
+  update(id: mongoose.Types.ObjectId, updateEventDto: UpdateEventDto) {
+    return this.eventsModel.findByIdAndUpdate(id, updateEventDto).exec();
+  }
+
+  async updateQuestions(eventId: mongoose.Types.ObjectId, questionsData: any) {
+    const event = await this.eventsModel.findById(eventId).exec();
+    if (!event) {
+      throw new HttpException('Event not found', 404);
+    }
+    const questions = await this.questionsModel.findByIdAndUpdate(event.questions, questionsData).exec();
+    event.questions = questions;
+    await event.save();
+    return event;
   }
 
   public async remove(id: mongoose.Types.ObjectId): Promise<Event> {

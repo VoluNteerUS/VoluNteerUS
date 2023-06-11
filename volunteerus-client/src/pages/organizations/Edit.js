@@ -1,7 +1,7 @@
-import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import Navbar from "../../components/navigation/Navbar";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import { MinusIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
@@ -11,6 +11,9 @@ function EditOrganizationPage() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const [organization, setOrganization] = useState({});
+  const navigate = useNavigate();
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || "Unknown";
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
   const [state, setState] = useState({
     profile: {
@@ -111,14 +114,20 @@ function EditOrganizationPage() {
     formData.append("description", state.profile.description);
 
     // Send PATCH request to update organization
-    const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+    const organizationURL = new URL(`/organizations/${id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     await axios.patch(organizationURL, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     }).then((res) => {
-      // Alert user of successful update
-      alert("Successfully updated organization!");
+      console.log(res);
+      if (!res.data) {
+        alert('You do not have permission to update profile.');
+        navigate('/');
+      } else {
+        // Alert user of successful update
+        alert("Successfully updated organization!");
+      }
     }).catch((err) => {
       // Add errors to state
       if (err.response) {
@@ -230,9 +239,15 @@ function EditOrganizationPage() {
 
     if (organization?.contact === null) {
       // Send POST request to create contact
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts`, process.env.REACT_APP_BACKEND_API);
+      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
       await axios.post(organizationContactsURL, state.contacts).then((res) => {
-        alert("Successfully added contact!");
+        console.log(res);
+        if (!res.data) {
+          alert('You do not have permission to create contact.');
+          navigate('/');
+        } else {
+          alert("Successfully created contact!");
+        }
       }).catch((err) => {
         const { data } = err.response;
         const errors = Object.keys(data).map((key) => `${key}: ${data[key]}`);
@@ -249,9 +264,15 @@ function EditOrganizationPage() {
       });
     } else {
       // Send PATCH request to update organization
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts`, process.env.REACT_APP_BACKEND_API);
+      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
       await axios.patch(organizationContactsURL, state.contacts).then((res) => {
-        alert("Successfully updated contact!");
+        console.log(res);
+        if (!res.data) {
+          alert('You do not have permission to update contacts.')
+          navigate('/');
+        } else {
+          alert("Successfully updated contact!");
+        }
       }).catch((err) => {
         const { data } = err.response;
         const errors = Object.keys(data).map((key) => `${key}: ${data[key]}`);
