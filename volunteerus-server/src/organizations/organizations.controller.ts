@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, Query, ParseIntPipe, HttpException, HttpStatus } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -16,17 +16,12 @@ export class OrganizationsController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(@Body() createOrganizationDto: CreateOrganizationDto, @UploadedFile() file: Express.Multer.File) {
-    const destination = 'organizations';
-    const organization = JSON.parse(createOrganizationDto["createOrganizationDto"]);
-    console.log(organization);
-
     if (file) {
+      const destination = 'organizations';
       const url = await this.uploadService.uploadFile(file, destination);
-      // createOrganizationDto.image_url = url;
-      organization.image_url = url;
+      createOrganizationDto.image_url = url;
     }
-    // return this.organizationsService.create(createOrganizationDto);
-    return this.organizationsService.create(organization);
+    return this.organizationsService.create(createOrganizationDto);
   }
 
   @Post(':id/contacts')
@@ -34,9 +29,21 @@ export class OrganizationsController {
     return this.organizationsService.addContactToOrganization(organizationId, contactData);
   }
 
+
   @Get()
-  findAll() {
-    return this.organizationsService.findAll();
+  findAll(
+    @Query('page') page: number = 1, 
+    @Query('limit') limit: number = 10
+  ) {
+    const parsedPage = parseInt(page.toString(), 10) || 1;
+    const parsedLimit = parseInt(limit.toString(), 10) || 10;
+    // Validate If parsedPage and parsedLimit is negative
+    if (parsedPage < 0 || parsedLimit < 0) {
+      throw new HttpException('Page and Limit must be positive', HttpStatus.BAD_REQUEST, {
+        cause: new Error('Page and Limit must be positive'),
+      });
+    }
+    return this.organizationsService.findAll(parsedPage, parsedLimit);
   }
 
   @Get(':id')

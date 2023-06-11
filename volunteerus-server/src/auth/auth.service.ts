@@ -19,10 +19,14 @@ export class AuthService {
         return user;
       }
       else {
-        throw new HttpException('Invalid password', 401);
+        throw new HttpException('Invalid password', 401, {
+          cause: new Error('Invalid password')
+        });
       }
     }
-    throw new HttpException('Invalid username or password', 401);
+    throw new HttpException('Invalid username or password', 401, {
+      cause: new Error('Invalid username or password')
+    });
   }
 
   async login(user: any) {

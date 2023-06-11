@@ -7,29 +7,13 @@ import imageLocation from "../../assets/images/location-icon.png";
 // temporary image for organizations
 import imageOrganization from "../../assets/images/organization-icon.png";
 import axios from "axios";
-import { MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, TagIcon, LockClosedIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, TagIcon, LockClosedIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import moment from "moment";
+import Pagination from "../../components/navigation/Pagination";
 
 function Events() {
-
-  const [allEvents, setAllEvents] = useState([]);
-
-  useEffect(() => {
-    getAllEvents();
-  }, []);
-
-  const getAllEvents = () => {
-    const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-    axios.get(eventsURL)
-      .then((res) => {
-        const events = res.data;
-        setAllEvents(events);
-      })
-    .catch(err => console.error({ err }));
-  }
-
   const filters = [
     'Elderly',
     'Migrant Workers',
@@ -47,10 +31,43 @@ function Events() {
     'Date: latest to earliest',
     'Date: earliest to latest'
   ]
+
+  const [allEvents, setAllEvents] = useState([]);
   const [filteredCategory, setFilteredCategory] = useState(filters);
   const [filteredEvents, setFilteredEvents] = useState(allEvents);
   const [sort, setSort] = useState([...sorts.slice(0, 1)]);
   const [queryEvents, setQueryEvents] = useState("");
+  const [state, setState] = useState({
+    events: [],
+    currentPage: 1,
+    limit: 5,
+    totalItems: 0,
+    totalPages: 0,
+    category: [...filters],
+    sort: [...sorts.slice(0, 1)],
+    queryEvents: "",
+  })
+
+  useEffect(() => {
+    getAllEvents();
+  }, [state.currentPage]);
+
+  const getAllEvents = () => {
+    const eventsURL = new URL(`/events?page=${state.currentPage}&limit=${state.limit}`, process.env.REACT_APP_BACKEND_API);
+    axios.get(eventsURL)
+      .then((res) => {
+        const paginatedEvents = { ...res.data };
+        const events = paginatedEvents.result;
+        setAllEvents(events);
+        setState({ 
+          ...state, 
+          events: paginatedEvents.result,
+          totalItems: paginatedEvents.totalItems,
+          totalPages: paginatedEvents.totalPages
+        });
+      })
+    .catch(err => console.error({ err }));
+  }
 
   // sort + filter according to search query
   useEffect(() => {
@@ -75,6 +92,18 @@ function Events() {
     let eventCategoryCopy = event.category.map(cat => filteredCategory.includes(cat));
     return eventCategoryCopy.includes(true);
   })
+
+  const handleNextPage = () => {
+    setState({ ...state, currentPage: state.currentPage + 1 });
+  }
+
+  const handlePrevPage = () => {
+    setState({ ...state, currentPage: state.currentPage - 1 });
+  }
+
+  const handlePageChange = (page) => {
+    setState({ ...state, currentPage: page });
+  }
 
   return (
     <>
@@ -230,6 +259,16 @@ function Events() {
           ))}
         </div>
       </div>
+      {/* Pagination */}
+      <Pagination 
+        currentPage={state.currentPage}
+        limit={state.limit}
+        totalItems={state.totalItems}
+        totalPages={state.totalPages}
+        handlePageChange={handlePageChange}
+        handleNextPage={handleNextPage}
+        handlePrevPage={handlePrevPage}
+      />
     </>
   );
 }

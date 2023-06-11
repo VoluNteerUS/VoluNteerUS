@@ -1,10 +1,11 @@
-import { Body, HttpException, Injectable } from '@nestjs/common';
+import { Body, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { PaginationResult } from 'src/types/pagination';
 
 @Injectable()
 export class UsersService {
@@ -15,7 +16,9 @@ export class UsersService {
     const email = await this.usersModel.findOne({ email: createUserDto.email });
 
     if (email) {
-      throw new HttpException('This email has been taken.', 403);
+      throw new HttpException('This email has been taken.', 403, {
+        cause: new Error('This email has been taken.')
+      });
     } else {
       // Generate salt to hash password
       const salt = await bcrypt.genSalt(10);
@@ -23,11 +26,15 @@ export class UsersService {
       const password = createUserDto.password;
       // Check password length
       if (password.length < 10) {
-        throw new HttpException('Password must be at least 10 characters long.', 403);
+        throw new HttpException('Password must be at least 10 characters long.', 403, {
+          cause: new Error('Password must be at least 10 characters long.')
+        });
       }
       // Check if password contains uppercase letter, lowercase letter, and number
       if (!password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{10,}$/)) {
-        throw new HttpException('Password must contain at least one uppercase letter, one lowercase letter, and one number.', 403);
+        throw new HttpException('Password must contain at least one uppercase letter, one lowercase letter, and one number.', 403, {
+          cause: new Error('Password must contain at least one uppercase letter, one lowercase letter, and one number.')
+        });
       }
       // Hash password
       const password_hash = await bcrypt.hash(password, salt);
@@ -38,8 +45,12 @@ export class UsersService {
     }
   }
 
-  public async findAll(): Promise<User[]> {
-    return this.usersModel.find().exec();
+  public async findAll(page: number, limit: number): Promise<PaginationResult<User>> {
+    const skip = (page - 1) * limit;
+    const total = await this.usersModel.countDocuments();
+    const data = await this.usersModel.find().skip(skip).limit(limit).exec();
+    const totalPages = Math.ceil(total / limit);
+    return new PaginationResult<User>(data, total, totalPages);
   }
 
   public async findOne(_id: string): Promise<User> {

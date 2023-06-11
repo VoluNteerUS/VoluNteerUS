@@ -5,26 +5,57 @@ import { Link } from "react-router-dom";
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useDispatch, useSelector } from "react-redux";
 import { setOrganizations } from "../../actions/organizationActions";
+import defaultOrganizationImage from "../../assets/images/organization-icon.png";
+import Pagination from "../../components/navigation/Pagination";
 
 function OrganizationsPage() {
     const dispatch = useDispatch();
     const organizationsReducer = useSelector((state) => state.organizations);
     const organizations = organizationsReducer.organizations;
     const [queryOrganizations, setQueryOrganizations] = useState(organizations);
+    const [state, setState] = useState({
+        searchQuery: '',
+        sortBy: 'name',
+        organizations: [],
+        queryOrganizations: [],
+        currentPage: 1,
+        limit: 10,
+        totalItems: 0,
+        totalPages: 0,
+    });
 
     useEffect(() => {
         const getOrganizations = async () => {
             try {
-                const organizationsURL = new URL('/organizations', process.env.REACT_APP_BACKEND_API);
+                const organizationsURL = new URL(`/organizations?page=${state.currentPage}&limit=${state.limit}`, process.env.REACT_APP_BACKEND_API);
                 const res = await axios.get(organizationsURL);
-                const organizations = res.data;
-                dispatch(setOrganizations(organizations));
+                const paginatedOrganizations = { ...res.data };
+                dispatch(setOrganizations(paginatedOrganizations.result));
+                setState({
+                    ...state,
+                    organizations: paginatedOrganizations.result,
+                    queryOrganizations: paginatedOrganizations.result,
+                    totalItems: paginatedOrganizations.totalItems,
+                    totalPages: paginatedOrganizations.totalPages
+                });
             } catch (err) {
                 console.error({ err });
             }
         }
         getOrganizations();
     }, []);
+
+    const handlePageChange = (page) => {
+        setState({ ...state, currentPage: page });
+    }
+
+    const handleNextPage = () => {
+        setState({ ...state, currentPage: state.currentPage + 1 });
+    }
+
+    const handlePrevPage = () => {
+        setState({ ...state, currentPage: state.currentPage - 1 });
+    }
 
     return (
         <>
@@ -48,10 +79,15 @@ function OrganizationsPage() {
                                     onChange={(e) => {
                                         const searchQuery = e.target.value;
                                         const filteredOrganizations = searchQuery 
-                                            ? organizations.filter((organization) => {
+                                            ? state.organizations.filter((organization) => {
                                                 return organization.name.toLowerCase().includes(searchQuery.toLowerCase());
-                                            }) : organizations;
+                                            }) : state.organizations;
                                         setQueryOrganizations(filteredOrganizations);
+                                        setState({
+                                            ...state,
+                                            searchQuery: searchQuery,
+                                            queryOrganizations: filteredOrganizations
+                                        });
                                     }}
                                 />
                             </div>
@@ -68,12 +104,12 @@ function OrganizationsPage() {
                 </div>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 pt-4">
                     {/* Organization Card */}
-                    {queryOrganizations.map((organization) => (
+                    {state.queryOrganizations.map((organization) => (
                         <div className="bg-grey-100 rounded-lg shadow-lg">
                             <Link to={`/organizations/${organization._id}`} key={organization._id}>
                                 <div className="flex flex-col justify-center items-center">
                                     <div className="pt-4">
-                                        <img src={organization.image_url} alt="organization-image" className="w-28 h-28 rounded-full" />
+                                        <img src={organization.image_url || defaultOrganizationImage} alt="organization-image" className="w-28 h-28 rounded-full" />
                                     </div>
                                     <h3 className="mx-3 font-semibold my-2 text-md lg:text-lg">{organization.name}</h3>
                                     <div className="flex flex-row space-x-2 mx-3 text-sm text-justify">
@@ -84,6 +120,18 @@ function OrganizationsPage() {
                         </div>
                     ))}
                 </div>
+                {/* Spacer */}
+                <div className="h-8"></div>
+                {/* Pagination */}
+                <Pagination
+                    currentPage={state.currentPage}
+                    limit={state.limit}
+                    totalItems={state.totalItems}
+                    totalPages={state.totalPages}
+                    handlePageChange={handlePageChange}
+                    handleNextPage={handleNextPage}
+                    handlePrevPage={handlePrevPage}
+                />
             </div>
         </>
     )

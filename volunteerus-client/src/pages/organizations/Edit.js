@@ -1,5 +1,5 @@
 import Navbar from "../../components/navigation/Navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
@@ -9,39 +9,106 @@ import { setOrganizations, setCurrentOrganization } from "../../actions/organiza
 
 function EditOrganizationPage() {
   const { id } = useParams();
-  const organizationsReducer = useSelector((state) => state.organizations);
-  const organization = organizationsReducer.currentOrganization;
+  const dispatch = useDispatch();
+  const [organization, setOrganization] = useState({});
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
-  const [profile, setProfile] = useState(
-    {
+  const [state, setState] = useState({
+    profile: {
       name: organization?.name,
       description: organization?.description,
       file: null,
-    }
-  );
-  const [contacts, setContacts] = useState(
-    {
+      errors: [],
+    },
+    contacts: {
       email: organization?.contact?.email || "",
       social_media: organization?.contact?.social_media || [],
-    }
-  );
-  
-  const dispatch = useDispatch();
+      errors: [],
+    },
+  });
 
-  const handleProfilePictureUpload = async (event) => {
+  useEffect(() => {
+    const getOrganization = async () => {
+      const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+      await axios.get(organizationURL).then((res) => {
+        setOrganization(res.data);
+        setProfilePicture(res.data.image_url || defaultOrganizationImage);
+        setState({
+          profile: {
+            name: res.data.name,
+            description: res.data.description,
+            file: null,
+            errors: [],
+          },
+          contacts: {
+            email: res.data.contact?.email || "",
+            social_media: res.data.contact?.social_media || [],
+            errors: [],
+          },
+        });
+      }).catch((err) => {
+        console.error({ err });
+      });
+    }
+    getOrganization();
+  }, [id]);
+
+
+  const handleProfilePictureUpload = (event) => {
+    event.preventDefault();
     const file = event.target.files[0];
-    setProfile({ ...profile, file: file });
     setProfilePicture(URL.createObjectURL(file));
+    setState({ 
+      ...state, 
+      profile: { ...state.profile, file: file } 
+    });
   }
 
   const handleSaveProfileChanges = async (event) => {
     event.preventDefault();
 
+    // Reset errors
+    setState({
+      ...state,
+      profile: {
+        ...state.profile,
+        errors: [],
+      },
+    });
+
+    // Validate form
+    if (state.profile.name === "") {
+      setState({ 
+        ...state, 
+        profile: { 
+          ...state.profile, 
+          errors: [
+            ...state.profile.errors,
+            "Please enter a name for your organization." 
+          ]
+        }
+      });
+      
+      return;
+    }
+    if (state.profile.description === "") {
+      setState({ 
+        ...state, 
+        profile: { 
+          ...state.profile, 
+          errors: [
+            ...state.profile.errors,
+            "Please enter a description for your organization." 
+          ]
+        }
+      });
+      return;
+    }
+
     // Form Data for multi-part form
     const formData = new FormData();
-    formData.append("file", profile.file);
-    formData.append("name", profile.name);
-    formData.append("description", profile.description);
+    formData.append("file", state.profile.file);
+    formData.append("name", state.profile.name);
+    formData.append("description", state.profile.description);
 
     // Send PATCH request to update organization
     const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
@@ -50,9 +117,15 @@ function EditOrganizationPage() {
         "Content-Type": "multipart/form-data",
       },
     }).then((res) => {
-      console.log(res);
+      // Alert user of successful update
+      alert("Successfully updated organization!");
     }).catch((err) => {
-      console.error(err);
+      // Add errors to state
+      if (err.response) {
+        const { data } = err.response;
+        const errors = Object.keys(data).map((key) => `${key}: ${data[key]}`);
+        setState({ ...state, profile_errors: errors });
+      }
     });
     
     // Send GET request to get updated organization
@@ -67,44 +140,131 @@ function EditOrganizationPage() {
 
   const handleAddSocialMedia = () => {
     console.log("Add social media");
-    setContacts({ ...contacts, social_media: [...contacts.social_media, { platform: "", url: "" }] });
+    setState({ 
+      ...state, 
+      contacts: { 
+        ...state.contacts, 
+        social_media: [
+          ...state.contacts.social_media, 
+          { 
+            platform: "", 
+            url: "" 
+          }
+        ] 
+      } 
+    });
   }
 
   const handleRemoveSocialMedia = (index) => {
     console.log("Remove social media");
-    setContacts({ ...contacts, social_media: [...contacts.social_media.slice(0, index), ...contacts.social_media.slice(index + 1)] });
+    setState({ 
+      ...state, 
+      contacts: { 
+        ...state.contacts, 
+        social_media: [
+          ...state.contacts.social_media.slice(0, index), 
+          ...state.contacts.social_media.slice(index + 1)
+        ] 
+      } 
+    });
   }
 
   const handleSocialMediaPlatformChange = (index, value) => {
     console.log("Social media platform change");
-    const newSocialMedia = [...contacts.social_media];
-    setContacts({ ...contacts, social_media: [...newSocialMedia.slice(0, index), { ...newSocialMedia[index], platform: value }, ...newSocialMedia.slice(index + 1)] });
+    const newSocialMedia = [...state.contacts.social_media];
+    setState({ 
+      ...state, 
+      contacts: { 
+        ...state.contacts, 
+        social_media: [
+          ...newSocialMedia.slice(0, index), 
+          { ...newSocialMedia[index], platform: value }, 
+          ...newSocialMedia.slice(index + 1)
+        ] 
+      } 
+    });
   }
 
   const handleSocialMediaURLChange = (index, value) => {
     console.log("Social media url change");
-    const newSocialMedia = [...contacts.social_media];
-    setContacts({ ...contacts, social_media: [...newSocialMedia.slice(0, index), { ...newSocialMedia[index], url: value }, ...newSocialMedia.slice(index + 1)] });
+    const newSocialMedia = [...state.contacts.social_media];
+    setState({
+      ...state,
+      contacts: {
+        ...state.contacts,
+        social_media: [
+          ...newSocialMedia.slice(0, index),
+          { ...newSocialMedia[index], url: value },
+          ...newSocialMedia.slice(index + 1)
+        ]
+      } 
+    });
   }
 
   const handleSaveContactChanges = async (event) => {
     event.preventDefault();
 
+    // Reset errors
+    setState({
+      ...state,
+      contacts: {
+        ...state.contacts,
+        errors: [],
+      },
+    });
+
+    // Validate form
+    if (state.contacts.email === "") {
+      setState({
+        ...state,
+        contacts: {
+          ...state.contacts,
+          errors: [
+            ...state.contacts.errors,
+            "Please enter an email for your organization."
+          ]
+        }
+      });
+      return;
+    }
+
     if (organization?.contact === null) {
       // Send POST request to create contact
       const organizationContactsURL = new URL(`/organizations/${id}/contacts`, process.env.REACT_APP_BACKEND_API);
-      await axios.post(organizationContactsURL, contacts).then((res) => {
-        console.log(res);
+      await axios.post(organizationContactsURL, state.contacts).then((res) => {
+        alert("Successfully added contact!");
       }).catch((err) => {
-        console.error(err);
+        const { data } = err.response;
+        const errors = Object.keys(data).map((key) => `${key}: ${data[key]}`);
+        setState({
+          ...state,
+          contacts: {
+            ...state.contacts,
+            errors: [
+              ...state.contacts.errors,
+              ...errors
+            ]
+          }
+        });
       });
     } else {
       // Send PATCH request to update organization
       const organizationContactsURL = new URL(`/organizations/${id}/contacts`, process.env.REACT_APP_BACKEND_API);
-      await axios.patch(organizationContactsURL, contacts).then((res) => {
-        console.log(res);
+      await axios.patch(organizationContactsURL, state.contacts).then((res) => {
+        alert("Successfully updated contact!");
       }).catch((err) => {
-        console.error(err);
+        const { data } = err.response;
+        const errors = Object.keys(data).map((key) => `${key}: ${data[key]}`);
+        setState({
+          ...state,
+          contacts: {
+            ...state.contacts,
+            errors: [
+              ...state.contacts.errors,
+              ...errors
+            ]
+          }
+        });
       });
     }
 
@@ -146,8 +306,8 @@ function EditOrganizationPage() {
                   id="name"
                   type="text"
                   placeholder="Organization Name"
-                  value={ profile.name }
-                  onChange={(event) => setProfile({ ...profile, name: event.target.value })}
+                  value={ state.profile.name }
+                  onChange={(event) => setState({ ...state, profile: { ...state.profile, name: event.target.value } })}
                 />
               </div>
               <div className="col-span-2">
@@ -159,10 +319,25 @@ function EditOrganizationPage() {
                   id="description"
                   type="text"
                   placeholder="Organization Description"
-                  value={ profile.description }
-                  onChange={(event) => setProfile({ ...profile, description: event.target.value })}
+                  value={ state.profile.description }
+                  onChange={(event) => setState({ ...state, profile: { ...state.profile, description: event.target.value } })}
                 />
               </div>
+              {
+                state.profile.errors.length > 0 && (
+                  <div className="col-span-2">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                      <ul>
+                        {
+                          state.profile.errors.map((error, index) => (
+                            <li key={index}>{ error }</li>
+                          ))
+                        }
+                      </ul>
+                    </div>
+                  </div>
+                )  
+              }
               <div className="col-span-2">
                 <button className="bg-pink-500 hover:bg-pink-700 text-white text-center font-semibold py-2 px-6 rounded-lg block ml-auto">
                   Save Profile Changes
@@ -189,8 +364,16 @@ function EditOrganizationPage() {
                     id="email"
                     type="email"
                     placeholder="Organization Email"
-                    value={contacts.email}
-                    onChange={(event) => setContacts({ ...contacts, email: event.target.value })}
+                    value={ state.contacts.email }
+                    onChange={
+                      (event) => setState({ 
+                        ...state, 
+                        contacts: { 
+                          ...state.contacts, 
+                          email: event.target.value 
+                        } 
+                      }) 
+                    }
                   />
                 </div>
                 <div className="col-span-2">
@@ -198,7 +381,7 @@ function EditOrganizationPage() {
                     Social Media Platforms
                   </label>
                   {
-                    contacts?.social_media?.map((item, index) => {
+                    state?.contacts?.social_media?.map((item, index) => {
                       return (
                         <div key={index}>
                           <div className="flex justify-between gap-4 pb-4">
@@ -241,6 +424,23 @@ function EditOrganizationPage() {
                       );
                     })
                   }
+                  {/* Display Errors */}
+                  {
+                    state.contacts.errors.length > 0 && (
+                      <div className="col-span-2">
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                          <ul>
+                            {
+                              state.contacts.errors.map((error, index) => (
+                                <li key={index}>{ error }</li>
+                              ))
+                            }
+                          </ul>
+                        </div>
+                      </div>
+                    )
+                  }
+
                   <div className="flex flex-row gap-2 ml-auto my-2">
                     {/* Add Social Media */}
                     <Link 

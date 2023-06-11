@@ -2,7 +2,6 @@ import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Reque
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { error } from 'console';
 
 @Controller('auth')
 export class AuthController {
@@ -25,7 +24,9 @@ export class AuthController {
   verifyToken(@Request() req) {
     // Check if token is present in the header
     if (!req.headers.authorization) {
-      return new HttpException('No token provided', 401);
+      return new HttpException('No token provided', 401, {
+        cause: new Error('No token provided')
+      });
     }
     const token = req.headers.authorization.split(' ')[1];
     return this.authService.verify(token);

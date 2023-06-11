@@ -32,7 +32,7 @@ dotenv.config();
     OrganizationsModule,
     UsersModule,
     QuestionsModule,
-    ResponsesModule
+    ResponsesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
