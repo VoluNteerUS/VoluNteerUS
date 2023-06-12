@@ -22,6 +22,7 @@ const AdminDashboard = lazy(() => import('./pages/admin'));
 const Events = lazy(() => import('./pages/events'));
 const CreateEvent = lazy(() => import('./pages/events/Create'));
 const EventSignup = lazy(() => import('./pages/events/Signup'));
+const Users = lazy(() => import('./pages/admin/Users'));
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -45,7 +46,10 @@ root.render(
                   </Route>
                   <Route path="create" element={<CreateOrganizationPage />} />
                 </Route>
-                <Route path="admin" element={<AdminDashboard />} />
+                <Route path="admin">
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="users" element={<Users />} />
+                </Route>
                 <Route path="events">
                   <Route index element={<Events />} />
                   <Route path=":id" element={<EventSignup />} />
