@@ -18,7 +18,7 @@ export class Organization {
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Contact.name })
     @Type(() => Contact)
-    contact: Contact
+    contact: Contact;
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

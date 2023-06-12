@@ -61,6 +61,15 @@ export class UsersService {
     return this.usersModel.findOne({ email: email });
   }
 
+  public async findUsers(query: string): Promise<User[]> {
+    return this.usersModel.find({ 
+      $or: [
+        { email: new RegExp(query, 'i') }, 
+        { full_name: new RegExp(query, 'i') }
+      ] 
+    });
+  }
+
   public async update(_id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.usersModel.findByIdAndUpdate(_id, updateUserDto);
   }

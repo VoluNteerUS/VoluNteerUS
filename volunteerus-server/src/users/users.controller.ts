@@ -26,6 +26,19 @@ export class UsersController {
     findOneByEmail(email: string): Promise<User> {
         return this.userService.findOneByEmail(email);
     }
+
+    @Get("/search")
+    findUsers(@Query('query') query: string): Promise<User[]> {
+        // If query is empty, return all users
+        if (!query) {
+            // Return empty array
+            return new Promise((resolve, reject) => {
+                resolve([]);
+            });
+        } else {
+            return this.userService.findUsers(query);
+        }
+    }
     
     @Patch()
     update(id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {

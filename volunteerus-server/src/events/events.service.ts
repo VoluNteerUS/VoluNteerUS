@@ -13,8 +13,8 @@ import { Question, QuestionDocument } from 'src/questions/schemas/question.schem
 export class EventsService {
   constructor(
     @InjectModel(Event.name) private eventsModel: Model<EventDocument>,
-    @InjectModel(Question.name) private questionsModel: Model<QuestionDocument>)
-  { }
+    @InjectModel(Question.name) private questionsModel: Model<QuestionDocument>
+  ){ }
 
   public async create(@Body() createEventDto: CreateEventDto): Promise<Event> {
     const newEvent = new this.eventsModel(createEventDto);
