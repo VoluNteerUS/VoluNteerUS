@@ -1,9 +1,7 @@
-import React from "react";
 import { useSelector } from "react-redux";
-import { Navigate } from "react-router-dom";
 import axios from "axios";
 
-function AdminProtected({ children }) {
+function AdminVisible({ children }) {
     const { user } = useSelector(state => state.user);
     const verifyTokenURL = new URL("/auth/verifyToken", process.env.REACT_APP_BACKEND_API);
     const token = localStorage.getItem("token");
@@ -24,8 +22,8 @@ function AdminProtected({ children }) {
     if (isAuthenticated && user?.role === "ADMIN") {
         return children;
     } else {
-        return <Navigate to="/login" replace />;
+        return null;
     }
 }
 
-export default AdminProtected;
+export default AdminVisible;

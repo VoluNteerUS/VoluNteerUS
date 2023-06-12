@@ -57,6 +57,42 @@ function OrganizationsPage() {
         setState({ ...state, currentPage: state.currentPage - 1 });
     }
 
+    const handleSearch = (e) => {
+        const searchQuery = e.target.value;
+        const filteredOrganizations = searchQuery 
+            ? state.organizations.filter((organization) => {
+                return organization.name.toLowerCase().includes(searchQuery.toLowerCase());
+            }) : state.organizations;
+        // If filteredOrganizations is empty, and searchQuery is not empty, then search the value in backend
+        if (filteredOrganizations.length === 0 && searchQuery) {
+            const getOrganizations = async () => {
+                try {
+                    const organizationsURL = new URL(`/organizations?page=${state.currentPage}&limit=${state.limit}&search=${searchQuery}`, process.env.REACT_APP_BACKEND_API);
+                    const res = await axios.get(organizationsURL);
+                    const paginatedOrganizations = { ...res.data };
+                    dispatch(setOrganizations(paginatedOrganizations.result));
+                    setState({
+                        ...state,
+                        organizations: paginatedOrganizations.result,
+                        queryOrganizations: paginatedOrganizations.result,
+                        totalItems: paginatedOrganizations.totalItems,
+                        totalPages: paginatedOrganizations.totalPages
+                    });
+                } catch (err) {
+                    console.error({ err });
+                }
+            }
+            getOrganizations();
+        } else {
+            setQueryOrganizations(filteredOrganizations);
+            setState({
+                ...state,
+                searchQuery: searchQuery,
+                queryOrganizations: filteredOrganizations
+            });
+        }
+    }
+
     return (
         <>
             <Navbar />
@@ -76,19 +112,7 @@ function OrganizationsPage() {
                                     type="text" 
                                     placeholder="Search Organizations" 
                                     className="h-10 px-3 pl-10 text-base placeholder-gray-600 border rounded-lg focus:shadow-outline w-4/5"
-                                    onChange={(e) => {
-                                        const searchQuery = e.target.value;
-                                        const filteredOrganizations = searchQuery 
-                                            ? state.organizations.filter((organization) => {
-                                                return organization.name.toLowerCase().includes(searchQuery.toLowerCase());
-                                            }) : state.organizations;
-                                        setQueryOrganizations(filteredOrganizations);
-                                        setState({
-                                            ...state,
-                                            searchQuery: searchQuery,
-                                            queryOrganizations: filteredOrganizations
-                                        });
-                                    }}
+                                    onChange={handleSearch}
                                 />
                             </div>
                             {/* Sort By */}

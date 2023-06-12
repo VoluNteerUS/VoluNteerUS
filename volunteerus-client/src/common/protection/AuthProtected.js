@@ -18,7 +18,7 @@ function AuthProtected({ children }) {
         localStorage.setItem("isAuthenticated", false);
     }
 
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
 
     if (isAuthenticated) {
         return children;

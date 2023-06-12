@@ -1,6 +1,5 @@
 import './App.css';
 import React, { lazy, Suspense } from 'react';
-import { useSelector } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 
 // Code splitting of routes
@@ -28,16 +27,16 @@ const AdminEventDashboard = lazy(() => import('./pages/events/Admin'));
 const AdminOrganizationDashboard = lazy(() => import('./pages/organizations/Admin'));
 const AdminUserDashboard = lazy(() => import('./pages/user/Admin'));
 
+// Auth Pages
+const PageNotFound = lazy(() => import('./pages/PageNotFound'));
+const Unauthorized = lazy(() => import('./pages/Unauthorized'));
+
 // Auth protected routes
 const AuthProtected = lazy(() => import('./common/protection/AuthProtected'));
 const AdminProtected = lazy(() => import('./common/protection/AdminProtected'));
-
+const CommitteeMemberProtected = lazy(() => import('./common/protection/CommitteeMemberProtected'));
 
 function App() {
-  const { user } = useSelector((state) => state.user);
-
-  console.log(user);
-
   return (
     <div className="App">
       <Suspense fallback={<div>Loading...</div>}>
@@ -49,8 +48,22 @@ function App() {
             <Route index element={<OrganizationsPage />} />
             <Route path=":id">
               <Route index element={<OrganizationDetailsPage />} />
-              <Route path="dashboard" element={<OrganizationDashboard />} />
-              <Route path="edit" element={<EditOrganizationPage />} />
+              <Route 
+                path="dashboard" 
+                element={            
+                  <CommitteeMemberProtected>
+                    <OrganizationDashboard />
+                  </CommitteeMemberProtected>
+                } 
+              />
+              <Route 
+                path="edit" 
+                element={
+                  <CommitteeMemberProtected>
+                    <EditOrganizationPage />
+                  </CommitteeMemberProtected>
+                } 
+              />
             </Route>
             <Route path="create" element={<CreateOrganizationPage />} />
           </Route>
@@ -100,6 +113,8 @@ function App() {
             <Route path=":id/edit" element={<EditEventDetails />} />
             <Route path="create" element={<CreateEvent />} />
           </Route>
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Suspense>
     </div>

@@ -6,9 +6,11 @@ import defaultOrganizationImage from "../../assets/images/organization-icon.png"
 import { MinusIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { setOrganizations, setCurrentOrganization } from "../../actions/organizationActions";
+import TagInput from "../../components/TagInput";
+import AdminVisible from "../../common/protection/AdminVisible";
 
 function EditOrganizationPage() {
-  const { id } = useParams();
+  const { id } = useParams(); 
   const dispatch = useDispatch();
   const [organization, setOrganization] = useState({});
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ function EditOrganizationPage() {
             email: res.data.contact?.email || "",
             social_media: res.data.contact?.social_media || [],
             errors: [],
-          },
+          }
         });
       }).catch((err) => {
         console.error({ err });
@@ -60,9 +62,9 @@ function EditOrganizationPage() {
     event.preventDefault();
     const file = event.target.files[0];
     setProfilePicture(URL.createObjectURL(file));
-    setState({ 
-      ...state, 
-      profile: { ...state.profile, file: file } 
+    setState({
+      ...state,
+      profile: { ...state.profile, file: file }
     });
   }
 
@@ -80,27 +82,27 @@ function EditOrganizationPage() {
 
     // Validate form
     if (state.profile.name === "") {
-      setState({ 
-        ...state, 
-        profile: { 
-          ...state.profile, 
+      setState({
+        ...state,
+        profile: {
+          ...state.profile,
           errors: [
             ...state.profile.errors,
-            "Please enter a name for your organization." 
+            "Please enter a name for your organization."
           ]
         }
       });
-      
+
       return;
     }
     if (state.profile.description === "") {
-      setState({ 
-        ...state, 
-        profile: { 
-          ...state.profile, 
+      setState({
+        ...state,
+        profile: {
+          ...state.profile,
           errors: [
             ...state.profile.errors,
-            "Please enter a description for your organization." 
+            "Please enter a description for your organization."
           ]
         }
       });
@@ -136,7 +138,7 @@ function EditOrganizationPage() {
         setState({ ...state, profile_errors: errors });
       }
     });
-    
+
     // Send GET request to get updated organization
     const updatedOrganization = await axios.get(organizationURL).then((res) => res.data);
     const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
@@ -149,48 +151,48 @@ function EditOrganizationPage() {
 
   const handleAddSocialMedia = () => {
     console.log("Add social media");
-    setState({ 
-      ...state, 
-      contacts: { 
-        ...state.contacts, 
+    setState({
+      ...state,
+      contacts: {
+        ...state.contacts,
         social_media: [
-          ...state.contacts.social_media, 
-          { 
-            platform: "", 
-            url: "" 
+          ...state.contacts.social_media,
+          {
+            platform: "",
+            url: ""
           }
-        ] 
-      } 
+        ]
+      }
     });
   }
 
   const handleRemoveSocialMedia = (index) => {
     console.log("Remove social media");
-    setState({ 
-      ...state, 
-      contacts: { 
-        ...state.contacts, 
+    setState({
+      ...state,
+      contacts: {
+        ...state.contacts,
         social_media: [
-          ...state.contacts.social_media.slice(0, index), 
+          ...state.contacts.social_media.slice(0, index),
           ...state.contacts.social_media.slice(index + 1)
-        ] 
-      } 
+        ]
+      }
     });
   }
 
   const handleSocialMediaPlatformChange = (index, value) => {
     console.log("Social media platform change");
     const newSocialMedia = [...state.contacts.social_media];
-    setState({ 
-      ...state, 
-      contacts: { 
-        ...state.contacts, 
+    setState({
+      ...state,
+      contacts: {
+        ...state.contacts,
         social_media: [
-          ...newSocialMedia.slice(0, index), 
-          { ...newSocialMedia[index], platform: value }, 
+          ...newSocialMedia.slice(0, index),
+          { ...newSocialMedia[index], platform: value },
           ...newSocialMedia.slice(index + 1)
-        ] 
-      } 
+        ]
+      }
     });
   }
 
@@ -206,7 +208,7 @@ function EditOrganizationPage() {
           { ...newSocialMedia[index], url: value },
           ...newSocialMedia.slice(index + 1)
         ]
-      } 
+      }
     });
   }
 
@@ -300,6 +302,43 @@ function EditOrganizationPage() {
     dispatch(setCurrentOrganization(updatedOrganization));
   }
 
+  // Save committee members changes
+  const handleChildData = (data) => {
+    const committeeMembersURL = new URL(`/committeeMembers?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const committeeMembers = getCommitteeMembers();
+    const body = {
+      organization_id: id,
+      users: data
+    }
+    if (committeeMembers.length === 0) {
+      // Send POST request to create committee members
+      axios.post(committeeMembersURL, body).then((res) => {
+        console.log(res);
+      }).catch((err) => {
+        console.log(err);
+      });
+    } else {
+      // Send PATCH request to update committee members
+      axios.patch(committeeMembersURL, body).then((res) => {
+        console.log(res);
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+  }
+
+  const searchUsers = async (search) => {
+    const usersURL = new URL(`/users/search?query=${search}`, process.env.REACT_APP_BACKEND_API);
+    const users = await axios.get(usersURL).then((res) => res.data);
+    return users;
+  }
+
+  const getCommitteeMembers = async () => {
+    const committeeMembersURL = new URL(`/committeeMembers?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
+    const committeeMembers = await axios.get(committeeMembersURL).then((res) => res.data);
+    return committeeMembers;
+  }
+
   return (
     <>
       <Navbar />
@@ -308,7 +347,7 @@ function EditOrganizationPage() {
         <div className="bg-neutral-100 rounded-lg shadow-lg md:w-3/4 lg:w-2/3 xl:w-1/2 block mx-auto">
           {/* Allow for edit of profile picture */}
           <div className="p-8">
-            <img src={ profilePicture } alt="organization-image" className="w-32 h-32 rounded-full mx-auto" />
+            <img src={profilePicture} alt="organization-image" className="w-32 h-32 rounded-full mx-auto" />
             {/* Button to edit profile picture */}
             <label htmlFor="profile-picture-upload" className="bg-pink-500 hover:bg-pink-700 text-white text-center font-bold py-2 px-4 rounded-full block mx-auto mt-4 w-52">
               Edit Profile Picture
@@ -327,7 +366,7 @@ function EditOrganizationPage() {
                   id="name"
                   type="text"
                   placeholder="Organization Name"
-                  value={ state.profile.name }
+                  value={state.profile.name}
                   onChange={(event) => setState({ ...state, profile: { ...state.profile, name: event.target.value } })}
                 />
               </div>
@@ -340,7 +379,7 @@ function EditOrganizationPage() {
                   id="description"
                   type="text"
                   placeholder="Organization Description"
-                  value={ state.profile.description }
+                  value={state.profile.description}
                   onChange={(event) => setState({ ...state, profile: { ...state.profile, description: event.target.value } })}
                 />
               </div>
@@ -351,13 +390,13 @@ function EditOrganizationPage() {
                       <ul>
                         {
                           state.profile.errors.map((error, index) => (
-                            <li key={index}>{ error }</li>
+                            <li key={index}>{error}</li>
                           ))
                         }
                       </ul>
                     </div>
                   </div>
-                )  
+                )
               }
               <div className="col-span-2">
                 <button className="bg-pink-500 hover:bg-pink-700 text-white text-center font-semibold py-2 px-6 rounded-lg block ml-auto">
@@ -374,7 +413,7 @@ function EditOrganizationPage() {
           {/* Form to update contacts */}
           <div className="px-8 py-4 lg:py-8">
             <h3 className="text-xl font-bold pb-4">Organization Contacts</h3>
-            <form onSubmit={ handleSaveContactChanges }>
+            <form onSubmit={handleSaveContactChanges}>
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-gray-700 text-sm lg:text-base font-bold mb-2" htmlFor="description">
@@ -385,15 +424,15 @@ function EditOrganizationPage() {
                     id="email"
                     type="email"
                     placeholder="Organization Email"
-                    value={ state.contacts.email }
+                    value={state.contacts.email}
                     onChange={
-                      (event) => setState({ 
-                        ...state, 
-                        contacts: { 
-                          ...state.contacts, 
-                          email: event.target.value 
-                        } 
-                      }) 
+                      (event) => setState({
+                        ...state,
+                        contacts: {
+                          ...state.contacts,
+                          email: event.target.value
+                        }
+                      })
                     }
                   />
                 </div>
@@ -433,8 +472,8 @@ function EditOrganizationPage() {
                               />
                             </div>
                             <div className="flex-none mt-auto">
-                              <Link 
-                                className="flex items-center w-10 h-10 rounded-full bg-danger-600 text-white ml-auto" 
+                              <Link
+                                className="flex items-center w-10 h-10 rounded-full bg-danger-600 text-white ml-auto"
                                 onClick={() => handleRemoveSocialMedia(index)}
                               >
                                 <MinusIcon className="h-5 w-5 text-white mx-auto block" aria-hidden="true" />
@@ -453,7 +492,7 @@ function EditOrganizationPage() {
                           <ul>
                             {
                               state.contacts.errors.map((error, index) => (
-                                <li key={index}>{ error }</li>
+                                <li key={index}>{error}</li>
                               ))
                             }
                           </ul>
@@ -461,15 +500,14 @@ function EditOrganizationPage() {
                       </div>
                     )
                   }
-
                   <div className="flex flex-row gap-2 ml-auto my-2">
                     {/* Add Social Media */}
-                    <Link 
+                    <Link
                       className="bg-white hover:bg-secondary-600 
                       border-gray-600 border-2 hover:border-white
                       hover:text-white text-gray-600 
-                      ml-auto py-2 px-6 rounded-lg block" 
-                      onClick={ handleAddSocialMedia }
+                      ml-auto py-2 px-6 rounded-lg block"
+                      onClick={handleAddSocialMedia}
                     >
                       Add Social Media
                     </Link>
@@ -483,6 +521,31 @@ function EditOrganizationPage() {
             </form>
           </div>
         </div>
+        <AdminVisible>
+          {/* Spacer */}
+          <div className="h-4 md:h-6"></div>
+          {/* Card to manage committee members only visible to admin */}
+          <div className="bg-neutral-100 rounded-lg shadow-lg md:w-3/4 lg:w-2/3 xl:w-1/2 block mx-auto">
+            <div className="px-8 py-4 lg:py-8">
+              <h3 className="text-xl font-bold pb-4">Manage Committee Members</h3>
+              {/* Simulate a giant textbox */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-gray-700 text-sm lg:text-base font-bold mb-2" htmlFor="description">
+                    Committee Members
+                  </label>
+                  <TagInput 
+                    onChildData = { handleChildData }
+                    searchCallback={ searchUsers }
+                    getTag={ (item) => `${item.full_name} <${item.email}>` }
+                    getData={ (item) => item._id }
+                    populateDataCallback = { getCommitteeMembers }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </AdminVisible>
       </div>
     </>
   );
