@@ -1,21 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
-import axios, { all } from "axios";
-import { useState } from "react";
-import { PencilIcon, MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
-import { Listbox } from "@headlessui/react";
+import Pagination from "../../components/navigation/Pagination";
+import axios from "axios";
+import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { Listbox } from '@headlessui/react'
 
-function Users() {
-  const [allUsers, setAllUsers] = useState([]);
-  const [queryUsers, setQueryUsers] = useState("");
-  const [filteredCategory, setFilteredCategory] = useState("All");
-  const [filteredUsers, setFilteredUsers] = useState(allUsers);
-  const [sort, setSort] = useState('Name');
-
+function AdminUserDashboard() {
   const filters = [
-    'Admin', 
     'All',
-    'Community Member', 
+    'Admin',
+    'Committee Member',
     'User',
   ];
 
@@ -24,178 +19,259 @@ function Users() {
     'Role'
   ];
 
-  const getAllUsers = async () => {
-    const usersURL = new URL("/users", process.env.REACT_APP_BACKEND_API);
-    await axios.get(usersURL)
-      .then((res) => {
-        const users = res.data;
-        setAllUsers(users);
-      })
-    .catch(err => console.error({ err }));
+  const [state, setState] = useState({
+    currentPage: 1,
+    limit: 5,
+    totalItems: 0,
+    totalPages: 0,
+    searchQuery: "",
+  })
+
+  const [users, setUsers] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState(filters[0]);
+  const [selectedSort, setSelectedSort] = useState(sorts[0]);
+  const [filteredUsers, setFilteredUsers] = useState(users);
+
+  const handlePageChange = (page) => {
+    setState({ ...state, currentPage: page });
+  }
+
+  const handleNextPage = () => {
+    setState({ ...state, currentPage: state.currentPage + 1 });
+  }
+
+  const handlePrevPage = () => {
+    setState({ ...state, currentPage: state.currentPage - 1 });
   }
 
   useEffect(() => {
-    getAllUsers();
+    const getUsers = async () => {
+      try {
+        const organizationsURL = new URL(`/users?page=${state.currentPage}&limit=${state.limit}`, process.env.REACT_APP_BACKEND_API);
+        const res = await axios.get(organizationsURL);
+        const paginatedOrganizations = { ...res.data };
+        setUsers(paginatedOrganizations.result);
+        setState({
+          ...state,
+          totalItems: paginatedOrganizations.totalItems,
+          totalPages: paginatedOrganizations.totalPages
+        });
+      } catch (err) {
+        console.error({ err });
+      }
+    }
+
+    const getFilteredUsers = () => {
+      // apply filter
+      let newAllUsers = selectedFilter === "All" ? [...users] : users.filter((user) => {
+        return user.role.toLowerCase() === selectedFilter.toLowerCase() 
+      });
+      // apply sort
+      selectedSort === 'Name' ? newAllUsers.sort((a, b) => a.full_name > b.full_name 
+          ? 1
+          : a.full_name === b.full_name
+            ? 0
+            : -1)
+        : newAllUsers.sort((a, b) => a.role > b.role
+          ? 1
+          : a.role === b.role 
+            ? 0
+            : -1); 
+      // apply search
+      const searchedUsers = state.searchQuery ? newAllUsers.filter((user) => {
+        return user.full_name.toLowerCase().includes(state.searchQuery.toLowerCase())
+        || user.role.toLowerCase().includes(state.searchQuery.toLowerCase());
+      }) : newAllUsers;
+  
+      setFilteredUsers(searchedUsers);
+    }
+
+    getUsers();
     getFilteredUsers();
-  }, [sort, queryUsers, filteredCategory, allUsers])
-
-  const getFilteredUsers = () => {
-    // apply filter
-    let newAllUsers = filteredCategory === "All" ? [...allUsers] : allUsers.filter((user) => {
-      return user.role.toLowerCase() === filteredCategory.toLowerCase() 
-    });
-    // apply sort
-    sort === 'Name' ? newAllUsers.sort((a, b) => a.full_name > b.full_name 
-        ? 1
-        : a.full_name === b.full_name
-          ? 0
-          : -1)
-      : newAllUsers.sort((a, b) => a.role > b.role
-        ? 1
-        : a.role === b.role 
-          ? 0
-          : -1); 
-    // apply search
-    const searchedUsers = queryUsers ? newAllUsers.filter((user) => {
-      return user.full_name.toLowerCase().includes(queryUsers.toLowerCase())
-      || user.role.toLowerCase().includes(queryUsers.toLowerCase());
-    }) : newAllUsers;
-
-    setFilteredUsers(searchedUsers);
-  }
+  }, [state.currentPage, selectedFilter, selectedSort, state.searchQuery])
 
   return (
     <>
       <Navbar />
-      <div className="my-10 mx-20 space-y-10">
-        <h1 className="text-4xl font-bold">Users</h1>
-        {/* Search bar, filter button, sort button */}
-        <div className="flex sm:flex-row md:basis-1/2 lg:basis-1/3 xl:basis-1/4 items-center justify-center space-x-5">
-          <form method="GET" className="w-1/3">
-            {/* Search bar */}
-            <div className="relative text-gray-600 focus-within:text-gray-400 border border-black">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-                <button type="submit" className="p-1 focus:outline-none focus:shadow-outline">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
-                </button>
-              </span>
-              <input 
-                type="search" 
-                className="h-10 py-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full" 
-                placeholder="Search users"
-                value= { queryUsers }
-                onChange={(e) => {
-                  setQueryUsers(e.target.value);
-                }}
-              />
+      <div className="py-8">
+        <div className="block mx-auto lg:w-3/4 bg-neutral-100 rounded-lg p-8">
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-col pb-4">
+              <h1 className="font-bold text-3xl">Users</h1>
+              <p className="text-gray-600">{state.totalItems} users joined!</p>
             </div>
-          </form>
-          <div className="flex flex-row space-x-2">
-            {/* filter button */}
-            <div className="flex flex-col"> 
-              <Listbox value={ filteredCategory } onChange={ setFilteredCategory }>
-                <Listbox.Button className="bg-white rounded-3xl p-2 border border-black flex items-center space-x-1 shadow-md">
-                  <p>Filter</p>
-                  <FunnelIcon className="fill-black w-5 h-5 flex" aria-hidden="true" />
-                </Listbox.Button>
-                
-                <Listbox.Options className="overflow-auto shadow-lg bg-white">
-                  {filters.map((filter) => (
-                    <Listbox.Option 
-                      key={filter} 
-                      value={filter}
-                      className={({ active }) =>
-                        `relative select-none py-2 px-2 ${
-                        active ? 'bg-pink-400 text-white' : 'text-black'
-                        }`
-                      } >
-              
-                      <div className="flex flex-row">
-                      {filteredCategory.includes(filter) ? (
-                        <span className="text-black">
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        ) : null}
-                        <span
-                          className={`block truncate ${
-                            filteredCategory.includes(filter) ? 'font-medium' : 'font-normal'
-                          }`}
+            <div className="flex flex-row">
+              <div className="flex">
+                {/* Search Bar */}
+                <form method="GET">
+                  <div className="relative text-gray-600 focus-within:text-gray-400 rounded-md shadow-md w-80">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+                      <button type="submit" className="p-1 focus:outline-none focus:shadow-outline">
+                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
+                      </button>
+                    </span>
+                    <input
+                      type="search"
+                      className="h-10 py-2 pe-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full"
+                      placeholder="Search users"
+                      value={state.searchQuery}
+                      onChange={(e) => {
+                        setState({
+                          ...state,
+                          searchQuery: e.target.value,
+                        });
+                      }}
+                    />
+                  </div>
+                </form>
+              </div>
+              <div className="flex">
+                {/* Filter Button */}
+                <Listbox value={selectedFilter} onChange={setSelectedFilter}>
+                  <div className="relative w-48 ms-4">
+                    <Listbox.Button className="relative h-10 w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-opacity-75 sm:text-sm">
+                      <span className="block truncate">{selectedFilter}</span>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <FunnelIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
+                      </span>
+                    </Listbox.Button>
+                    <Listbox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                      {filters.map((filter, filterIdx) => (
+                        <Listbox.Option
+                          key={filterIdx}
+                          className={({ active }) =>
+                            `${active ? 'text-amber-900 bg-amber-100' : 'text-gray-900'}
+                            cursor-default select-none relative py-2 pl-10 pr-4`
+                          }
+                          value={filter}
                         >
-                        {filter}
-                        </span>
-                      </div>      
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
-              </Listbox>
-            </div>
-            {/*  sort button */}
-            <div className="flex flex-col"> 
-              <Listbox value={ sort } onChange={ setSort } >
-                <Listbox.Button className="bg-white rounded-3xl p-2 border border-black flex items-center space-x-1 shadow-md">
-                  <p>Sort</p>
-                  <ArrowsUpDownIcon className="fill-black w-5 h-5 flex" aria-hidden="true" />
-                </Listbox.Button>
-                
-                <Listbox.Options className="overflow-auto shadow-lg bg-white">
-                  {sorts.map((s) => (
-                    <Listbox.Option 
-                      key={ s } 
-                      value={ s }
-                      className={({ active }) =>
-                        `relative select-none py-2 px-2 ${
-                        active ? 'bg-pink-400 text-white' : 'text-black'
-                        }`
-                      } >
-              
-                      <div className="flex flex-row">
-                      {sort.includes(s) ? (
-                        <span className="text-black">
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        ) : null}
-                        <span
-                          className={`block truncate ${
-                            sort.includes(s) ? 'font-medium' : 'font-normal'
-                          }`}
+                          {({ selected, active }) => (
+                            <>
+                              <span className={`${selected ? 'font-medium' : 'font-normal'} block truncate`}>
+                                {filter}
+                              </span>
+                              {selected ? (
+                                <span
+                                  className={`${active ? 'text-amber-600' : 'text-amber-600'}
+                                  absolute inset-y-0 left-0 flex items-center pl-3`}
+                                >
+                                  <CheckIcon className="w-5 h-5" aria-hidden="true" />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+              </div>
+              <div className="flex">
+                {/* Sort Button */}
+                <Listbox value={selectedSort} onChange={setSelectedSort}>
+                  <div className="relative w-32 ms-4">
+                    <Listbox.Button className="relative h-10 w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-opacity-75 sm:text-sm">
+                      <span className="block truncate">{selectedSort}</span>
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <ArrowsUpDownIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
+                      </span>
+                    </Listbox.Button>
+                    <Listbox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                      {sorts.map((sort, sortIdx) => (
+                        <Listbox.Option
+                          key={sortIdx}
+                          className={({ active }) =>
+                            `${active ? 'text-amber-900 bg-amber-100' : 'text-gray-900'}
+                            cursor-default select-none relative py-2 pl-10 pr-4`
+                          }
+                          value={sort}
                         >
-                        {s}
-                        </span>
-                      </div>      
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
-              </Listbox>
+                          {({ selected, active }) => (
+                            <>
+                              <span className={`${selected ? 'font-medium' : 'font-normal'} block truncate`}>
+                                {sort}
+                              </span>
+                              {selected ? (
+                                <span
+                                  className={`${active ? 'text-amber-600' : 'text-amber-600'}
+                                  absolute inset-y-0 left-0 flex items-center pl-3`}
+                                >
+                                  <CheckIcon className="w-5 h-5" aria-hidden="true" />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex justify-center">
-          <table className="w-2/3 font-serif text-left border border-black">
-            <tr className="text-xl bg-pink-400 text-white">
-              <th></th>
-              <th>Name</th>
-              <th>Role</th>
-              <th></th>
-            </tr>
-            {filteredUsers.map((user) => {
-              return (
-                <tr key={ user._id } className="text-lg border-t border-black h-14 bg-grey-100">
-                  <td>
-                    <img className="block mx-auto h-10 w-10 rounded-full border border-black" src={`https://ui-avatars.com/api/?name=${user.full_name}&background=F6D2D2&color=000`} alt="Profile Picture" />
-                  </td>
-                  <td>{ user.full_name }</td>
-                  <td>{ user.role.charAt(0) + user.role.slice(1).toLowerCase() }</td>
-                  <td>
-                    <button><PencilIcon className="h-5 w-5"/></button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-neutral-200">
+              <thead>
+                <tr>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider"></th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Full Name</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Email</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Role</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
                 </tr>
-              )
-            })}
-          </table>
+              </thead>
+              <tbody className="divide-y divide-neutral-200">
+                {
+                  filteredUsers.map((user) => {
+                    return (
+                      <tr key={user._id}>
+                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                          <img
+                            className="h-12 w-12 rounded-full"
+                            src={`https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`}
+                            alt="Profile Picture"
+                          />
+                        </td>
+                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                          {user.full_name}
+                        </td>
+                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                          {user.email}
+                        </td>
+                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                          {user.role}
+                        </td>
+                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                          <Link to={`/users/${user._id}/edit`} className="text-primary-600 hover:text-primary-800">
+                            Edit
+                          </Link>
+                          <span className="px-2">|</span>
+                          <button type="button" className="text-primary-600 hover:text-primary-800">
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  }
+                  )
+                }
+              </tbody>
+            </table>
+          </div>
+          {/* Pagination */}
+          <Pagination
+            currentPage={state.currentPage}
+            limit={state.limit}
+            totalItems={state.totalItems}
+            totalPages={state.totalPages}
+            handlePageChange={handlePageChange}
+            handleNextPage={handleNextPage}
+            handlePrevPage={handlePrevPage}
+          />
         </div>
-      </div>
+      </div >
     </>
-  )
+  );
 }
 
-export default Users;
+export default AdminUserDashboard;

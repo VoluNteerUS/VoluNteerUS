@@ -83,7 +83,7 @@ function Login() {
         return (
             <div className="bg-pink-100">
                 <div className="flex items-center h-screen justify-center">
-                    <div className="bg-white rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2">
+                    <div className="bg-white rounded-lg sm:w-4/5 md:w-3/4 lg:w-3/5 2xl:w-1/2">
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-12 md:col-span-8 p-12 mx-4 mt-4 mb-12">
                                 <h1 className="max-w-2xl mb-4 text-3xl font-serif font-bold tracking-tight leading-none text-darkblue-900 md:text-3xl xl:text-4xl">Log In</h1>

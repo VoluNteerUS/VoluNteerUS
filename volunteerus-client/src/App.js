@@ -23,9 +23,10 @@ const OrganizationDashboard = lazy(() => import('./pages/organizations/Dashboard
 
 // Admin
 const AdminDashboard = lazy(() => import('./pages/admin'));
-const AdminEventDashboard = lazy(() => import('./pages/events/Admin'));
-const AdminOrganizationDashboard = lazy(() => import('./pages/organizations/Admin'));
-const AdminUserDashboard = lazy(() => import('./pages/user/Admin'));
+const AdminEventDashboard = lazy(() => import('./pages/admin/Events'));
+const AdminOrganizationDashboard = lazy(() => import('./pages/admin/Organizations'));
+const AdminUserDashboard = lazy(() => import('./pages/admin/Users'));
+const Users = lazy(() => import('./pages/archived/Users'));
 
 // Auth Pages
 const PageNotFound = lazy(() => import('./pages/PageNotFound'));
