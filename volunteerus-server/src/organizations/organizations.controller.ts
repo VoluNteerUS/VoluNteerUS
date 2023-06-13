@@ -44,9 +44,25 @@ export class OrganizationsController {
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('create', Organization)) {
       return this.organizationsService.addContactToOrganization(organizationId, contactData);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
   }
 
+  @Post(':id/committeeMembers')
+  async addCommitteeMembersToOrganization(
+    @Param('id') organizationId: mongoose.Types.ObjectId, 
+    @Body() committeeMemberData: string[], 
+    @Query('role') role: string
+  ) {
+    // Check if user has permission to create committee member for an organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Organization)) {
+      this.organizationsService.addCommitteeMembersToOrganization(organizationId, committeeMemberData);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
+    }
+  }
 
   @Get()
   findAll(
@@ -97,6 +113,18 @@ export class OrganizationsController {
       return this.organizationsService.updateContact(organizationId, contactData);
     }
   }
+
+  @Patch(':id/committeeMembers')
+  async updateCommitteeMembers(@Param('id') organizationId: mongoose.Types.ObjectId, @Query('role') role: string, @Body() committeeMemberData: any) {
+    // Check if user has permission to update committee member for an Organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('update', Organization)) {
+      return this.organizationsService.updateCommitteeMembers(organizationId, committeeMemberData);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
+    }
+  }
+
 
   @Delete(':id')
   remove(@Param('id') id: mongoose.Types.ObjectId, @Query('role') role: string) {

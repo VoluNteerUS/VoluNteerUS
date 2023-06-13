@@ -1,15 +1,19 @@
-import { Body, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Body, HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { PaginationResult } from 'src/types/pagination';
+import { Organization, OrganizationDocument } from 'src/organizations/schemas/organization.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private usersModel: Model<UserDocument>) { }
+  constructor(
+    @InjectModel(User.name) private usersModel: Model<UserDocument>,
+    @InjectModel(Organization.name) private organizationsModel: Model<OrganizationDocument>
+  ) { }
 
   public async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     // Check if user exists in database through email and username
@@ -45,16 +49,62 @@ export class UsersService {
     }
   }
 
-  public async findAll(page: number, limit: number): Promise<PaginationResult<User>> {
-    const skip = (page - 1) * limit;
-    const total = await this.usersModel.countDocuments();
-    const data = await this.usersModel.find().skip(skip).limit(limit).exec();
+  public async findAll(page: number, limit: number, search: string, role: string, sortBy: string): Promise<PaginationResult<User>> {
+    let data: User[];
+    let total: number;
+    let skip = (page - 1) * limit;
+
+    if (search !== '') {
+      data = await this.usersModel.find({
+        $or: [
+          { email: new RegExp(search, 'i') },
+          { full_name: new RegExp(search, 'i') }
+        ]
+      }).select('-password').skip(skip).limit(limit).exec();
+      total = data.length;
+    } else {
+      data = await this.usersModel.find().select('-password').skip(skip).limit(limit).exec();
+      total = await this.usersModel.countDocuments();
+    }
+    // Filter by role
+    switch (role) {
+      case 'All':
+        break;
+      case 'Admin':
+        data = await this.usersModel.find({ role: 'ADMIN' }).select('-password').skip(skip).limit(limit).exec();
+        total = data.length;
+        page = 1;
+        skip = 0;
+        break;
+      case 'User':
+        data = await this.usersModel.find({ role: 'USER' }).select('-password').skip(skip).limit(limit).exec();
+        total = data.length;
+        page = 1;
+        skip = 0;
+        break;
+      default:
+        break;
+    }
+
+    // Sort By
+    switch (sortBy) {
+      case 'Name':
+        data = data.sort((a, b) => a.full_name.localeCompare(b.full_name));
+        break;
+      case 'Role':
+        data = data.sort((a, b) => a.role.localeCompare(b.role));
+        break;
+      default:
+        data = data.sort((a, b) => a.full_name.localeCompare(b.full_name));
+        break;
+    }
+
     const totalPages = Math.ceil(total / limit);
-    return new PaginationResult<User>(data, total, totalPages);
+    return new PaginationResult<User>(data, page, total, totalPages);
   }
 
-  public async findOne(_id: string): Promise<User> {
-    return this.usersModel.findOne({ _id: _id });
+  public async findOne(_id: mongoose.Types.ObjectId): Promise<User> {
+    return this.usersModel.findById(_id).select('-password');
   }
 
   public async findOneByEmail(email: string): Promise<User> {
@@ -67,7 +117,11 @@ export class UsersService {
         { email: new RegExp(query, 'i') }, 
         { full_name: new RegExp(query, 'i') }
       ] 
-    });
+    }).select('-password');
+  }
+
+  public async findUserOrganizations(_id: string): Promise<Organization[]> {
+    return this.organizationsModel.find({ committee_members: _id }).select('_id name image_url');
   }
 
   public async update(_id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {

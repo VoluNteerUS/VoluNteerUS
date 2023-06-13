@@ -38,19 +38,19 @@ function Home() {
     const [allEvents, setAllEvents] = useState([]);
 
     useEffect(() => {
+        const getAllEvents = () => {
+            const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+            axios.get(eventsURL)
+                .then((res) => {
+                    const events = res.data.result;
+                    console.log({ events });
+                    setAllEvents(events);
+                })
+                .catch(err => console.error({ err }));
+        }
+
         getAllEvents();
     }, []);
-
-    const getAllEvents = () => {
-        const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-        axios.get(eventsURL)
-            .then((res) => {
-                const events = res.data.result;
-                console.log({ events });
-                setAllEvents(events);
-            })
-            .catch(err => console.error({ err }));
-    }
 
     const featuredEvents = allEvents.length > 4 ? allEvents.slice(0, 4) : allEvents;
 

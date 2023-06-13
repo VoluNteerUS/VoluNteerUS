@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import Pagination from "../../components/navigation/Pagination";
 import axios from "axios";
-import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, PencilIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Listbox } from '@headlessui/react'
 
 function AdminUserDashboard() {
@@ -47,12 +47,18 @@ function AdminUserDashboard() {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const organizationsURL = new URL(`/users?page=${state.currentPage}&limit=${state.limit}`, process.env.REACT_APP_BACKEND_API);
+        console.log(selectedFilter)
+        const organizationsURL = new URL(
+          `/users?search=${state.searchQuery}&role=${selectedFilter}&sortBy=${selectedSort}&page=${state.currentPage}&limit=${state.limit}`, 
+          process.env.REACT_APP_BACKEND_API
+        );
         const res = await axios.get(organizationsURL);
         const paginatedOrganizations = { ...res.data };
+        console.log(paginatedOrganizations);
         setUsers(paginatedOrganizations.result);
         setState({
           ...state,
+          currentPage: paginatedOrganizations.currentPage,
           totalItems: paginatedOrganizations.totalItems,
           totalPages: paginatedOrganizations.totalPages
         });
@@ -61,33 +67,7 @@ function AdminUserDashboard() {
       }
     }
 
-    const getFilteredUsers = () => {
-      // apply filter
-      let newAllUsers = selectedFilter === "All" ? [...users] : users.filter((user) => {
-        return user.role.toLowerCase() === selectedFilter.toLowerCase() 
-      });
-      // apply sort
-      selectedSort === 'Name' ? newAllUsers.sort((a, b) => a.full_name > b.full_name 
-          ? 1
-          : a.full_name === b.full_name
-            ? 0
-            : -1)
-        : newAllUsers.sort((a, b) => a.role > b.role
-          ? 1
-          : a.role === b.role 
-            ? 0
-            : -1); 
-      // apply search
-      const searchedUsers = state.searchQuery ? newAllUsers.filter((user) => {
-        return user.full_name.toLowerCase().includes(state.searchQuery.toLowerCase())
-        || user.role.toLowerCase().includes(state.searchQuery.toLowerCase());
-      }) : newAllUsers;
-  
-      setFilteredUsers(searchedUsers);
-    }
-
     getUsers();
-    getFilteredUsers();
   }, [state.currentPage, selectedFilter, selectedSort, state.searchQuery])
 
   return (
@@ -209,23 +189,23 @@ function AdminUserDashboard() {
               </div>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg">
             <table className="min-w-full divide-y divide-neutral-200">
-              <thead>
+              <thead className="bg-primary-600">
                 <tr>
-                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider"></th>
-                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Full Name</th>
-                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Email</th>
-                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Role</th>
-                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-white uppercase tracking-wider"></th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-white uppercase tracking-wider">Full Name</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-white uppercase tracking-wider">Email</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-white uppercase tracking-wider">Role</th>
+                  <th className="pe-6 py-3 text-left text-xs md:text-sm font-semibold text-white uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
                 {
-                  filteredUsers.map((user) => {
+                  users.map((user) => {
                     return (
-                      <tr key={user._id}>
-                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                      <tr key={user._id} className="bg-white">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
                           <img
                             className="h-12 w-12 rounded-full"
                             src={`https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`}
@@ -242,13 +222,17 @@ function AdminUserDashboard() {
                           {user.role}
                         </td>
                         <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                          <Link to={`/users/${user._id}/edit`} className="text-primary-600 hover:text-primary-800">
-                            Edit
-                          </Link>
-                          <span className="px-2">|</span>
-                          <button type="button" className="text-primary-600 hover:text-primary-800">
-                            Delete
-                          </button>
+                          <div className="flex items-center">
+                            <Link to={`/users/${user._id}/edit`} className="flex items-center space-x-2 text-secondary-600 hover:text-secondary-700 ">
+                              <span>Edit</span>
+                              <PencilIcon className="w-5 h-5" aria-hidden="true" />
+                            </Link>
+                            <span className="px-2">|</span>
+                            <button type="button" className="flex items-center space-x-2 text-danger-600 hover:text-danger-400">
+                              <span>Delete</span>
+                              <TrashIcon className="w-5 h-5" aria-hidden="true" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )

@@ -63,7 +63,7 @@ function OrganizationsPage() {
             ? state.organizations.filter((organization) => {
                 return organization.name.toLowerCase().includes(searchQuery.toLowerCase());
             }) : state.organizations;
-        // If filteredOrganizations is empty, and searchQuery is not empty, then search the value in backend
+        // If filteredOrganizations is empty, and searchQuery is not empty, then search for the value in backend
         if (filteredOrganizations.length === 0 && searchQuery) {
             const getOrganizations = async () => {
                 try {
@@ -129,8 +129,8 @@ function OrganizationsPage() {
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 pt-4">
                     {/* Organization Card */}
                     {state.queryOrganizations.map((organization) => (
-                        <div className="bg-grey-100 rounded-lg shadow-lg">
-                            <Link to={`/organizations/${organization._id}`} key={organization._id}>
+                        <div className="bg-grey-100 rounded-lg shadow-lg" key={organization._id}>
+                            <Link to={`/organizations/${organization._id}`}>
                                 <div className="flex flex-col justify-center items-center">
                                     <div className="pt-4">
                                         <img src={organization.image_url || defaultOrganizationImage} alt="organization-image" className="w-28 h-28 rounded-full" />

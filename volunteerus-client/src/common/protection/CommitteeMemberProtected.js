@@ -1,27 +1,14 @@
-import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
-function CommitteeMemberProtected({ children }) {
-    const { user } = useSelector((state) => state.user);
-    const currentOrganization = useSelector((state) => state.organizations.currentOrganization);
+function CommitteeMemberProtected({ children, user }) {
     const token = localStorage.getItem("token");
-    const [committeeMembers, setCommitteeMembers] = useState([]);
+    const organizationsReducer = useSelector((state) => state.organizations);
+    const currentOrganization = organizationsReducer.currentOrganization;
+    const committeeMembers = currentOrganization?.committee_members;
+    const isCommitteeMember = committeeMembers?.some((committeeMember) => committeeMember._id === user?.id);
 
-    useEffect(() => {
-        const getCommitteeMembers = async () => {
-            const committeeMemberURL = new URL(`/committeeMembers?organization_id=${currentOrganization._id}`, process.env.REACT_APP_BACKEND_API);
-            const committeeMembers = await axios.get(committeeMemberURL);
-            setCommitteeMembers(committeeMembers.data);
-        }
-        getCommitteeMembers();
-    }, [currentOrganization._id]);
-
-    const isCommitteeMember = committeeMembers.some((committeeMember) => committeeMember.user_id === user?._id);
-
-    if (token && isCommitteeMember) {
-        console.log("Authorized");
+    if (token && (isCommitteeMember || user?.role === "ADMIN")) {
         return children;
     } else {
         if (token) {

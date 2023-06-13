@@ -10,6 +10,7 @@ import { Tab } from '@headlessui/react'
 import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
 import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
+import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -157,7 +158,7 @@ function OrganizationDashboard() {
   }
 
   return (
-    <>
+    <CommitteeMemberProtected user={user}>
       <Navbar />
       <div className="bg-pink-300 py-2 min-h-screen h-full">
         {/* Organizational Profile */}
@@ -335,7 +336,7 @@ function OrganizationDashboard() {
           </Tab.Group>
         </div>
       </div>
-    </>
+    </CommitteeMemberProtected>
   )
 }
 

@@ -8,13 +8,13 @@ function TagInput({ onChildData, searchCallback, populateDataCallback, getTag, g
     const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
-        const populateData = async () => {
-            const callBackData = await populateDataCallback();
+        const populateData = () => {
+            const callBackData = populateDataCallback();
             setData(callBackData.map((item) => getData(item)));
             setTags(callBackData.map((item) => getTag(item)));
         }
         populateData();
-    }, []);
+    }, [getData, getTag, populateDataCallback]);
 
 
     const filterMembers = async (input) => {

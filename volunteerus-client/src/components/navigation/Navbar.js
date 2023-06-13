@@ -41,9 +41,8 @@ export default function Navbar() {
   useEffect(() => {
     const getOrganizations = async () => {
       try {
-        console.log(user);
-        const committeeMembersURL = new URL(`/committeeMembers?user_id=${user.id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(committeeMembersURL);
+        const userOrganizationsURL = new URL(`/users/${user.id}/organizations`, process.env.REACT_APP_BACKEND_API);
+        const res = await axios.get(userOrganizationsURL);
         setState({
           ...state,
           "userOrganizations": res.data,
@@ -52,11 +51,10 @@ export default function Navbar() {
         console.log(err);
       }
     }
-
     if (state.isAuthenticated) {
       getOrganizations();
     }
-  }, [state.isAuthenticated]);
+  }, [state.isAuthenticated, user?.id]);
 
   const openSideNav = () => {
     // If screen width is less than 640px, open side to full screen

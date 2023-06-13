@@ -8,6 +8,7 @@ import axios from "axios";
 import { setOrganizations, setCurrentOrganization } from "../../actions/organizationActions";
 import TagInput from "../../components/TagInput";
 import AdminVisible from "../../common/protection/AdminVisible";
+import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 
 function EditOrganizationPage() {
   const { id } = useParams(); 
@@ -29,6 +30,7 @@ function EditOrganizationPage() {
       social_media: organization?.contact?.social_media || [],
       errors: [],
     },
+    committeeMembers: [],
   });
 
   useEffect(() => {
@@ -48,7 +50,8 @@ function EditOrganizationPage() {
             email: res.data.contact?.email || "",
             social_media: res.data.contact?.social_media || [],
             errors: [],
-          }
+          },
+          committeeMembers: res.data?.committee_members || [],
         });
       }).catch((err) => {
         console.error({ err });
@@ -304,16 +307,19 @@ function EditOrganizationPage() {
 
   // Save committee members changes
   const handleChildData = (data) => {
-    const committeeMembersURL = new URL(`/committeeMembers?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    
+    const committeeMembersURL = new URL(`/organizations/${id}/committeeMembers?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     const committeeMembers = getCommitteeMembers();
-    const body = {
-      organization_id: id,
-      users: data
-    }
-    if (committeeMembers.length === 0) {
+    const body = [...data]
+
+    // Check if no changes were made
+    if (JSON.stringify(committeeMembers) === JSON.stringify(body)) {
+      return;
+    } else if (committeeMembers.length === 0) {
       // Send POST request to create committee members
       axios.post(committeeMembersURL, body).then((res) => {
         console.log(res);
+        alert("Successfully created committee members!");
       }).catch((err) => {
         console.log(err);
       });
@@ -321,6 +327,7 @@ function EditOrganizationPage() {
       // Send PATCH request to update committee members
       axios.patch(committeeMembersURL, body).then((res) => {
         console.log(res);
+        alert("Successfully updated committee members!");
       }).catch((err) => {
         console.log(err);
       });
@@ -333,14 +340,15 @@ function EditOrganizationPage() {
     return users;
   }
 
-  const getCommitteeMembers = async () => {
-    const committeeMembersURL = new URL(`/committeeMembers?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
-    const committeeMembers = await axios.get(committeeMembersURL).then((res) => res.data);
-    return committeeMembers;
+  const getCommitteeMembers = () => {
+    // const committeeMembersURL = new URL(`/committeeMembers?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
+    // const committeeMembers = await axios.get(committeeMembersURL).then((res) => res.data);
+    // return committeeMembers;
+    return state.committeeMembers;
   }
 
   return (
-    <>
+    <CommitteeMemberProtected user={ user }>
       <Navbar />
       <div className="bg-pink-300 py-4 px-4 md:px-0">
         {/*  Organizational Profile */}
@@ -547,7 +555,7 @@ function EditOrganizationPage() {
           </div>
         </AdminVisible>
       </div>
-    </>
+    </CommitteeMemberProtected>
   );
 }
 

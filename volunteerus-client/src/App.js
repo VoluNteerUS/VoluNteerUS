@@ -52,17 +52,13 @@ function App() {
               <Route 
                 path="dashboard" 
                 element={            
-                  <CommitteeMemberProtected>
-                    <OrganizationDashboard />
-                  </CommitteeMemberProtected>
+                  <OrganizationDashboard />
                 } 
               />
               <Route 
                 path="edit" 
                 element={
-                  <CommitteeMemberProtected>
-                    <EditOrganizationPage />
-                  </CommitteeMemberProtected>
+                  <EditOrganizationPage />
                 } 
               />
             </Route>

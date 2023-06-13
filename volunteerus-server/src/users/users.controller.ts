@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationResult } from 'src/types/pagination';
+import { Organization } from 'src/organizations/schemas/organization.schema';
+import mongoose from 'mongoose';
 
 @Controller('users')
 export class UsersController {
@@ -18,8 +20,24 @@ export class UsersController {
     findAll(
         @Query('page') page: number = 1, 
         @Query('limit') limit: number = 10,
+        @Query('search') search: string = '',
+        @Query('role') role: string = 'All',
+        @Query('sortBy') sortBy: string = 'Name'
     ): Promise<PaginationResult<User>> {
-        return this.userService.findAll(page, limit);
+        const parsedPage = parseInt(page.toString(), 10) || 1;
+        const parsedLimit = parseInt(limit.toString(), 10) || 10;
+        // Validate If parsedPage and parsedLimit is negative
+        if (parsedPage < 0 || parsedLimit < 0) {
+          throw new HttpException('Page and Limit must be positive', HttpStatus.BAD_REQUEST, {
+            cause: new Error('Page and Limit must be positive'),
+          });
+        }
+        return this.userService.findAll(parsedPage, parsedLimit, search, role, sortBy);
+    }
+
+    @Get(":id")
+    findOne(@Param('id') id: mongoose.Types.ObjectId): Promise<User> {
+        return this.userService.findOne(id);
     }
 
     @Get()
@@ -38,6 +56,11 @@ export class UsersController {
         } else {
             return this.userService.findUsers(query);
         }
+    }
+
+    @Get(":id/organizations")
+    findUserOrganizations(@Param('id') id: string): Promise<Organization[]> {
+        return this.userService.findUserOrganizations(id);
     }
     
     @Patch()

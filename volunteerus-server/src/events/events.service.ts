@@ -33,7 +33,7 @@ export class EventsService {
       this.eventsModel.countDocuments().exec()
     ]);
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(data, totalItems, totalPages);
+    return new PaginationResult<Event>(data, page, totalItems, totalPages);
   }
 
   public async findUpcomingEvents(page: number, limit: number): Promise<PaginationResult<Event>> {
@@ -43,7 +43,7 @@ export class EventsService {
     const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
     const totalItems = upcomingEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(upcomingEvents, totalItems, totalPages);
+    return new PaginationResult<Event>(upcomingEvents, page, totalItems, totalPages);
   }
 
   public async findPastEvents(page: number, limit: number): Promise<PaginationResult<Event>> {
@@ -53,7 +53,7 @@ export class EventsService {
     const pastEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment()));
     const totalItems = pastEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(pastEvents, totalItems, totalPages);
+    return new PaginationResult<Event>(pastEvents, page, totalItems, totalPages);
   }
 
   public async getEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
@@ -63,7 +63,7 @@ export class EventsService {
       this.eventsModel.countDocuments({ organized_by: id }).exec()
     ]);
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(data, totalItems, totalPages);
+    return new PaginationResult<Event>(data, page, totalItems, totalPages);
   }
 
   public async getUpcomingEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
@@ -73,7 +73,7 @@ export class EventsService {
     const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
     const totalItems = upcomingEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(upcomingEvents, totalItems, totalPages);
+    return new PaginationResult<Event>(upcomingEvents, page, totalItems, totalPages);
   }
 
   public async getPastEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
@@ -83,7 +83,7 @@ export class EventsService {
     const pastEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment()));
     const totalItems = pastEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(pastEvents, totalItems, totalPages);
+    return new PaginationResult<Event>(pastEvents, page, totalItems, totalPages);
   }
 
   update(id: mongoose.Types.ObjectId, updateEventDto: UpdateEventDto) {
