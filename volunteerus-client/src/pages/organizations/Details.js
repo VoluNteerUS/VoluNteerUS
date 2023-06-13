@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
+import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import emailIcon from "../../assets/social_media_icons/email.ico"
 import facebookIcon from "../../assets/social_media_icons/facebook.ico"
 import instagramIcon from "../../assets/social_media_icons/instagram.ico"
@@ -17,7 +18,7 @@ function OrganizationDetailsPage(){
     const dispatch = useDispatch();
     const organizationsReducer = useSelector((state) => state.organizations);
     const organization = organizationsReducer.currentOrganization;
-    const organizationEvents = organizationsReducer.currentOrganizationEvents;
+    const organizationEvents = organizationsReducer.currentOrganizationEvents || [];
 
     const getIconFor = (platform) => {
         switch (platform) {
@@ -53,8 +54,9 @@ function OrganizationDetailsPage(){
             try {
                 const eventsByOrganizationURL = new URL(`/events?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
                 const res = await axios.get(eventsByOrganizationURL);
-                const events = res.data;
-                dispatch(setCurrentOrganizationEvents(events));
+                const paginatedEvents = { ...res.data };
+                console.log({ paginatedEvents });
+                dispatch(setCurrentOrganizationEvents(paginatedEvents.result));
             } catch (err) {
                 console.error({ err });
             }
@@ -70,7 +72,7 @@ function OrganizationDetailsPage(){
             <div className="block mx-auto w-screen pt-4 lg:w-3/4 lg:pt-8">
                 <div className="flex items-center">
                     <div className="me-4">
-                        <img src={organization?.image_url} alt="organization-image" className="w-24 h-24 rounded-full" />
+                        <img src={organization?.image_url || defaultOrganizationImage} alt="organization-image" className="w-24 h-24 rounded-full" />
                     </div>
                     <div className="flex flex-col items-center">
                         <p className="mx-3 font-semibold my-2 text-xl lg:text-3xl">{organization?.name}</p>
@@ -102,7 +104,7 @@ function OrganizationDetailsPage(){
                 {/* Upcoming Events */}
                 <h3 className="text-2xl font-bold text-black">Upcoming Events</h3>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-4 pb-4">
-                    { organizationEvents.map((event) => (
+                    { organizationEvents.length > 0 && organizationEvents.map((event) => (
                         <div className="bg-grey-100 rounded-lg shadow-lg">
                             <Link to={`/events/${event._id}`} key={event._id}>
                                 <div className="flex flex-col">

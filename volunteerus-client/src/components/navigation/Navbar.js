@@ -1,43 +1,60 @@
-import { useState } from 'react'
-import { 
-  Bars3Icon, CalendarDaysIcon, CalendarIcon, 
-  HomeIcon, MagnifyingGlassIcon, UserGroupIcon, XMarkIcon 
-} from '@heroicons/react/24/outline'
-import logo from '../../assets/images/logo.png'
-import { Link, useLocation } from 'react-router-dom'
-import ProfileDropdown from './ProfileDropdown'
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Bars3Icon, CalendarDaysIcon, CalendarIcon,
+  HomeIcon, MagnifyingGlassIcon, UserGroupIcon, 
+  UserIcon, XMarkIcon
+} from '@heroicons/react/24/outline';
+import logo from '../../assets/images/logo.png';
+import ProfileDropdown from './ProfileDropdown';
+import axios from 'axios';
 
 const navigation = [
   { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Events', href: '/events', icon: CalendarDaysIcon },
   { name: 'Organizations', href: '/organizations', icon: UserGroupIcon },
   { name: 'Calendar', href: '#', icon: CalendarIcon },
-]
+];
+
+const adminNavigation = [
+  { name: 'Dashboard', href: '/admin', icon: HomeIcon },
+  { name: 'Manage Events', href: '/admin/events', icon: CalendarDaysIcon },
+  { name: 'Manage Organizations', href: '/admin/organizations', icon: UserGroupIcon },
+  { name: 'Manage Users', href: '/admin/users', icon: UserIcon },
+];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(' ');
 }
 
 export default function Navbar() {
+  const { user } = useSelector((state) => state.user);
   const [state, setState] = useState(
     {
       "isAuthenticated": localStorage.getItem("token") ? true : false,
-      "userOrganizations": [
-        {
-          "id": 1,
-          "name": "NUS Students' Community Service Club",
-          "iconURL" : "https://ui-avatars.com/api/?name=NUS+Students%27+Community+Service+Club&background=0D8ABC&color=fff",
-          "href": "#",
-        },
-        {
-          "id": 2,
-          "name": "NUS Rotaract Club",
-          "iconURL" : "https://ui-avatars.com/api/?name=NUS+Students%27+Community+Service+Club&background=0D8ABC&color=fff",
-          "href": "#",
-        },
-      ],
+      "isAdmin": user?.role === "ADMIN" ? true : false,
+      "userOrganizations": [],
     }
   );
+
+  useEffect(() => {
+    const getOrganizations = async () => {
+      try {
+        const userOrganizationsURL = new URL(`/users/${user.id}/organizations`, process.env.REACT_APP_BACKEND_API);
+        const res = await axios.get(userOrganizationsURL);
+        setState({
+          ...state,
+          "userOrganizations": res.data,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    if (state.isAuthenticated) {
+      getOrganizations();
+    }
+  }, [state.isAuthenticated, user?.id]);
 
   const openSideNav = () => {
     // If screen width is less than 640px, open side to full screen
@@ -70,31 +87,42 @@ export default function Navbar() {
             <XMarkIcon className="h-8 w-8 text-gray-500" aria-hidden="true" onClick={closeSideNav} />
           </div>
         </div>
-        {
-          navigation.map((item) => (
-            <Link 
-              key={item.name} 
-              to={item.href} 
-              className={ classNames(isActive(item.href) ? 'bg-pink-300 text-black' : 'text-gray-500', 'flex items-center px-4 py-2 text-sm sm:text-base font-medium hover:text-gray-900 hover:bg-neutral-200')}
-            >
-              <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
-              {item.name}
-            </Link>
-          ))
-        }
+        {(state.isAdmin && state.isAuthenticated) ? adminNavigation.map((item) => (
+          <Link
+            key={item.name}
+            to={item.href}
+            className={classNames(isActive(item.href) ? 'bg-pink-300 text-black' : 'text-gray-500', 'flex items-center px-4 py-2 text-sm sm:text-base font-medium hover:text-gray-900 hover:bg-neutral-200')}
+          >
+            <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
+            {item.name}
+          </Link>
+        )) : navigation.map((item) => (
+          <Link
+            key={item.name}
+            to={item.href}
+            className={classNames(isActive(item.href) ? 'bg-pink-300 text-black' : 'text-gray-500', 'flex items-center px-4 py-2 text-sm sm:text-base font-medium hover:text-gray-900 hover:bg-neutral-200')}
+          >
+            <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
+            {item.name}
+          </Link>
+        ))}
         {/* Divider */}
         <div className="border-t border-gray-200 border-2"></div>
         {/* My Organizations */}
-        <span className="px-4 uppercase font-extra-bold">My Organizations</span>
         {
-          state.userOrganizations.map((item) => (
-            <Link key={item.id} to="#" className="flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-neutral-200">
+          (state.userOrganizations.length > 0) ? (
+            <span className="px-4 uppercase font-extra-bold">My Organizations</span>
+          ) : null
+        }
+        {
+          state.userOrganizations.length > 0 && state.userOrganizations.map((item) => (
+            <Link key={item._id} to={`/organizations/${item._id}/dashboard`} className="flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-neutral-200">
               {/* <UserGroupIcon className="h-6 w-6 mr-3" aria-hidden="true" /> */}
-              <img className="h-6 w-6 mr-3 rounded-full" src={item.iconURL} />
+              <img className="h-6 w-6 mr-3 rounded-full" src={item.image_url} />
               <div className="text-ellipsis overflow-hidden whitespace-nowrap">{item.name}</div>
             </Link>
           ))
-        }   
+        }
       </div>
 
       {/* Top Menu Bar with hidden side menu */}
@@ -144,7 +172,7 @@ export default function Navbar() {
           </div>
           {/* Profile dropdown */}
           <div className="flex items-center space-x-4 me-4">
-            <ProfileDropdown isAuthenticated={ state.isAuthenticated } />
+            <ProfileDropdown isAuthenticated={state.isAuthenticated} />
           </div>
         </div>
       </div>

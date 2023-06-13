@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -6,7 +6,6 @@ import { FirebasestorageService } from 'src/firebasestorage/firebasestorage.serv
 import { FileInterceptor } from '@nestjs/platform-express';
 import mongoose from 'mongoose';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
-import { Query } from '@nestjs/common';
 import { Organization } from './schemas/organization.schema';
 
 @Controller('organizations')
@@ -34,6 +33,8 @@ export class OrganizationsController {
       }
       // return this.organizationsService.create(createOrganizationDto);
       return this.organizationsService.create(organization);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
   }
 
@@ -43,12 +44,45 @@ export class OrganizationsController {
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('create', Organization)) {
       return this.organizationsService.addContactToOrganization(organizationId, contactData);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
+    }
+  }
+
+  @Post(':id/committeeMembers')
+  async addCommitteeMembersToOrganization(
+    @Param('id') organizationId: mongoose.Types.ObjectId, 
+    @Body() committeeMemberData: string[], 
+    @Query('role') role: string
+  ) {
+    // Check if user has permission to create committee member for an organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Organization)) {
+      this.organizationsService.addCommitteeMembersToOrganization(organizationId, committeeMemberData);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
   }
 
   @Get()
-  findAll() {
-    return this.organizationsService.findAll();
+  findAll(
+    @Query('page') page: number = 1, 
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string
+  ) {
+    const parsedPage = parseInt(page.toString(), 10) || 1;
+    const parsedLimit = parseInt(limit.toString(), 10) || 10;
+    // Validate If parsedPage and parsedLimit is negative
+    if (parsedPage < 0 || parsedLimit < 0) {
+      throw new HttpException('Page and Limit must be positive', HttpStatus.BAD_REQUEST, {
+        cause: new Error('Page and Limit must be positive'),
+      });
+    }
+    if (search) {
+      return this.organizationsService.search(parsedPage, parsedLimit, search);
+    } else {
+      return this.organizationsService.findAll(parsedPage, parsedLimit);
+    }
   }
 
   @Get(':id')
@@ -79,6 +113,18 @@ export class OrganizationsController {
       return this.organizationsService.updateContact(organizationId, contactData);
     }
   }
+
+  @Patch(':id/committeeMembers')
+  async updateCommitteeMembers(@Param('id') organizationId: mongoose.Types.ObjectId, @Query('role') role: string, @Body() committeeMemberData: any) {
+    // Check if user has permission to update committee member for an Organization
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('update', Organization)) {
+      return this.organizationsService.updateCommitteeMembers(organizationId, committeeMemberData);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
+    }
+  }
+
 
   @Delete(':id')
   remove(@Param('id') id: mongoose.Types.ObjectId, @Query('role') role: string) {
