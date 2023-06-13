@@ -8,16 +8,16 @@ import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { removeUser } from '../../actions/userActions'
 
-const userNavigation = [
-  { name: 'Profile', href: '#', icon: UserIcon },
-  { name: 'Settings', href: '#', icon: Cog6ToothIcon },
-  { name: 'Volunteering Records', href: '#', icon: ClipboardIcon },
-  { name: 'My Submissions', href: '#', icon: FolderIcon },
-]
-
 export default function ProfileDropdown({ isAuthenticated }) {
   const persistedUserState = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
+  const userNavigation = [
+    { name: 'Profile', href: '#', icon: UserIcon },
+    { name: 'Settings', href: '#', icon: Cog6ToothIcon },
+    { name: 'Volunteering Records', href: '#', icon: ClipboardIcon },
+    { name: 'My Submissions', href: `/${ persistedUserState?.user?.id }/submissions`, icon: FolderIcon },
+  ]
 
   const handleLogout = () => {
     // Clear token from local storage

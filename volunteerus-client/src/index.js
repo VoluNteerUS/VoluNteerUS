@@ -7,7 +7,6 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react'
 import { store, persistor } from './store';
-import EditEventDetails from './pages/events/Edit';
 
 // Code splitting of routes
 const Home = lazy(() => import('./pages/Home'));
@@ -23,6 +22,8 @@ const Events = lazy(() => import('./pages/events'));
 const CreateEvent = lazy(() => import('./pages/events/Create'));
 const EventSignup = lazy(() => import('./pages/events/Signup'));
 const Users = lazy(() => import('./pages/admin/Users'));
+const EditEventDetails = lazy(() => import('./pages/events/Edit'));
+const Submissions = lazy(() => import('./pages/users/Submissions'));
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -55,6 +56,9 @@ root.render(
                   <Route path=":id" element={<EventSignup />} />
                   <Route path=":id/edit" element={<EditEventDetails />} />
                   <Route path="create" element={<CreateEvent />} />
+                </Route>
+                <Route path=":id">
+                  <Route path="submissions" element={<Submissions />} />
                 </Route>
               </Route>
             </Routes>

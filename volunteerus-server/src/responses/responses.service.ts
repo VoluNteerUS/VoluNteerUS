@@ -23,6 +23,11 @@ export class ResponsesService {
     return response;
   }
 
+  public async getResponsesByUser(id: mongoose.Types.ObjectId): Promise<Response[]> {
+    const responses = await this.responsesModel.find({ user: id }).exec();
+    return responses;
+  }
+
   findOneByUser(user: User): Promise<Response> {
     return this.responsesModel.findOne(user).exec();
   }

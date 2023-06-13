@@ -24,7 +24,10 @@ export class ResponsesController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query('user_id') user_id: mongoose.Types.ObjectId): Promise<Response[]> {
+    if (user_id) {
+      return this.responsesService.getResponsesByUser(user_id);
+    }
     return this.responsesService.findAll();
   }
 
