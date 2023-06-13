@@ -33,6 +33,7 @@ module.exports = {
           "600": "#fff06d",
         },
         danger : {
+          "400": "#f72525",
           "600": "#d75c5c",
         },
         'pink' : {

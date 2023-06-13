@@ -2,6 +2,7 @@ import { Type } from "@nestjs/class-transformer";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document } from "mongoose";
 import { Contact } from "src/contacts/schemas/contact.schema";
+import { User } from "src/users/schemas/user.schema";
 
 export type OrganizationDocument = Organization & Document;
 
@@ -18,7 +19,10 @@ export class Organization {
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Contact.name })
     @Type(() => Contact)
-    contact: Contact
+    contact: Contact;
+
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
+    committee_members: User[];
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

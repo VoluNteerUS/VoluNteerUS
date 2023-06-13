@@ -6,15 +6,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { FirebasestorageModule } from 'src/firebasestorage/firebasestorage.module';
 import { Contact, ContactSchema } from 'src/contacts/schemas/contact.schema';
 import { CaslModule } from 'src/casl/casl.module';
+import { User, UserSchema } from 'src/users/schemas/user.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Organization.name, schema: OrganizationSchema},
-      { name: Contact.name, schema: ContactSchema}
+      { name: Contact.name, schema: ContactSchema},
+      { name: User.name, schema: UserSchema }
     ]),
     FirebasestorageModule,
-    CaslModule
+    CaslModule,
   ],
   controllers: [OrganizationsController],
   providers: [OrganizationsService]

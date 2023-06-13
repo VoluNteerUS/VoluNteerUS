@@ -10,6 +10,7 @@ import { Tab } from '@headlessui/react'
 import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
 import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
+import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -19,25 +20,32 @@ function OrganizationDashboard() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || 'user';
   const organizationsReducer = useSelector((state) => state.organizations);
   const organization = organizationsReducer.currentOrganization;
-  const organizationEvents = organizationsReducer.currentOrganizationEvents;
-  const [upcomingEvents, setUpcomingEvents] = useState(
-    organizationEvents.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()))
-  );
-  const [pastEvents, setPastEvents] = useState(
-    organizationEvents.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment()))
-  );
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
   const [queryUpcomingEvents, setQueryUpcomingEvents] = useState(upcomingEvents);
   const [queryPastEvents, setQueryPastEvents] = useState(pastEvents);
   const [tabs, setTabs] = useState([
     { name: "Upcoming Events", active: true },
     { name: "Past Events", active: false }
   ]);
-  const eventsReducer = useSelector((state) => state.events);
-  const events = eventsReducer.events;
-  const persistedUserState = useSelector((state) => state.user);
-  const user = persistedUserState?.user || 'user';
+  const [paginationState, setPaginationState] = useState({
+    upcomingEvents: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    },
+    pastEvents: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    }
+  });
 
   const updateTab = (name) => {
     return () => {
@@ -48,39 +56,69 @@ function OrganizationDashboard() {
           return { ...tab, active: false };
         }
       });
-      if (name === "Upcoming Events") {
-        setUpcomingEvents(organizationEvents.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment())));
-      } else if (name === "Past Events") {
-        setPastEvents(organizationEvents.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment())));
-      }
       setTabs(newTabs);
     };
   };
 
+  const getOrganization = async () => {
+    try {
+      const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+      const res = await axios.get(organizationURL);
+      const organization = res.data;
+      dispatch(setCurrentOrganization(organization));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const getUpcomingEvents = async () => {
+    try {
+      const upcomingEventsURL = new URL(
+        `/events/upcoming?organization_id=${organization._id}&page=${paginationState.upcomingEvents.currentPage}&limit=${paginationState.upcomingEvents.limit}`, 
+        process.env.REACT_APP_BACKEND_API
+      );
+      const res = await axios.get(upcomingEventsURL);
+      const paginatedEvents = { ...res.data };
+      setUpcomingEvents(paginatedEvents.result);
+      setQueryUpcomingEvents(paginatedEvents.result)
+      setPaginationState({
+        upcomingEvents: {
+          currentPage: paginationState.upcomingEvents.currentPage,
+          limit: paginationState.upcomingEvents.limit,
+          totalItems: paginatedEvents.totalItems,
+          totalPages: paginatedEvents.totalPages,
+        }
+      })
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const getPastEvents = async () => {
+    try {
+      const pastEventsURL = new URL(
+        `/events/past?organization_id=${organization._id}&page=${paginationState.pastEvents.currentPage}&limit=${paginationState.pastEvents.limit}`, 
+        process.env.REACT_APP_BACKEND_API);
+      const res = await axios.get(pastEventsURL);
+      const paginatedEvents = { ...res.data };
+      setPastEvents(paginatedEvents.result);
+      setQueryPastEvents(paginatedEvents.result)
+      setPaginationState({
+        pastEvents: {
+          currentPage: paginationState.pastEvents.currentPage,
+          limit: paginationState.pastEvents.limit,
+          totalItems: paginatedEvents.totalItems,
+          totalPages: paginatedEvents.totalPages,
+        }
+      })
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
-    const getOrganization = async () => {
-      try {
-        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationURL);
-        const organization = res.data;
-        dispatch(setCurrentOrganization(organization));
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    const getOrganizationEvents = async () => {
-      try {
-        const organizationEventsURL = new URL(`/events?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationEventsURL);
-        const organizationEvents = res.data;
-        dispatch(setCurrentOrganizationEvents(organizationEvents));
-      } catch (err) {
-        console.log(err);
-      }
-    };
     getOrganization();
-    getOrganizationEvents();
-  }, [id, events]);
+    getUpcomingEvents();
+    getPastEvents();
+  }, [id]);
 
   const handleDelete = async (e, event) => {
     // Send DELETE request to delete event and sign up form questions
@@ -120,7 +158,7 @@ function OrganizationDashboard() {
   }
 
   return (
-    <>
+    <CommitteeMemberProtected user={user}>
       <Navbar />
       <div className="bg-pink-300 py-2 min-h-screen h-full">
         {/* Organizational Profile */}
@@ -199,7 +237,7 @@ function OrganizationDashboard() {
                     </thead>
                     <tbody className="divide-y divide-neutral-200">
                       {
-                        queryUpcomingEvents.length === 0 ? (
+                        queryUpcomingEvents?.length === 0 ? (
                           <tr>
                             <td className="px-6 py-4 text-sm md:text-base text-neutral-600" colSpan="4">No upcoming events</td>
                           </tr>
@@ -298,7 +336,7 @@ function OrganizationDashboard() {
           </Tab.Group>
         </div>
       </div>
-    </>
+    </CommitteeMemberProtected>
   )
 }
 

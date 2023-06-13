@@ -1,5 +1,7 @@
 import Navbar from "../components/navigation/Navbar";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
 import imagePeople from "../assets/images/people.png";
 import imageJoinUs from "../assets/images/image-join-us.png"
 import imageExploreEvents from "../assets/images/image-explore-events.png"
@@ -36,22 +38,31 @@ function Home() {
     const [allEvents, setAllEvents] = useState([]);
 
     useEffect(() => {
+        const getAllEvents = () => {
+            const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+            axios.get(eventsURL)
+                .then((res) => {
+                    const events = res.data.result;
+                    console.log({ events });
+                    setAllEvents(events);
+                })
+                .catch(err => console.error({ err }));
+        }
+
         getAllEvents();
     }, []);
 
-    const getAllEvents = () => {
-        const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-        axios.get(eventsURL)
-            .then((res) => {
-                const events = res.data;
-                setAllEvents(events);
-            })
-            .catch(err => console.error({ err }));
-    }
-
     const featuredEvents = allEvents.length > 4 ? allEvents.slice(0, 4) : allEvents;
 
-    return (
+    const { user } = useSelector((state) => state.user);
+
+    // Redirect to user dashboard if user is logged in (Incomplete)
+
+    // Redirect to admin dashboard if user is admin
+    if (user?.role === "ADMIN") {
+        return <Navigate to="/admin" replace />;
+    } else {
+        return (
         <>
             <Navbar />
             <section className="bg-pink-100">
@@ -71,7 +82,7 @@ function Home() {
                 <p className="text-xl mx-20 font-bold">Featured Events</p>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:mx-20 md:mx-10 mx-20 my-5">
                     {featuredEvents.map((event, key) => (
-                        <Link to='/events' state={ event } className="border border-black" key={key}>
+                        <Link to='/events' state={event} className="border border-black" key={key}>
                             <img src={event.image_url} alt="event" className="h-60 md:h-72 xl:h-80 w-full object-cover" />
                             <p className="mx-3 font-semibold my-2">{event.title}</p>
                             <div className="flex flex-row space-x-2 mx-3">
@@ -91,7 +102,8 @@ function Home() {
                 </div>
             </div>
         </>
-    );
+        );
+    }
 }
 
 export default Home;

@@ -14,7 +14,13 @@ function AdminDashboard() {
   const eventsReducer = useSelector((state) => state.events)
   const organizations = organizationsReducer?.organizations
   const events = eventsReducer?.events
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState([]);
+  const [state, setState] = useState({
+    organizationsCount: 0,
+    eventsCount: 0,
+    usersCount: 0,
+    committeeMembersCount: 4,
+  });
   const dispatch = useDispatch();
 
   // To be replaced with actual data
@@ -55,8 +61,13 @@ function AdminDashboard() {
     const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
     axios.get(eventsURL)
       .then((res) => {
-        const events = res.data;
-        dispatch(setEvents(events));
+        const paginatedEvents = { ...res.data };
+        console.log(paginatedEvents.result);
+        dispatch(setEvents(paginatedEvents.result));
+        setState({
+          ...state,
+          eventsCount: paginatedEvents.totalItems,
+        });
       })
       .catch(err => console.error({ err }));
   }
@@ -65,8 +76,12 @@ function AdminDashboard() {
     const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
     axios.get(organizationsURL)
       .then((res) => {
-        const organizations = res.data;
-        dispatch(setOrganizations(organizations));
+        const paginatedOrganizations = { ...res.data };
+        dispatch(setOrganizations(paginatedOrganizations.result));
+        setState({
+          ...state,
+          organizationsCount: paginatedOrganizations.totalItems,
+        });
       })
       .catch(err => console.error({ err }));
   }
@@ -75,8 +90,12 @@ function AdminDashboard() {
     const usersURL = new URL("/users", process.env.REACT_APP_BACKEND_API);
     axios.get(usersURL)
       .then((res) => {
-        const users = res.data;
-        setUsers(users);
+        const paginatedUsers = { ...res.data };
+        setUsers(paginatedUsers.result);
+        setState({
+          ...state,
+          usersCount: paginatedUsers.result.length,
+        });
       })
       .catch(err => console.error({ err }));
   }
@@ -138,8 +157,7 @@ function AdminDashboard() {
                       return (
                         <EventRow event={event} key={event.id} />
                       )
-                    }
-                    )
+                    })
                   }
                 </>
               }
