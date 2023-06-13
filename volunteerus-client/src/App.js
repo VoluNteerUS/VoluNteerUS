@@ -7,6 +7,7 @@ import { Route, Routes } from 'react-router-dom';
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const Submissions = lazy(() => import('./pages/user/Submissions'))
 
 // Events
 const Events = lazy(() => import('./pages/events'));
@@ -45,6 +46,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path=":id">
+            <Route path="submissions" element={<Submissions />} />
+          </Route>
           <Route path="organizations">
             <Route index element={<OrganizationsPage />} />
             <Route path=":id">
