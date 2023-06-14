@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import Navbar from "../../components/navigation/Navbar";
 import { Tab } from "@headlessui/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import moment from "moment"; 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { setResponses as updateResponses } from "../../actions/responsesActions";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ');
@@ -16,6 +17,8 @@ function Submissions() {
   const user = persistedUserState?.user || "Unknown";
   const userId = user?.id;
   const tabs = ["Accepted", "Pending", "Rejected"];
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [responseAndEvent, setResponseAndEvent] = useState([]);
   const [events, setEvents] = useState([]);
@@ -37,14 +40,14 @@ function Submissions() {
 
   const body = (obj) => {
     return (
-      <tbody>
-        <tr key={obj?.response?._id} className="text-sm grid grid-cols-5 border-b items-center">
+      <tbody key={obj?.response?._id}>
+        <tr className="text-sm grid grid-cols-5 border-b items-center">
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{obj?.event?.title}</td>
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[0]} ${obj?.event?.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</td>
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">
-            <Link to={`/responses/${obj?.response?._id}/edit`} className="text-primary-600 hover:text-primary-800">
+            <Link to={`/${obj?.response?._id}/edit`} className="text-primary-600 hover:text-primary-800">
               Edit
             </Link>
             <span className="px-2">|</span>
@@ -81,15 +84,17 @@ function Submissions() {
 
   useEffect(() => {
     getResponsesByUser();
-    console.log(responses);
   }, []);
 
   useEffect(() => {
-    const responseEvents = Promise.all(responses.map((response) => 
-      getEventByResponse(response)
-    )).then((eventResults) => {
-      setEvents(eventResults);
+    console.log(responses);
+    if (responses.length > 0) {
+      const responseEvents = Promise.all(responses.map((response) => 
+        getEventByResponse(response)
+      )).then((eventResults) => {
+        setEvents(eventResults);
     })
+    }
   }, [responses]);
 
   useEffect(() => {
@@ -100,8 +105,29 @@ function Submissions() {
     setResponseAndEvent(currResponseAndEvent);
   }, [events, responses]);  
 
-  const handleDelete = () => {
+  const handleDelete = async (e, obj) => {
+    // Send DELETE request to delete response
+    const responseURL = new URL(`/responses/${obj?.response?._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 
+    await axios.delete(responseURL)
+    .then((res) => {
+      console.log(res);
+      if (!res.data) {
+        alert('You do not have permission to delete.');
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
+            
+    // Send GET request to get updated responses
+    const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(responsesURL).then((res) => res.data);
+
+    // Update responses in redux store
+    dispatch(updateResponses(updatedResponses));
+
+    window.location.reload();
   }
 
   return (
