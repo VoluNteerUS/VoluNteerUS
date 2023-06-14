@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvent } from "../../actions/eventActions";
+import { setResponses } from "../../actions/responsesActions";
  
 function EventSignup() { 
   const { id } = useParams();
@@ -100,7 +101,7 @@ function EventSignup() {
     event.preventDefault();
 
     // Send request to server
-    const requestBody = response;
+    const requestBody = { ...response, submitted_on: Date.now() };
 
     // Endpoint for responses
     const responsesURL = new URL(`/responses?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
@@ -111,6 +112,13 @@ function EventSignup() {
       if (!response.data) {
         navigate('/login');
       } else {
+        // Send GET request to get updated responses
+        const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
+        const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+
+        // Update responses in redux store
+        dispatch(setResponses(updatedResponses));
+
         navigate('/');
       }
     }).catch((error) => {
