@@ -24,10 +24,11 @@ function Submissions() {
   const heading = () => {
     return (
       <thead>
-        <tr className="text-sm grid grid-cols-4 text-left border-b">
+        <tr className="text-sm grid grid-cols-5 text-left border-b">
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start date & time</th>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End date & time</th>
+          <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Submitted on</th>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
@@ -37,11 +38,12 @@ function Submissions() {
   const body = (obj) => {
     return (
       <tbody>
-        <tr key={obj?.response?._id} className="text-sm grid grid-cols-4 border-b">
-          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{obj?.event?.title.length > 20 ? obj?.event?.title.slice(0, 20) + '...' : obj?.event?.title}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[0]} ${obj?.event?.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+        <tr key={obj?.response?._id} className="text-sm grid grid-cols-5 border-b items-center">
+          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{obj?.event?.title}</td>
+          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[0]} ${obj?.event?.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
+          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
+          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</td>
+          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">
             <Link to={`/responses/${obj?.response?._id}/edit`} className="text-primary-600 hover:text-primary-800">
               Edit
             </Link>
@@ -105,7 +107,7 @@ function Submissions() {
   return (
     <>
       <Navbar />
-      <div className="w-screen lg:w-3/4 block mx-auto">
+      <div className="w-screen lg:w-5/6 block mx-auto">
         <div className="text-2xl my-10 font-bold flex space-x-3">
           <h1>My Submissions</h1>
           <PaperAirplaneIcon width={25} height={25} />
@@ -133,13 +135,13 @@ function Submissions() {
             <Tab.Panel>
               <table className="flex flex-col space-y-1">
                 { heading() }
-                {events.length === 0
+                {responseAndEvent.filter(obj => obj.response.status === "Accepted").length === 0
                   ? <tbody>
                     <tr className="text-sm flex justify-evenly font-mono">
-                      <td>No accepted events</td>  
+                      <td>No accepted submissions</td>  
                     </tr>
                   </tbody>
-                  : responseAndEvent.map((obj) => {
+                  : responseAndEvent.filter(obj => obj.response.status === "Accepted").map((obj) => {
                     return (
                       body(obj)
                     );
@@ -147,16 +149,16 @@ function Submissions() {
               </table>
             </Tab.Panel>
             {/* Tab for pending events */}
-            <Tab.Panel className="overflow-x-auto">
+            <Tab.Panel>
               <table className="flex flex-col space-y-1">
                 { heading() }
-                {responseAndEvent.length === 0
+                {responseAndEvent.filter(obj => obj.response.status === "Pending").length === 0
                   ? <tbody>
                     <tr className="text-sm flex justify-evenly font-mono">
-                      <td>No pending events</td>  
+                      <td>No pending submissions</td>  
                     </tr>
                   </tbody>
-                  : responseAndEvent.map((obj) => {
+                  : responseAndEvent.filter(obj => obj.response.status === "Pending").map((obj) => {
                     return (
                       body(obj)
                     );
@@ -168,13 +170,13 @@ function Submissions() {
             <Tab.Panel>
               <table className="flex flex-col space-y-1">
                 { heading() }
-                {responseAndEvent.length === 0
+                {responseAndEvent.filter(obj => obj.response.status === "Rejected").length === 0
                   ? <tbody>
                     <tr className="text-sm flex justify-evenly font-mono">
-                      <td>No rejected events</td>  
+                      <td>No rejected submissions</td>  
                     </tr>
                   </tbody>
-                  : responseAndEvent.map((obj) => {
+                  : responseAndEvent.filter(obj => obj.response.status === "Rejected").map((obj) => {
                     return (
                       body(obj)
                     );

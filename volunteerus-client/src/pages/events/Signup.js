@@ -100,7 +100,7 @@ function EventSignup() {
     event.preventDefault();
 
     // Send request to server
-    const requestBody = response;
+    const requestBody = { ...response, submitted_on: Date.now() };
 
     // Endpoint for responses
     const responsesURL = new URL(`/responses?role=${user.role}`, process.env.REACT_APP_BACKEND_API);

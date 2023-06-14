@@ -33,6 +33,12 @@ export class Response {
     
     @Prop()
     6: string;
+
+    @Prop({ default: "Pending" })
+    status: string;
+
+    @Prop()
+    submitted_on: Date;
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(Response);

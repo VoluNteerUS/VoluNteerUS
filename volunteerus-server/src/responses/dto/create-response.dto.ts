@@ -10,4 +10,6 @@ export class CreateResponseDto {
     4: string;
     5: string;
     6: string;
+    status: string;
+    submitted_on: Date;
 }
