@@ -79,24 +79,27 @@ export class OrganizationsService {
     return organization;
   }
 
-  async findAll(page: number, limit: number) {
-    const skip = (page - 1) * limit;
-    const [data, totalItems] = await Promise.all([
-      this.organizationsModel.find().skip(skip).limit(limit).exec(), 
-      this.organizationsModel.countDocuments().exec()
-    ]);
-    const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Organization>(data, page, totalItems, totalPages);
+  async count() {
+    return this.organizationsModel.countDocuments().exec();
   }
 
-  async search(page: number, limit: number, query: string) {
+  async findAll(page: number, limit: number, query: string, sort: string) {
     const skip = (page - 1) * limit;
-    const [data, totalItems] = await Promise.all([
-      this.organizationsModel.find({ name: { $regex: query, $options: 'i' } }).skip(skip).limit(limit).exec(),
-      this.organizationsModel.countDocuments({ name: { $regex: query, $options: 'i' } }).exec()
-    ]);
-    const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Organization>(data, page, totalItems, totalPages);
+    if (sort === "DESC") {
+      const [data, totalItems] = await Promise.all([
+        this.organizationsModel.find({ name: { $regex: query, $options: 'i' } }).sort({ name: -1 }).skip(skip).limit(limit).exec(),
+        this.organizationsModel.countDocuments({ name: { $regex: query, $options: 'i' } }).exec()
+      ]);
+      const totalPages = Math.ceil(totalItems / limit);
+      return new PaginationResult<Organization>(data, page, totalItems, totalPages);
+    } else {
+      const [data, totalItems] = await Promise.all([
+        this.organizationsModel.find({ name: { $regex: query, $options: 'i' } }).sort({ name: 1 }).skip(skip).limit(limit).exec(),
+        this.organizationsModel.countDocuments({ name: { $regex: query, $options: 'i' } }).exec()
+      ]);
+      const totalPages = Math.ceil(totalItems / limit);
+      return new PaginationResult<Organization>(data, page, totalItems, totalPages);
+    }
   }
 
   findOne(id: mongoose.Types.ObjectId) {

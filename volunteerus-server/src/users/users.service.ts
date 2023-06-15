@@ -54,35 +54,52 @@ export class UsersService {
     let total: number;
     let skip = (page - 1) * limit;
 
-    if (search !== '') {
-      data = await this.usersModel.find({
-        $or: [
-          { email: new RegExp(search, 'i') },
-          { full_name: new RegExp(search, 'i') }
-        ]
-      }).select('-password').skip(skip).limit(limit).exec();
-      total = data.length;
-    } else {
-      data = await this.usersModel.find().select('-password').skip(skip).limit(limit).exec();
-      total = await this.usersModel.countDocuments();
-    }
     // Filter by role
     switch (role) {
-      case 'All':
-        break;
       case 'Admin':
-        data = await this.usersModel.find({ role: 'ADMIN' }).select('-password').skip(skip).limit(limit).exec();
+        data = await this.usersModel.find({
+          role: 'ADMIN',
+          $or: [
+            { email: new RegExp(search, 'i') },
+            { full_name: new RegExp(search, 'i') }
+          ]
+        }).sort({ full_name: 1 }).select('-password').skip(skip).limit(limit).exec();
+        total = data.length;
+        page = 1;
+        skip = 0;
+        break;
+      case 'Committee Member':
+        data = await this.usersModel.find({
+          role: 'COMMITTEE MEMBER',
+          $or: [
+            { email: new RegExp(search, 'i') },
+            { full_name: new RegExp(search, 'i') }
+          ]
+        }).sort({ full_name: 1 }).select('-password').skip(skip).limit(limit).exec();
         total = data.length;
         page = 1;
         skip = 0;
         break;
       case 'User':
-        data = await this.usersModel.find({ role: 'USER' }).select('-password').skip(skip).limit(limit).exec();
+        data = await this.usersModel.find({
+          role: 'USER',
+          $or: [
+            { email: new RegExp(search, 'i') },
+            { full_name: new RegExp(search, 'i') }
+          ]
+        }).sort({ full_name: 1 }).select('-password').skip(skip).limit(limit).exec();
         total = data.length;
         page = 1;
         skip = 0;
         break;
       default:
+        data = await this.usersModel.find({
+          $or: [
+            { email: new RegExp(search, 'i') },
+            { full_name: new RegExp(search, 'i') }
+          ]
+        }).sort({ full_name: 1 }).select('-password').skip(skip).limit(limit).exec();
+        total = await this.usersModel.countDocuments();
         break;
     }
 
@@ -101,6 +118,10 @@ export class UsersService {
 
     const totalPages = Math.ceil(total / limit);
     return new PaginationResult<User>(data, page, total, totalPages);
+  }
+
+  public async count(): Promise<number> {
+    return this.usersModel.countDocuments();
   }
 
   public async findOne(_id: mongoose.Types.ObjectId): Promise<User> {
@@ -124,11 +145,19 @@ export class UsersService {
     return this.organizationsModel.find({ committee_members: _id }).select('_id name image_url');
   }
 
+  public async getCommitteeMemberCount(): Promise<number> {
+    // Get all committee members from database and return unique user count
+    const committee_members = await this.organizationsModel.find().select('committee_members');
+    const committee_member_ids = committee_members.map(committee_member => committee_member.committee_members);
+    const unique_committee_member_ids = [...new Set(committee_member_ids.flat())];
+    return unique_committee_member_ids.length;
+  }
+
   public async update(_id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.usersModel.findByIdAndUpdate(_id, updateUserDto);
   }
 
-  public async delete(_id: string): Promise<User> {
+  public async delete(_id: mongoose.Types.ObjectId): Promise<User> {
     return this.usersModel.findByIdAndDelete(_id);
   }
   

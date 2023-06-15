@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import Pagination from "../../components/navigation/Pagination";
+import AppDialog from "../../components/AppDialog";
 import axios from "axios";
 import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, PencilIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Listbox } from '@headlessui/react'
@@ -31,6 +32,9 @@ function AdminUserDashboard() {
   const [selectedFilter, setSelectedFilter] = useState(filters[0]);
   const [selectedSort, setSelectedSort] = useState(sorts[0]);
   const [filteredUsers, setFilteredUsers] = useState(users);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState({});
 
   const handlePageChange = (page) => {
     setState({ ...state, currentPage: page });
@@ -44,43 +48,73 @@ function AdminUserDashboard() {
     setState({ ...state, currentPage: state.currentPage - 1 });
   }
 
+  const handleDelete = (user) => {
+    setUserToDelete(user);
+    setIsDialogOpen(true);
+  }
+
+  const handleConfirmDelete = async () => {
+    try {
+      const userURL = new URL(`/users/${userToDelete._id}`, process.env.REACT_APP_BACKEND_API);
+      await axios.delete(userURL);
+      setIsDialogOpen(false);
+      setUserToDelete({});
+    } catch (err) {
+      console.error({ err });
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setIsDialogOpen(false);
+    setUserToDelete({});
+  }
+
   useEffect(() => {
     const getUsers = async () => {
       try {
-        console.log(selectedFilter)
-        const organizationsURL = new URL(
+        const usersURL = new URL(
           `/users?search=${state.searchQuery}&role=${selectedFilter}&sortBy=${selectedSort}&page=${state.currentPage}&limit=${state.limit}`, 
           process.env.REACT_APP_BACKEND_API
         );
-        const res = await axios.get(organizationsURL);
-        const paginatedOrganizations = { ...res.data };
-        console.log(paginatedOrganizations);
-        setUsers(paginatedOrganizations.result);
+        const res = await axios.get(usersURL);
+        const paginatedUsers = { ...res.data };
+        setUsers(paginatedUsers.result);
         setState({
           ...state,
-          currentPage: paginatedOrganizations.currentPage,
-          totalItems: paginatedOrganizations.totalItems,
-          totalPages: paginatedOrganizations.totalPages
+          currentPage: paginatedUsers.currentPage,
+          totalItems: paginatedUsers.totalItems,
+          totalPages: paginatedUsers.totalPages
         });
       } catch (err) {
         console.error({ err });
       }
     }
 
+    const getTotalCount = async () => {
+      try {
+        const userCountURL = new URL(`/users/count`, process.env.REACT_APP_BACKEND_API);
+        const res = await axios.get(userCountURL);
+        setTotalCount(res.data);
+      } catch (err) {
+        console.error({ err });
+      }
+    }
+
     getUsers();
-  }, [state.currentPage, selectedFilter, selectedSort, state.searchQuery])
+    getTotalCount();
+  }, [state.currentPage, selectedFilter, selectedSort, state.searchQuery, userToDelete])
 
   return (
     <>
       <Navbar />
       <div className="py-8">
         <div className="block mx-auto lg:w-3/4 bg-neutral-100 rounded-lg p-8">
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-row flex-wrap justify-between items-center">
             <div className="flex flex-col pb-4">
               <h1 className="font-bold text-3xl">Users</h1>
-              <p className="text-gray-600">{state.totalItems} users joined!</p>
+              <p className="text-gray-600">{totalCount} users joined!</p>
             </div>
-            <div className="flex flex-row">
+            <div className="flex flex-row flex-wrap gap-4 mb-4 lg:mb-0">
               <div className="flex">
                 {/* Search Bar */}
                 <form method="GET">
@@ -108,7 +142,7 @@ function AdminUserDashboard() {
               <div className="flex">
                 {/* Filter Button */}
                 <Listbox value={selectedFilter} onChange={setSelectedFilter}>
-                  <div className="relative w-48 ms-4">
+                  <div className="relative w-48">
                     <Listbox.Button className="relative h-10 w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-opacity-75 sm:text-sm">
                       <span className="block truncate">{selectedFilter}</span>
                       <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -120,7 +154,7 @@ function AdminUserDashboard() {
                         <Listbox.Option
                           key={filterIdx}
                           className={({ active }) =>
-                            `${active ? 'text-amber-900 bg-amber-100' : 'text-gray-900'}
+                            `${active ? 'text-neutral-900 bg-primary-300' : 'text-gray-900'}
                             cursor-default select-none relative py-2 pl-10 pr-4`
                           }
                           value={filter}
@@ -132,7 +166,7 @@ function AdminUserDashboard() {
                               </span>
                               {selected ? (
                                 <span
-                                  className={`${active ? 'text-amber-600' : 'text-amber-600'}
+                                  className={`${active ? 'text-primary-600' : 'text-primary-600'}
                                   absolute inset-y-0 left-0 flex items-center pl-3`}
                                 >
                                   <CheckIcon className="w-5 h-5" aria-hidden="true" />
@@ -149,7 +183,7 @@ function AdminUserDashboard() {
               <div className="flex">
                 {/* Sort Button */}
                 <Listbox value={selectedSort} onChange={setSelectedSort}>
-                  <div className="relative w-32 ms-4">
+                  <div className="relative w-32">
                     <Listbox.Button className="relative h-10 w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-opacity-75 sm:text-sm">
                       <span className="block truncate">{selectedSort}</span>
                       <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -161,7 +195,7 @@ function AdminUserDashboard() {
                         <Listbox.Option
                           key={sortIdx}
                           className={({ active }) =>
-                            `${active ? 'text-amber-900 bg-amber-100' : 'text-gray-900'}
+                            `${active ? 'text-neutral-900 bg-primary-300' : 'text-gray-900'}
                             cursor-default select-none relative py-2 pl-10 pr-4`
                           }
                           value={sort}
@@ -173,7 +207,7 @@ function AdminUserDashboard() {
                               </span>
                               {selected ? (
                                 <span
-                                  className={`${active ? 'text-amber-600' : 'text-amber-600'}
+                                  className={`${active ? 'text-primary-600' : 'text-primary-600'}
                                   absolute inset-y-0 left-0 flex items-center pl-3`}
                                 >
                                   <CheckIcon className="w-5 h-5" aria-hidden="true" />
@@ -228,7 +262,11 @@ function AdminUserDashboard() {
                               <PencilIcon className="w-5 h-5" aria-hidden="true" />
                             </Link>
                             <span className="px-2">|</span>
-                            <button type="button" className="flex items-center space-x-2 text-danger-600 hover:text-danger-400">
+                            <button 
+                              type="button" 
+                              className="flex items-center space-x-2 text-danger-600 hover:text-danger-400"
+                              onClick={() => handleDelete(user)}
+                            >
                               <span>Delete</span>
                               <TrashIcon className="w-5 h-5" aria-hidden="true" />
                             </button>
@@ -253,6 +291,17 @@ function AdminUserDashboard() {
             handlePrevPage={handlePrevPage}
           />
         </div>
+        { isDialogOpen && (
+          <AppDialog
+            isOpen={isDialogOpen}
+            title="Confirm Delete"
+            description={`Are you sure you want to delete the user "${userToDelete.full_name}"?`}
+            warningMessage={`This action cannot be undone.`}
+            actionName="Delete"
+            handleAction={handleConfirmDelete}
+            handleClose={handleCancelDelete}
+          />
+        )}
       </div >
     </>
   );

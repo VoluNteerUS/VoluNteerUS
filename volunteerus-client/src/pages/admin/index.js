@@ -4,23 +4,19 @@ import Navbar from '../../components/navigation/Navbar';
 import StatCard from '../../components/dashboard/StatCard';
 import ContentCard from '../../components/dashboard/ContentCard';
 import EventRow from '../../components/dashboard/EventRow';
+import AdminProtected from '../../common/protection/AdminProtected';
 import axios from 'axios';
 import { setEvents } from '../../actions/eventActions';
 import { setOrganizations } from '../../actions/organizationActions';
+import { 
+  setEventCount, setOrganizationCount, setCommitteeMemberCount, 
+  setUserCount, setRecentlyCreatedEvents 
+} from '../../actions/adminDashboardActions';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 function AdminDashboard() {
-  const organizationsReducer = useSelector((state) => state.organizations)
-  const eventsReducer = useSelector((state) => state.events)
-  const organizations = organizationsReducer?.organizations
-  const events = eventsReducer?.events
-  const [users, setUsers] = useState([]);
-  const [state, setState] = useState({
-    organizationsCount: 0,
-    eventsCount: 0,
-    usersCount: 0,
-    committeeMembersCount: 4,
-  });
+  const adminDashboardReducer = useSelector((state) => state.adminDashboard);
+  const [loaded, setLoaded] = useState(false);
   const dispatch = useDispatch();
 
   // To be replaced with actual data
@@ -57,67 +53,75 @@ function AdminDashboard() {
     },
   ];
 
-  const getAllEvents = () => {
+  const getAllEvents = async () => {
     const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-    axios.get(eventsURL)
+    await axios.get(eventsURL)
       .then((res) => {
         const paginatedEvents = { ...res.data };
-        console.log(paginatedEvents.result);
-        dispatch(setEvents(paginatedEvents.result));
-        setState({
-          ...state,
-          eventsCount: paginatedEvents.totalItems,
-        });
+        dispatch(setEventCount(paginatedEvents.totalItems));
       })
       .catch(err => console.error({ err }));
   }
 
-  const getAllOrganizations = () => {
+  const getAllOrganizations = async () => {
     const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
-    axios.get(organizationsURL)
+    await axios.get(organizationsURL)
       .then((res) => {
         const paginatedOrganizations = { ...res.data };
-        dispatch(setOrganizations(paginatedOrganizations.result));
-        setState({
-          ...state,
-          organizationsCount: paginatedOrganizations.totalItems,
-        });
+        dispatch(setOrganizationCount(paginatedOrganizations.totalItems));
       })
       .catch(err => console.error({ err }));
   }
 
-  const getAllUsers = () => {
+  const getAllUsers = async () => {
     const usersURL = new URL("/users", process.env.REACT_APP_BACKEND_API);
-    axios.get(usersURL)
+    await axios.get(usersURL)
       .then((res) => {
         const paginatedUsers = { ...res.data };
-        setUsers(paginatedUsers.result);
-        setState({
-          ...state,
-          usersCount: paginatedUsers.result.length,
-        });
+        dispatch(setUserCount(paginatedUsers.totalItems));
+      })
+      .catch(err => console.error({ err }));
+  }
+
+  const getCommitteeMembersCount = async () => {
+    const committeeMembersURL = new URL("/users/committeeMemberCount", process.env.REACT_APP_BACKEND_API);
+    await axios.get(committeeMembersURL)
+      .then((res) => {
+        const count = res.data;
+        dispatch(setCommitteeMemberCount(count));
+      })
+      .catch(err => console.error({ err }));
+  }
+
+  const getLatestEvents = async () => {
+    const latestEventsURL = new URL("/events/latest", process.env.REACT_APP_BACKEND_API);
+    await axios.get(latestEventsURL)
+      .then((res) => {
+        const latestEvents = res.data;
+        dispatch(setRecentlyCreatedEvents(latestEvents));
       })
       .catch(err => console.error({ err }));
   }
 
   useEffect(() => {
-    getAllEvents();
-    getAllOrganizations();
-    getAllUsers();
+    Promise.all([getAllEvents(), getAllOrganizations(), getAllUsers(), getCommitteeMembersCount(), getLatestEvents()]).then(() => {
+      setLoaded(true);
+    });
   }, [])
 
   return (
-    <>
+    <AdminProtected>
       <Navbar />
       <div className="block mx-auto px-6 sm:w-4/5 sm:px-0 lg:w-3/4">
         <h1 className="font-bold text-3xl py-6">Admin Dashboard</h1>
+        { loaded ? (
         <div className="grid grid-cols-12 gap-4">
-          <StatCard title={"Organizations"} value={organizations.length} />
-          <StatCard title={"Events"} value={events.length} />
-          {/* TODO: Replace with actual data */}
-          <StatCard title={"Committee Members"} value={4} />
-          <StatCard title={"Users"} value={users.length} />
+          <StatCard title={"Organizations"} route={'/admin/organizations'} value={adminDashboardReducer.organizationCount} />
+          <StatCard title={"Events"} route={'/admin/events'} value={adminDashboardReducer.eventCount} />
+          <StatCard title={"Committee Members"} value={adminDashboardReducer.committeeMemberCount} />
+          <StatCard title={"Users"} route={'/admin/users'} value={adminDashboardReducer.userCount} />
         </div>
+        ) : (<div>Loading...</div>)}
         <div className="grid grid-cols-12 gap-4 py-6">
           <div className="col-span-12 xl:col-span-7">
             <ContentCard
@@ -153,9 +157,12 @@ function AdminDashboard() {
               children={
                 <>
                   {
-                    events.slice(0, 3).map((event) => {
+                    adminDashboardReducer.recentlyCreatedEvents.length === 0 ? (
+                      <div className="text-center py-4">No events have been created yet.</div>
+                    ) :
+                    adminDashboardReducer.recentlyCreatedEvents.slice(0, 3).map((event) => {
                       return (
-                        <EventRow event={event} key={event.id} />
+                        <EventRow event={event} key={event._id} />
                       )
                     })
                   }
@@ -165,7 +172,7 @@ function AdminDashboard() {
           </div>
         </div>
       </div>
-    </>
+    </AdminProtected>
   )
 }
 

@@ -21,19 +21,51 @@ export class EventsService {
     return newEvent.save();
   }
 
+  public async getCategories(): Promise<String[]> {
+    return this.eventsModel.find().distinct('category').exec();
+  }
+
   public async findOne(id: mongoose.Types.ObjectId): Promise<Event> {
     const event = await this.eventsModel.findById(id).exec();
     return event;
   }
 
-  public async findAll(page: number, limit: number): Promise<PaginationResult<Event>> {
+  public async findAll(search: string, category: string, page: number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const [data, totalItems] = await Promise.all([
-      this.eventsModel.find().populate('organized_by', 'name').skip(skip).limit(limit).exec(),
-      this.eventsModel.countDocuments().exec()
-    ]);
-    const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(data, page, totalItems, totalPages);
+    if (category === 'All') {
+      const [data, totalItems] = await Promise.all([
+        this.eventsModel.find(
+          { 
+            title: { $regex: search, $options: 'i' },
+          }).sort({ title: 1 })
+          .populate('organized_by', 'name')
+          .skip(skip).limit(limit).exec(),
+        this.eventsModel.countDocuments({ title: { $regex: search, $options: 'i' }  }).exec()
+      ]);
+      const totalPages = Math.ceil(totalItems / limit);
+      return new PaginationResult<Event>(data, page, totalItems, totalPages);
+    } else {
+      const [data, totalItems] = await Promise.all([
+        this.eventsModel.find(
+          {
+            title: { $regex: search, $options: 'i' },
+            category: category
+          }).sort({ title: 1 })
+          .populate('organized_by', 'name')
+          .skip(skip).limit(limit).exec(),
+        this.eventsModel.countDocuments({ title: { $regex: search, $options: 'i' }, category: category }).exec()
+      ]);
+      const totalPages = Math.ceil(totalItems / limit);
+      return new PaginationResult<Event>(data, page, totalItems, totalPages);
+    }
+  }
+
+  public async findLatestEvents(limit: number) {
+    const data = await this.eventsModel.find()
+      .sort({ signup_by: -1 })
+      .populate('organized_by', 'name')
+      .limit(limit).exec();
+    return data;
   }
 
   public async findUpcomingEvents(page: number, limit: number): Promise<PaginationResult<Event>> {

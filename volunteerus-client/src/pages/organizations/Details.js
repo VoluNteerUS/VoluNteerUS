@@ -12,6 +12,7 @@ import linkedinIcon from "../../assets/social_media_icons/linkedin.ico"
 import twitterIcon from "../../assets/social_media_icons/twitter.ico"
 import websiteIcon from "../../assets/social_media_icons/website.ico"
 import youtubeIcon from "../../assets/social_media_icons/youtube.ico"
+import EventCard from "../../components/EventCard";
 
 function OrganizationDetailsPage(){
     const { id } = useParams();
@@ -105,14 +106,7 @@ function OrganizationDetailsPage(){
                 <h3 className="text-2xl font-bold text-black">Upcoming Events</h3>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-4 pb-4">
                     { organizationEvents.length > 0 && organizationEvents.map((event) => (
-                        <div className="bg-grey-100 rounded-lg shadow-lg">
-                            <Link to={`/events/${event._id}`} key={event._id}>
-                                <div className="flex flex-col">
-                                    <img src={ event.image_url } className="rounded-t-lg h-64 object-cover"/>
-                                    <h3 className="mx-3 font-semibold my-2 text-md lg:text-lg">{event.title}</h3>
-                                </div>
-                            </Link>
-                        </div>
+                        <EventCard event={event} />
                     ))}
                 </div>          
             </div>

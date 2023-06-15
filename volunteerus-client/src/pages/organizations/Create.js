@@ -3,8 +3,11 @@ import Navbar from "../../components/navigation/Navbar";
 import imageUpload from "../../assets/images/image-upload.png";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function CreateOrganizationPage() {
+    const persistedUserState = useSelector((state) => state.user);
+    const user = persistedUserState?.user || 'Unknown';
 
     const [state, setState] = useState({
         profile: {
@@ -21,7 +24,8 @@ function CreateOrganizationPage() {
 
     const handleCreateOrganization = (event) => {
         event.preventDefault();
-        const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
+        const organizationsURL = new URL(`/organizations?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+        console.log(organizationsURL);
         const token = localStorage.getItem("token");
 
         // Reset errors

@@ -23,16 +23,11 @@ export class OrganizationsController {
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('create', Organization)) {
       const destination = 'organizations';
-      const organization = JSON.parse(createOrganizationDto["createOrganizationDto"]);
-      console.log(organization);
-
       if (file) {
         const url = await this.uploadService.uploadFile(file, destination);
-        // createOrganizationDto.image_url = url;
-        organization.image_url = url;
+        createOrganizationDto.image_url = url;
       }
-      // return this.organizationsService.create(createOrganizationDto);
-      return this.organizationsService.create(organization);
+      return this.organizationsService.create(createOrganizationDto);
     } else {
       throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
@@ -68,7 +63,8 @@ export class OrganizationsController {
   findAll(
     @Query('page') page: number = 1, 
     @Query('limit') limit: number = 10,
-    @Query('search') search: string
+    @Query('search') search: string = '',
+    @Query('sort') sort: string = 'ASC'
   ) {
     const parsedPage = parseInt(page.toString(), 10) || 1;
     const parsedLimit = parseInt(limit.toString(), 10) || 10;
@@ -78,11 +74,12 @@ export class OrganizationsController {
         cause: new Error('Page and Limit must be positive'),
       });
     }
-    if (search) {
-      return this.organizationsService.search(parsedPage, parsedLimit, search);
-    } else {
-      return this.organizationsService.findAll(parsedPage, parsedLimit);
-    }
+    return this.organizationsService.findAll(parsedPage, parsedLimit, search, sort);
+  }
+
+  @Get('count')
+  count() {
+    return this.organizationsService.count();
   }
 
   @Get(':id')
@@ -132,6 +129,8 @@ export class OrganizationsController {
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('delete', Organization)) {
       return this.organizationsService.remove(id);
+    } else {
+      throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
   }
 }

@@ -16,6 +16,11 @@ export class UsersController {
         return this.userService.create(createUserDto);
     }
 
+    @Get("/committeeMemberCount")
+    getCommitteeMemberCount(): Promise<number> {
+        return this.userService.getCommitteeMemberCount();
+    }
+
     @Get()
     findAll(
         @Query('page') page: number = 1, 
@@ -35,17 +40,12 @@ export class UsersController {
         return this.userService.findAll(parsedPage, parsedLimit, search, role, sortBy);
     }
 
-    @Get(":id")
-    findOne(@Param('id') id: mongoose.Types.ObjectId): Promise<User> {
-        return this.userService.findOne(id);
+    @Get("count")
+    count(): Promise<number> {
+        return this.userService.count();
     }
 
-    @Get()
-    findOneByEmail(email: string): Promise<User> {
-        return this.userService.findOneByEmail(email);
-    }
-
-    @Get("/search")
+    @Get("search")
     findUsers(@Query('query') query: string): Promise<User[]> {
         // If query is empty, return all users
         if (!query) {
@@ -58,6 +58,16 @@ export class UsersController {
         }
     }
 
+    @Get(":id")
+    findOne(@Param('id') id: mongoose.Types.ObjectId): Promise<User> {
+        return this.userService.findOne(id);
+    }
+
+    @Get()
+    findOneByEmail(email: string): Promise<User> {
+        return this.userService.findOneByEmail(email);
+    }
+
     @Get(":id/organizations")
     findUserOrganizations(@Param('id') id: string): Promise<Organization[]> {
         return this.userService.findUserOrganizations(id);
@@ -68,8 +78,8 @@ export class UsersController {
         return this.userService.update(id, updateUserDto);
     }
     
-    @Delete()
-    remove(id: string): Promise<User> {
+    @Delete(":id")
+    remove(@Param('id') id: mongoose.Types.ObjectId): Promise<User> {
         return this.userService.delete(id);
     }
 }
