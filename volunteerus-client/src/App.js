@@ -8,6 +8,7 @@ const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Submissions = lazy(() => import('./pages/user/Submissions'))
+const EditResponse = lazy(() => import('./pages/user/EditResponse'))
 
 // Events
 const Events = lazy(() => import('./pages/events'));
@@ -48,6 +49,9 @@ function App() {
           <Route path="register" element={<Register />} />
           <Route path=":id">
             <Route path="submissions" element={<Submissions />} />
+          </Route>
+          <Route path=":id">
+            <Route path="edit" element={<EditResponse />} />
           </Route>
           <Route path="organizations">
             <Route index element={<OrganizationsPage />} />
