@@ -77,9 +77,7 @@ function App() {
             <Route
               index
               element={
-                <AdminProtected>
-                  <AdminDashboard />
-                </AdminProtected>
+                <AdminDashboard />
               }
             />
             <Route path="events">
@@ -96,9 +94,7 @@ function App() {
               <Route
                 index
                 element={
-                  <AdminProtected>
-                    <AdminOrganizationDashboard />
-                  </AdminProtected>
+                  <AdminOrganizationDashboard />
                 }
               />
             </Route>

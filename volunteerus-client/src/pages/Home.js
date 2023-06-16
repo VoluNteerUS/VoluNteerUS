@@ -12,6 +12,7 @@ import imageLocation from "../assets/images/location-icon.png";
 import imageOrganization from "../assets/images/organization-icon.png";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { TagIcon } from "@heroicons/react/24/solid";
 
 function Home() {
     const navigations = [
@@ -84,18 +85,30 @@ function Home() {
                     {featuredEvents.map((event, key) => (
                         <Link to='/events' state={event} className="border border-black" key={key}>
                             <img src={event.image_url} alt="event" className="h-60 md:h-72 xl:h-80 w-full object-cover" />
-                            <p className="mx-3 font-semibold my-2">{event.title}</p>
-                            <div className="flex flex-row space-x-2 mx-3">
-                                <img src={imageCalender} alt="calender icon" className="w-5 h-5" />
-                                <p>{event.date[0] === event.date[1] ? event.date[0] : event.date[0] + ' to ' + event.date[1]}</p>
-                            </div>
-                            <div className="flex flex-row space-x-2 mx-3">
-                                <img src={imageLocation} alt="location icon" className="w-5 h-5" />
-                                <p>{event.location.length <= 20 ? event.location : event.location.substring(0, 20) + '...'}</p>
-                            </div>
-                            <div className="flex flex-row space-x-2 mx-3">
-                                <img src={imageOrganization} alt="organization icon" className="w-5 h-5" />
-                                <p>{event.organized_by["name"].length <= 30 ? event.organized_by["name"] : event.organized_by["name"].substring(0, 30) + '...'}</p>
+                            <div className="p-3">
+                                <p className="font-semibold my-2">{event.title}</p>
+                                <div className="flex flex-row space-x-2">
+                                    <img src={imageCalender} alt="calender icon" className="w-5 h-5" />
+                                    <p>{event.date[0] === event.date[1] ? event.date[0] : event.date[0] + ' to ' + event.date[1]}</p>
+                                </div>
+                                <div className="flex flex-row space-x-2">
+                                    <img src={imageLocation} alt="location icon" className="w-5 h-5" />
+                                    <p>{event.location.length <= 20 ? event.location : event.location.substring(0, 20) + '...'}</p>
+                                </div>
+                                <div className="flex flex-row space-x-2">
+                                    <img src={imageOrganization} alt="organization icon" className="w-5 h-5" />
+                                    <p>{event.organized_by["name"].length <= 30 ? event.organized_by["name"] : event.organized_by["name"].substring(0, 30) + '...'}</p>
+                                </div>
+                                <div className="flex flex-row space-x-2">
+                                    <TagIcon className="w-5 h-5" />
+                                    <div className="flex flex-row flex-wrap gap-2">
+                                    {
+                                        event.category.map((tag, key) => (
+                                            <span className="bg-primary-600 text-white text-sm px-3 rounded-full" key={key}>{tag}</span>
+                                        ))
+                                    }
+                                    </div>
+                                </div>
                             </div>
                         </Link>
                     ))}
