@@ -7,6 +7,7 @@ import mongoose, { Model } from 'mongoose';
 import { Contact, ContactDocument } from '../contacts/schemas/contact.schema';
 import { PaginationResult } from 'src/types/pagination';
 import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -20,7 +21,7 @@ export class OrganizationsService {
   ) { }
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    // Check if an organization with the same name exists
+    // Check if an organization with the same name exists)
     const existingOrganization = await this.organizationsModel.findOne({ name: createOrganizationDto.name }).exec();
     if (existingOrganization) {
       throw new HttpException('Organization with the same name already exists', HttpStatus.BAD_REQUEST, {
@@ -29,6 +30,22 @@ export class OrganizationsService {
     } else {
       return new this.organizationsModel(createOrganizationDto).save();
     }
+  }
+
+  async checkCommitteeMember(data: CheckCommitteeMemberDto) : Promise<boolean> {
+    const organization = await this.organizationsModel.findById(data.organizationId).exec();
+    if (!organization) {
+      throw new HttpException('Organization not found', HttpStatus.NOT_FOUND, {
+        cause: new Error('Organization not found'),
+      });
+    }
+    const user = await this.usersModel.findById(data.userId).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND, {
+        cause: new Error('User not found'),
+      });
+    }
+    return organization.committee_members.includes(user._id);
   }
 
   async addContactToOrganization(organizationId: mongoose.Types.ObjectId, contactData: any) {

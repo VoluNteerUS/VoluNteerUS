@@ -6,6 +6,7 @@ import AppDialog from "../../components/AppDialog";
 import axios from "axios";
 import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, PencilIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Listbox } from '@headlessui/react'
+import AdminProtected from "../../common/protection/AdminProtected";
 
 function AdminUserDashboard() {
   const filters = [
@@ -105,7 +106,7 @@ function AdminUserDashboard() {
   }, [state.currentPage, selectedFilter, selectedSort, state.searchQuery, userToDelete])
 
   return (
-    <>
+    <AdminProtected>
       <Navbar />
       <div className="py-8">
         <div className="block mx-auto lg:w-3/4 bg-neutral-100 rounded-lg p-8">
@@ -303,7 +304,7 @@ function AdminUserDashboard() {
           />
         )}
       </div >
-    </>
+    </AdminProtected>
   );
 }
 

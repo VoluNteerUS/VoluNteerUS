@@ -7,6 +7,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import mongoose from 'mongoose';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { Organization } from './schemas/organization.schema';
+import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -31,6 +32,11 @@ export class OrganizationsController {
     } else {
       throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
+  }
+  
+  @Post('checkCommitteeMember')
+  async checkCommitteeMember(@Body() data: CheckCommitteeMemberDto) {
+    return this.organizationsService.checkCommitteeMember(data);
   }
 
   @Post(':id/contacts')

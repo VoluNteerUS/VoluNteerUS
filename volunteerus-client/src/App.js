@@ -57,55 +57,21 @@ function App() {
             <Route index element={<OrganizationsPage />} />
             <Route path=":id">
               <Route index element={<OrganizationDetailsPage />} />
-              <Route 
-                path="dashboard" 
-                element={            
-                  <OrganizationDashboard />
-                } 
-              />
-              <Route 
-                path="edit" 
-                element={
-                  <EditOrganizationPage />
-                } 
-              />
+              <Route path="dashboard" element={<OrganizationDashboard />} />
+              <Route path="edit" element={<EditOrganizationPage />} />
             </Route>
             <Route path="create" element={<CreateOrganizationPage />} />
           </Route>
           <Route path="admin">
-            <Route
-              index
-              element={
-                <AdminDashboard />
-              }
-            />
+            <Route index element={<AdminDashboard />} />
             <Route path="events">
-              <Route
-                index
-                element={
-                  <AdminProtected>
-                    <AdminEventDashboard />
-                  </AdminProtected>
-                }
-              />
+              <Route index element={<AdminEventDashboard />} />
             </Route>
             <Route path="organizations">
-              <Route
-                index
-                element={
-                  <AdminOrganizationDashboard />
-                }
-              />
+              <Route index element={<AdminOrganizationDashboard />} />
             </Route>
             <Route path="users">
-              <Route
-                index
-                element={
-                  <AdminProtected>
-                    <AdminUserDashboard />
-                  </AdminProtected>
-                }
-              />
+              <Route index element={<AdminUserDashboard />}/>
             </Route>
           </Route>
           <Route path="events">

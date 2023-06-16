@@ -7,6 +7,7 @@ import Pagination from "../../components/navigation/Pagination";
 import AppDialog from "../../components/AppDialog";
 import { CheckIcon, FunnelIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline"
 import { Listbox } from "@headlessui/react";
+import AdminProtected from "../../common/protection/AdminProtected";
 
 
 function AdminEventDashboard() {
@@ -90,7 +91,7 @@ function AdminEventDashboard() {
 
 
   return (
-    <>
+    <AdminProtected>
       <Navbar />
       <div className="py-8">
         <div className="block mx-auto lg:w-3/4 bg-neutral-100 rounded-lg p-8">
@@ -247,7 +248,7 @@ function AdminEventDashboard() {
           handleClose={handleCancelDelete}
         />
       )}
-    </>
+    </AdminProtected>
   )
 }
 

@@ -26,7 +26,8 @@ function CreateEvent() {
       "description": "",
       "image_url": "",
       "file": null,
-      "signup_by": ""
+      "signup_by": "",
+      "role": user.role
     }
   )
 
@@ -37,8 +38,27 @@ function CreateEvent() {
     id = location.state.id;
   }
 
+  const checkUser = async () => {
+    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+    const checkCommitteeMemberRequestBody = {
+      userId: user.id,
+      organizationId: id
+    }
+
+    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    
+    if (response.data) {
+      setDetails({ ...details, role: "COMMITTEE MEMBER" });
+    }
+  }
+
   useEffect(() => {
-    setDetails({ ...details, organized_by: id });
+    checkUser();
+
+    setDetails({ 
+      ...details, 
+      organized_by: id 
+    });
   }, []);
   
   // questions[][question number, question, question type]
@@ -106,9 +126,11 @@ function CreateEvent() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    console.log(details.role);
     // create event
     try {
+      // Update user role if is a committee member
+
       // event sign up form questions
       const eventQuestions = Object.values(formQuestions).filter(question => question[1] !== "");
       const questionObject = {};
@@ -120,7 +142,7 @@ function CreateEvent() {
       const requestBody = questionObject;
 
       // Endpoint for event questions
-      const questionsURL = new URL(`/questions?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+      let questionsURL = new URL(`/questions?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
 
       await axios.post(questionsURL, requestBody).then((response) => {
           console.log(response.data);
@@ -135,7 +157,7 @@ function CreateEvent() {
           eventData.append('title', details.title);
           eventData.append('date', details.date);
           eventData.append('location', details.location);
-          eventData.append('organized_by', details.organized_by);
+          eventData.append('organized_by', id);
           eventData.append('category', details.category);
           eventData.append('signup_by', details.signup_by);
           eventData.append('description', details.description);
@@ -143,7 +165,10 @@ function CreateEvent() {
           eventData.append('file', details.file);
           eventData.append('questions', response.data._id);
 
-          const eventsURL = new URL(`/events?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+          let eventsURL = new URL(`/events?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
+          eventsURL = new URL(`/events?role=${"COMMITTEE MEMBER"}`, process.env.REACT_APP_BACKEND_API);
+          
+          console.log(eventsURL)
           axios.post(eventsURL, eventData, {
             headers: {
               'Content-Type': 'multipart/form-data',

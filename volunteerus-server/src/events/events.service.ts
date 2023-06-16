@@ -70,9 +70,14 @@ export class EventsService {
 
   public async findUpcomingEvents(page: number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const data = await this.eventsModel.find().populate('organized_by', 'name').skip(skip).limit(limit).exec();
+    const data = await this.eventsModel.find({
+      "date.0": {
+        $gte: moment().format('YYYY-MM-DD')
+      },
+    }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
     // Filter out events that are upcoming
-    const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
+    const upcomingEvents = data;
+    // const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
     const totalItems = upcomingEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
     return new PaginationResult<Event>(upcomingEvents, page, totalItems, totalPages);
@@ -100,9 +105,15 @@ export class EventsService {
 
   public async getUpcomingEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const data = await this.eventsModel.find({ organized_by: id }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
+    const upcomingEvents = await this.eventsModel.find({ 
+      organized_by: id,
+      "date.0": {
+        $gte: moment().format('YYYY-MM-DD')
+      },
+    }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
     // Filter out events that are upcoming
-    const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
+    // const upcomingEvents = data;
+    // const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
     const totalItems = upcomingEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
     return new PaginationResult<Event>(upcomingEvents, page, totalItems, totalPages);
@@ -110,9 +121,14 @@ export class EventsService {
 
   public async getPastEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const data = await this.eventsModel.find({ organized_by: id }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
+    const pastEvents = await this.eventsModel.find({ 
+      organized_by: id,
+      "date.0": {
+        $lt: moment().format('YYYY-MM-DD')
+      }, 
+    }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
     // Filter out events that are in the past
-    const pastEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment()));
+    // const pastEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment()));
     const totalItems = pastEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
     return new PaginationResult<Event>(pastEvents, page, totalItems, totalPages);

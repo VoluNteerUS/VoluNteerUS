@@ -6,8 +6,6 @@ import ContentCard from '../../components/dashboard/ContentCard';
 import EventRow from '../../components/dashboard/EventRow';
 import AdminProtected from '../../common/protection/AdminProtected';
 import axios from 'axios';
-import { setEvents } from '../../actions/eventActions';
-import { setOrganizations } from '../../actions/organizationActions';
 import { 
   setEventCount, setOrganizationCount, setCommitteeMemberCount, 
   setUserCount, setRecentlyCreatedEvents 
