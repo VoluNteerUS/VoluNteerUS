@@ -54,7 +54,9 @@ export class EventsController {
     findAll(
       @Query('organization_id') organization_id: mongoose.Types.ObjectId,
       @Query('page') page: number = 1,
-      @Query('limit') limit: number = 10
+      @Query('limit') limit: number = 10,
+      @Query('search') search: string = '',
+      @Query('category') category: string = 'All'
     ): Promise<PaginationResult<Event>> {
       const parsedPage = parseInt(page.toString(), 10) || 1;
       const parsedLimit = parseInt(limit.toString(), 10) || 10;
@@ -67,7 +69,17 @@ export class EventsController {
       if (organization_id) {
         return this.eventService.getEventsByOrganization(organization_id, parsedPage, parsedLimit);
       }
-      return this.eventService.findAll(parsedPage, parsedLimit);
+      return this.eventService.findAll(search, category, parsedPage, parsedLimit);
+    }
+
+    @Get('/categories')
+    getCategories() {
+      return this.eventService.getCategories();
+    }
+
+    @Get('/latest')
+    findLatestEvents(@Query('limit') limit: number = 10) {
+      return this.eventService.findLatestEvents(limit);
     }
 
     @Get('/upcoming')
