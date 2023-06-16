@@ -15,6 +15,7 @@ const Events = lazy(() => import('./pages/events'));
 const CreateEvent = lazy(() => import('./pages/events/Create'));
 const EventSignup = lazy(() => import('./pages/events/Signup'));
 const EditEventDetails = lazy(() => import('./pages/events/Edit'));
+const ViewResponses = lazy(() => import('./pages/events/Responses'));
 
 // Organizations
 const OrganizationsPage = lazy(() => import('./pages/organizations'));
@@ -77,8 +78,21 @@ function App() {
           <Route path="events">
             <Route index element={<Events />} />
             <Route path=":id" element={<EventSignup />} />
-            <Route path=":id/edit" element={<EditEventDetails />} />
-            <Route path="create" element={<CreateEvent />} />
+              <Route path=":id/edit" element={
+                <CommitteeMemberProtected>
+                  <EditEventDetails />
+                </CommitteeMemberProtected>
+              } />
+              <Route path=":id/responses" element={
+                <CommitteeMemberProtected>
+                  <ViewResponses />
+                </CommitteeMemberProtected>
+              } />
+              <Route path="create" element={
+                <CommitteeMemberProtected>
+                  <CreateEvent />
+                </CommitteeMemberProtected>
+              } />
           </Route>
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<PageNotFound />} />
