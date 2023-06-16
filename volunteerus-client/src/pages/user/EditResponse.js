@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import imageCross from "../../assets/images/cross.png" 
+import SignUpForm from "../../components/SignUpForm";
 import { useSelector, useDispatch } from "react-redux";
 import { setResponses } from "../../actions/responsesActions";
 
@@ -50,25 +50,6 @@ function EditResponse() {
     setResponse({ ...newResponse });
   }
 
-  function inputType(question) {
-    if (question[2] === "Open-ended") {
-      return (
-        <textarea className="border border-black p-1" 
-          required
-          value={response[`${question[0]}`]}
-          onChange={ (e) => handleChange(e, question) }                 
-        /> 
-      )
-    } else if (question[2] === "Yes / No") {
-      return (
-        <select required value={response[`${question[0]}`]} className="border rounded-lg mt-2 md:w-1/2 py-1" onChange={ (e) => handleChange(e, question)} >
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      )
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -103,37 +84,14 @@ function EditResponse() {
   return (
     <>
       <Navbar />
-      <div className="bg-pink-100"> 
-        <div className="flex items-center h-screen justify-center"> 
-          <div className="bg-white rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2 px-3"> 
-            <button onClick={ () => navigate(-1) }>
-              <img src={ imageCross } alt="cross" className="h-10 w-10 m-3 fill-pink-400"/> 
-            </button>
-            <div className="grid grid-cols-12 gap-4"> 
-              <form onSubmit={ handleSubmit } className="col-span-12 sm:px-12 xl:py-2 mx-0 sm:mx-4">
-                <h1 className="font-bold tracking-tight leading-none text-darkblue-900 sm:text-2xl md:text-3xl xl:text-4xl text-center mb-10">Volunteer for { event?.title }</h1> 
-                {/* form questions */}
-                {Object.values(questions).filter((question) => question.length > 1 && question !== event.questions).map((question) => (
-                  <div className="flex flex-col mb-10" key={ question[0] }> 
-                    <label className="">{ question[1] }</label> 
-                    { inputType(question) }
-                  </div> 
-                ))}
-                <div className="flex flex-row space-x-2 mb-10"> 
-                  <input className="w-8 h-8" 
-                    required  
-                    type="checkbox"              
-                  /> 
-                  <label className="font-semibold">Confirm attendance</label> 
-                </div> 
-                <div className="flex justify-end"> 
-                  <button type="submit" className="bg-pink-400 rounded-md text-white py-1 px-3 mb-10">Update</button> 
-                </div> 
-              </form> 
-            </div> 
-          </div> 
-        </div> 
-      </div> 
+      <SignUpForm
+        questions={ Object.values(questions).filter((question) => question.length > 1 && question !== event.questions) }
+        response={ response }
+        event={ event }
+        handleSubmit={ handleSubmit }
+        handleChange={ handleChange }
+        action="Update"
+      />
     </>
   )
 }

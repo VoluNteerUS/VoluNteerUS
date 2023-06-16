@@ -247,6 +247,10 @@ function OrganizationDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                              <Link to={`/events/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
+                                Responses
+                              </Link>
+                              <span className="px-2">|</span>
                               <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
                                 Edit
                               </Link>
@@ -317,6 +321,10 @@ function OrganizationDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm a')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('MMMM Do YYYY, h:mm a')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                              <Link to={`/events/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
+                                Responses
+                              </Link>
+                              <span className="px-2">|</span>
                               <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
                                 Edit
                               </Link>
