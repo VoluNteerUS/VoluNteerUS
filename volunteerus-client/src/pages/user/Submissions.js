@@ -7,6 +7,8 @@ import moment from "moment";
 import { useDispatch, useSelector } from "react-redux";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
+import AppDialog from "../../components/AppDialog";
+import Pagination from "../../components/navigation/Pagination";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ');
@@ -19,10 +21,36 @@ function Submissions() {
   const tabs = ["Accepted", "Pending", "Rejected"];
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [responseAndEvent, setResponseAndEvent] = useState([]);
+  const [responseToDelete, setResponseToDelete] = useState({});
   const [events, setEvents] = useState([]);
   const [responses, setResponses] = useState([]);
+  const [acceptedResponses, setAcceptedResponses] = useState([]);
+  const [pendingResponses, setPendingResponses] = useState([]);
+  const [rejectedResponses, setRejectedResponses] = useState([]);
+
+  const [paginationState, setPaginationState] = useState({
+    accepted: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    },
+    pending: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    },
+    rejected: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    }
+  });
 
   const heading = () => {
     return (
@@ -73,10 +101,42 @@ function Submissions() {
 
   const getResponsesByUser = async () => {
     try {
-      const responsesByUserURL = new URL(`/responses?user_id=${ userId }`, process.env.REACT_APP_BACKEND_API);
+      const responsesByUserURL = new URL(`/responses?user_id=${userId}`, process.env.REACT_APP_BACKEND_API);
       const res = await axios.get(responsesByUserURL);
       const responses = res.data;
       setResponses(responses);
+
+      const acceptedResponsesURL = new URL(`/responses/accepted?user_id=${userId}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
+      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
+      setAcceptedResponses(paginatedAcceptedResponses.result);
+
+      const rejectedResponsesURL = new URL(`/responses/rejected?user_id=${userId}&page=${paginationState.rejected.currentPage}&limit=${paginationState.rejected.limit}`, process.env.REACT_APP_BACKEND_API);
+      const rejectedResponsesRes = await axios.get(rejectedResponsesURL);
+      const paginatedRejectedResponses = { ...rejectedResponsesRes.data };
+      setRejectedResponses(paginatedRejectedResponses.result);
+
+      const pendingResponsesURL = new URL(`/responses/pending?user_id=${userId}&page=${paginationState.pending.currentPage}&limit=${paginationState.pending.limit}`, process.env.REACT_APP_BACKEND_API);
+      const pendingResponsesRes = await axios.get(pendingResponsesURL);
+      const paginatedPendingResponses = { ...pendingResponsesRes.data };
+      setPendingResponses(paginatedPendingResponses.result);
+      setPaginationState({
+        accepted: {
+          ...paginationState.accepted,
+          totalItems: paginatedAcceptedResponses.totalItems,
+          totalPages: paginatedAcceptedResponses.totalPages,
+        },
+        rejected: {
+          ...paginationState.rejected,
+          totalItems: paginatedRejectedResponses.totalItems,
+          totalPages: paginatedRejectedResponses.totalPages,
+        },
+        pending: {
+          ...paginationState.pending,
+          totalItems: paginatedPendingResponses.totalItems,
+          totalPages: paginatedPendingResponses.totalPages,
+        }
+      })
     } catch (err) {
       console.error({ err });
     }
@@ -105,9 +165,20 @@ function Submissions() {
     setResponseAndEvent(currResponseAndEvent);
   }, [events, responses]);  
 
-  const handleDelete = async (e, obj) => {
+  const handleDelete = (e, obj) => {
+    e.preventDefault();
+    setResponseToDelete(obj);
+    setIsDialogOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setResponseToDelete({});
+    setIsDialogOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
     // Send DELETE request to delete response
-    const responseURL = new URL(`/responses/${obj?.response?._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const responseURL = new URL(`/responses/${responseToDelete?.response?._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 
     await axios.delete(responseURL)
     .then((res) => {
@@ -119,6 +190,9 @@ function Submissions() {
     }).catch((err) => {
       console.error(err);
     });
+
+    setResponseToDelete({});
+    setIsDialogOpen(false);
             
     // Send GET request to get updated responses
     const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
@@ -128,6 +202,96 @@ function Submissions() {
     dispatch(updateResponses(updatedResponses));
 
     window.location.reload();
+  }
+
+  const handleAcceptedResponsesPageChange = (page) => {
+    setPaginationState({
+      ...paginationState,
+      accepted: {
+        ...paginationState.accepted,
+        currentPage: page
+      }
+    });
+  }
+
+  const handleAcceptedResponsesNextPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      accepted: {
+        ...paginationState.accepted,
+        currentPage: paginationState.accepted.currentPage + 1
+      }
+    });
+  }
+
+  const handleAcceptedResponsesPrevPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      accepted: {
+        ...paginationState.accepted,
+        currentPage: paginationState.accepted.currentPage - 1
+      }
+    });
+  }
+
+  const handlePendingResponsesPageChange = (page) => {
+    setPaginationState({
+      ...paginationState,
+      pending: {
+        ...paginationState.pending,
+        currentPage: page
+      }
+    });
+  }
+
+  const handlePendingResponsesNextPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      pending: {
+        ...paginationState.pending,
+        currentPage: paginationState.pending.currentPage + 1
+      }
+    });
+  }
+
+  const handlePendingResponsesPrevPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      pending: {
+        ...paginationState.pending,
+        currentPage: paginationState.pending.currentPage - 1
+      }
+    });
+  }
+
+  const handleRejectedResponsesPageChange = (page) => {
+    setPaginationState({
+      ...paginationState,
+      rejected: {
+        ...paginationState.rejected,
+        currentPage: page
+      }
+    });
+  }
+
+  const handleRejectedResponsesNextPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      rejected: {
+        ...paginationState.rejected,
+        currentPage: paginationState.rejected.currentPage + 1
+      }
+    });
+  }
+
+  const handleRejectedResponsesPrevPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      accepted: {
+        ...paginationState.rejected,
+        currentPage: paginationState.rejected.currentPage - 1
+      }
+    });
   }
 
   return (
@@ -173,6 +337,15 @@ function Submissions() {
                     );
                 })}
               </table>
+              <Pagination
+                currentPage={paginationState?.accepted?.currentPage}
+                limit={paginationState?.accepted?.limit}
+                totalItems={paginationState?.accepted?.totalItems}
+                totalPages={paginationState?.accepted?.totalPages}
+                handlePageChange={handleAcceptedResponsesPageChange}
+                handleNextPage={handleAcceptedResponsesNextPage}
+                handlePrevPage={handleAcceptedResponsesPrevPage}
+              />  
             </Tab.Panel>
             {/* Tab for pending events */}
             <Tab.Panel>
@@ -191,6 +364,15 @@ function Submissions() {
                   })
                 }
               </table>
+              <Pagination
+                currentPage={paginationState?.pending?.currentPage}
+                limit={paginationState?.pending?.limit}
+                totalItems={paginationState?.pending?.totalItems}
+                totalPages={paginationState?.pending?.totalPages}
+                handlePageChange={handlePendingResponsesPageChange}
+                handleNextPage={handlePendingResponsesNextPage}
+                handlePrevPage={handlePendingResponsesPrevPage}
+              />  
             </Tab.Panel>
             {/* Tab for rejected events */}
             <Tab.Panel>
@@ -208,10 +390,30 @@ function Submissions() {
                     );
                   })}
               </table>
+              <Pagination
+                currentPage={paginationState?.rejected?.currentPage}
+                limit={paginationState?.rejected?.limit}
+                totalItems={paginationState?.rejected?.totalItems}
+                totalPages={paginationState?.rejected?.totalPages}
+                handlePageChange={handleRejectedResponsesPageChange}
+                handleNextPage={handleRejectedResponsesNextPage}
+                handlePrevPage={handleRejectedResponsesPrevPage}
+              />  
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
       </div>
+      {isDialogOpen && (
+        <AppDialog
+          isOpen={isDialogOpen}
+          title="Confirm Delete"
+          description={`Are you sure you want to delete your response for "${responseToDelete?.event?.title}"?`}
+          warningMessage={`This action cannot be undone.`}
+          actionName="Delete"
+          handleAction={handleConfirmDelete}
+          handleClose={handleCancelDelete}
+        />
+      )}
     </>
   )
 }
