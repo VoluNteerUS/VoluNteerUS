@@ -1,6 +1,7 @@
 import './App.css';
 import React, { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // Code splitting of routes
 // Pages
@@ -41,6 +42,9 @@ const AdminProtected = lazy(() => import('./common/protection/AdminProtected'));
 const CommitteeMemberProtected = lazy(() => import('./common/protection/CommitteeMemberProtected'));
 
 function App() {
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState?.user || 'Unknown';
+
   return (
     <div className="App">
       <Suspense fallback={<div>Loading...</div>}>
@@ -79,17 +83,17 @@ function App() {
             <Route index element={<Events />} />
             <Route path=":id" element={<EventSignup />} />
               <Route path=":id/edit" element={
-                <CommitteeMemberProtected>
+                <CommitteeMemberProtected user={user}>
                   <EditEventDetails />
                 </CommitteeMemberProtected>
               } />
               <Route path=":id/responses" element={
-                <CommitteeMemberProtected>
+                <CommitteeMemberProtected user={user}>
                   <ViewResponses />
                 </CommitteeMemberProtected>
               } />
               <Route path="create" element={
-                <CommitteeMemberProtected>
+                <CommitteeMemberProtected user={user}>
                   <CreateEvent />
                 </CommitteeMemberProtected>
               } />
