@@ -1,12 +1,15 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
 import { ChevronDownIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import SignUpForm from "../../components/SignUpForm";
+import { setResponses as updateResponses } from "../../actions/responsesActions";
+import AppDialog from "../../components/AppDialog";
+import Pagination from "../../components/navigation/Pagination";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -18,9 +21,35 @@ function Responses() {
   const user = persistedUserState?.user || 'Unknown';
   const [event, setEvent] = useState({});
   const [questions, setQuestions] = useState([]);
-  const [responses, setResponses] = useState([]);
-  const [questionsAndResponses, setQuestionsAndResponses] = useState({});
+  const [acceptedResponses, setAcceptedResponses] = useState([]);
+  const [pendingResponses, setPendingResponses] = useState([]);
+  const [rejectedResponses, setRejectedResponses] = useState([]);
+  const [action, setAction] = useState("");
   const tabs = ["Accepted", "Pending", "Rejected"];
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [responseToUpdate, setResponseToUpdate] = useState({});
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [paginationState, setPaginationState] = useState({
+    accepted: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    },
+    pending: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    },
+    rejected: {
+      currentPage: 1,
+      limit: 5,
+      totalItems: 0,
+      totalPages: 0,
+    }
+  });
 
   const getResponseInformation = async () => {
     try {
@@ -34,10 +63,37 @@ function Responses() {
       const questions = questionsRes.data;
       setQuestions(questions);
 
-      const responsesURL = new URL(`/responses?event_id=${id}&role=${user.role}`, process.env.REACT_APP_BACKEND_API);
-      const responsesRes = await axios.get(responsesURL);
-      const responses = responsesRes.data;
-      setResponses(responses);
+      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${id}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
+      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
+      setAcceptedResponses(paginatedAcceptedResponses.result);
+
+      const rejectedResponsesURL = new URL(`/responses/rejected?event_id=${id}&page=${paginationState.rejected.currentPage}&limit=${paginationState.rejected.limit}`, process.env.REACT_APP_BACKEND_API);
+      const rejectedResponsesRes = await axios.get(rejectedResponsesURL);
+      const paginatedRejectedResponses = { ...rejectedResponsesRes.data };
+      setRejectedResponses(paginatedRejectedResponses.result);
+
+      const pendingResponsesURL = new URL(`/responses/pending?event_id=${id}&page=${paginationState.pending.currentPage}&limit=${paginationState.pending.limit}`, process.env.REACT_APP_BACKEND_API);
+      const pendingResponsesRes = await axios.get(pendingResponsesURL);
+      const paginatedPendingResponses = { ...pendingResponsesRes.data };
+      setPendingResponses(paginatedPendingResponses.result);
+      setPaginationState({
+        accepted: {
+          ...paginationState.accepted,
+          totalItems: paginatedAcceptedResponses.totalItems,
+          totalPages: paginatedAcceptedResponses.totalPages,
+        },
+        rejected: {
+          ...paginationState.rejected,
+          totalItems: paginatedRejectedResponses.totalItems,
+          totalPages: paginatedRejectedResponses.totalPages,
+        },
+        pending: {
+          ...paginationState.pending,
+          totalItems: paginatedPendingResponses.totalItems,
+          totalPages: paginatedPendingResponses.totalPages,
+        }
+      })
     } catch (err) {
       console.error({ err });
     }
@@ -47,10 +103,6 @@ function Responses() {
     getResponseInformation();
   }, [])
 
-  useEffect(() => {
-    setQuestionsAndResponses({questions: questions, responses: responses});
-  }, [responses, questions])
-
   const handleSubmit = () => {
 
   }
@@ -59,27 +111,152 @@ function Responses() {
 
   }
 
-  const handleAccept = (e, response) => {
+  const handleAction = (e, response, action) => {
+    e.preventDefault();
+    setResponseToUpdate(response);
+    setAction(action);
+    setIsDialogOpen(true);
+  };
 
+  const handleCancelUpdate = () => {
+    setResponseToUpdate({});
+    setAction("");
+    setIsDialogOpen(false);
+  };
+
+  const handleConfirmUpdate = async () => {
+    // Send request to server
+    const requestBody = { ...responseToUpdate, status: `${ action }ed` };
+
+    // Endpoint for responses
+    const responsesURL = new URL(`/responses/${ responseToUpdate?._id }?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+
+    // Send PATCH request to update response
+    await axios.patch(responsesURL, requestBody).then((res) => {
+      console.log(res);
+      if (!res.data) {
+        alert(`You do not have permission to ${ action }.`);
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
+
+    setResponseToUpdate({});
+    setIsDialogOpen(false);
+            
+    // Send GET request to get updated responses
+    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+
+    // Update responses in redux store
+    dispatch(updateResponses(updatedResponses));
+
+    window.location.reload();
   }
 
-  const handleReject = (e, response) => {
+  const handleAcceptedResponsesPageChange = (page) => {
+    setPaginationState({
+      ...paginationState,
+      accepted: {
+        ...paginationState.accepted,
+        currentPage: page
+      }
+    });
+  }
 
+  const handleAcceptedResponsesNextPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      accepted: {
+        ...paginationState.accepted,
+        currentPage: paginationState.accepted.currentPage + 1
+      }
+    });
+  }
+
+  const handleAcceptedResponsesPrevPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      accepted: {
+        ...paginationState.accepted,
+        currentPage: paginationState.accepted.currentPage - 1
+      }
+    });
+  }
+
+  const handlePendingResponsesPageChange = (page) => {
+    setPaginationState({
+      ...paginationState,
+      pending: {
+        ...paginationState.pending,
+        currentPage: page
+      }
+    });
+  }
+
+  const handlePendingResponsesNextPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      pending: {
+        ...paginationState.pending,
+        currentPage: paginationState.pending.currentPage + 1
+      }
+    });
+  }
+
+  const handlePendingResponsesPrevPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      pending: {
+        ...paginationState.pending,
+        currentPage: paginationState.pending.currentPage - 1
+      }
+    });
+  }
+
+  const handleRejectedResponsesPageChange = (page) => {
+    setPaginationState({
+      ...paginationState,
+      rejected: {
+        ...paginationState.rejected,
+        currentPage: page
+      }
+    });
+  }
+
+  const handleRejectedResponsesNextPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      rejected: {
+        ...paginationState.rejected,
+        currentPage: paginationState.rejected.currentPage + 1
+      }
+    });
+  }
+
+  const handleRejectedResponsesPrevPage = () => {
+    setPaginationState({ 
+      ...paginationState, 
+      accepted: {
+        ...paginationState.rejected,
+        currentPage: paginationState.rejected.currentPage - 1
+      }
+    });
   }
 
   const body = (response) => {
-    console.log(response.user["full_name"])
     return (
       <div key={response?._id}>
         <div className="text-sm grid grid-cols-6 border-b items-center">
           <div className="px-6 py-4 text-sm md:text-base text-neutral-600 font-bold col-span-2">{response?.user["full_name"]}</div>
           <div className="px-6 py-4 text-xs md:text-sm text-neutral-500 font-light col-span-2">~ {moment(`${response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</div>
           <div className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium col-span-1">
-            <button type="button" onClick={ e => handleAccept(e, response) } className="text-primary-600 hover:text-primary-800">
+            <button type="button" onClick={ e => handleAction(e, response, "Accept") } className="text-primary-600 hover:text-primary-800">
               Accept
             </button>
             <span className="px-2">|</span>
-            <button type="button" onClick={ e => handleReject(e, response) } className="text-primary-600 hover:text-primary-800">
+            <button type="button" onClick={ e => handleAction(e, response, "Reject") } className="text-primary-600 hover:text-primary-800">
               Reject
             </button>
           </div>
@@ -132,25 +309,64 @@ function Responses() {
           <Tab.Panels className="mt-5 bg-grey-100 rounded-lg py-1">
             {/* Tab for accepted responses */}
             <Tab.Panel>
-              {responses.filter((response) => response?.status === "Accepted").map((response) => {
+              {acceptedResponses.filter((response) => response?.status === "Accepted").map((response) => {
                 return body(response);
               })}
+              {/* Pagination */}
+              <Pagination
+                currentPage={paginationState?.accepted?.currentPage}
+                limit={paginationState?.accepted?.limit}
+                totalItems={paginationState?.accepted?.totalItems}
+                totalPages={paginationState?.accepted?.totalPages}
+                handlePageChange={handleAcceptedResponsesPageChange}
+                handleNextPage={handleAcceptedResponsesNextPage}
+                handlePrevPage={handleAcceptedResponsesPrevPage}
+              />
             </Tab.Panel>
             {/* Tab for pending responses */}
             <Tab.Panel>
-              {responses.filter((response) => response?.status === "Pending").map((response) => {
+              {pendingResponses.filter((response) => response?.status === "Pending").map((response) => {
                 return body(response);
               })}
+              <Pagination
+                currentPage={paginationState?.pending?.currentPage}
+                limit={paginationState?.pending?.limit}
+                totalItems={paginationState?.pending?.totalItems}
+                totalPages={paginationState?.pending?.totalPages}
+                handlePageChange={handlePendingResponsesPageChange}
+                handleNextPage={handlePendingResponsesNextPage}
+                handlePrevPage={handlePendingResponsesPrevPage}
+              />
             </Tab.Panel>
             {/* Tab for rejected responses */}
             <Tab.Panel>
-              {responses.filter((response) => response?.status === "Rejected").map((response) => {
+              {rejectedResponses.filter((response) => response?.status === "Rejected").map((response) => {
                 return body(response);
               })}
+              <Pagination
+                currentPage={paginationState?.rejected?.currentPage}
+                limit={paginationState?.rejected?.limit}
+                totalItems={paginationState?.rejected?.totalItems}
+                totalPages={paginationState?.rejected?.totalPages}
+                handlePageChange={handleRejectedResponsesPageChange}
+                handleNextPage={handleRejectedResponsesNextPage}
+                handlePrevPage={handleRejectedResponsesPrevPage}
+              />  
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
       </div>
+      {isDialogOpen && (
+        <AppDialog
+          isOpen={isDialogOpen}
+          title={`Confirm ${ action }`}
+          description={`Are you sure you want to ${ action.toLowerCase() } this response?`}
+          warningMessage=""
+          actionName={`${action}`}
+          handleAction={handleConfirmUpdate}
+          handleClose={handleCancelUpdate}
+        />
+      )}
     </>
   )
 }
