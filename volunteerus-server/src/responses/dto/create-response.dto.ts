@@ -4,12 +4,12 @@ import { User } from "src/users/schemas/user.schema";
 export class CreateResponseDto {
     event: Event;
     user: User;
-    1: string;
-    2: string;
-    3: string;
-    4: string;
-    5: string;
-    6: string;
+    1: any[];
+    2: any[];
+    3: any[];
+    4: any[];
+    5: any[];
+    6: any[];
     status: string;
     submitted_on: Date;
 }

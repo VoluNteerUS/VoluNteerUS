@@ -17,22 +17,22 @@ export class Response {
     user: User
 
     @Prop()
-    1: string;
+    1: any[];
     
     @Prop()
-    2: string;
+    2: any[];
     
     @Prop()
-    3: string;
+    3: any[];
 
     @Prop()
-    4: string;
+    4: any[];
     
     @Prop()
-    5: string;
+    5: any[];
     
     @Prop()
-    6: string;
+    6: any[];
 
     @Prop({ default: "Pending" })
     status: string;

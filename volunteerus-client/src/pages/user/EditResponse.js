@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import SignUpForm from "../../components/SignUpForm";
+import SignUpForm from "../../components/form/SignUpForm";
 import { useSelector, useDispatch } from "react-redux";
 import { setResponses } from "../../actions/responsesActions";
 
@@ -46,7 +46,20 @@ function EditResponse() {
 
   const handleChange = (e,question) => {
     let newResponse = { ...response };
-    newResponse[`${ question[0] }`] = e.target.value;
+    if (!newResponse[`${ question[0] }`]) {
+      newResponse[`${ question[0] }`] = [""];
+    }
+    newResponse[`${ question[0] }`][0] = e.target.value;
+    setResponse({ ...newResponse });
+  }
+
+  const handleCheck = (e, key, question) => {
+    let newResponse = { ...response };
+    const numOfOptions = Object.keys(question[4]).length;
+    if (newResponse[`${ question[0] }`] === "") {
+      newResponse[`${ question[0] }`] = new Array(numOfOptions).fill(false);
+    }
+    newResponse[`${ question[0] }`][key] = e.target.checked;
     setResponse({ ...newResponse });
   }
 
@@ -90,6 +103,7 @@ function EditResponse() {
         event={ event }
         handleSubmit={ handleSubmit }
         handleChange={ handleChange }
+        handleCheck={ handleCheck }
         action="Update"
       />
     </>

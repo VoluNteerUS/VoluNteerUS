@@ -5,7 +5,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvent } from "../../actions/eventActions";
 import { setResponses } from "../../actions/responsesActions";
-import SignUpForm from "../../components/SignUpForm";
+import SignUpForm from "../../components/form/SignUpForm";
  
 function EventSignup() { 
   const { id } = useParams();
@@ -13,7 +13,7 @@ function EventSignup() {
   const dispatch = useDispatch();
 
   const eventReducer = useSelector((state) => state.events);
-  const event = eventReducer?.event;
+  const event = eventReducer?.event; 
 
   const [questions, setQuestions] = useState([]);
   
@@ -48,7 +48,6 @@ function EventSignup() {
           const res = await axios.get(eventURL);
           const event = res.data;
           dispatch(setEvent(event));
-          console.log(event)
           setResponse({ ...response, event: event._id })
       } catch (err) {
           console.error({ err });
@@ -74,9 +73,22 @@ function EventSignup() {
     getQuestions();
   }, [id]);
 
-  const handleChange = (e,question) => {
+  const handleChange = (e, question) => {
     let newResponse = { ...response };
-    newResponse[`${ question[0] }`] = e.target.value;
+    if (!newResponse[`${ question[0] }`]) {
+      newResponse[`${ question[0] }`] = [""];
+    }
+    newResponse[`${ question[0] }`][0] = e.target.value;
+    setResponse({ ...newResponse });
+  }
+
+  const handleCheck = (e, key, question) => {
+    let newResponse = { ...response };
+    const numOfOptions = Object.values(question[3]).filter((option) => option !== "").length;
+    if (!newResponse[`${ question[0] }`]) {
+      newResponse[`${ question[0] }`] = new Array(numOfOptions).fill(false);
+    }
+    newResponse[`${ question[0] }`][key - 1] = e.target.checked;
     setResponse({ ...newResponse });
   }
 
@@ -85,12 +97,17 @@ function EventSignup() {
 
     // Send request to server
     const requestBody = { ...response, submitted_on: Date.now() };
+    // set value for mcqs to be first choice if no changed detected
+    questions.filter((question) => question[2] === "MCQ").forEach((question) => {
+      if (response[`${ question[0] }`] === undefined) {
+        requestBody[`${ question[0] }`] = question[3]["1"];
+      }
+    })
 
     // Endpoint for responses
     const responsesURL = new URL(`/responses?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 
     await axios.post(responsesURL, requestBody).then((response) => {
-      console.log(response.data);
       // User is not logged in -> redirect to login page
       if (!response.data) {
         navigate('/login');
@@ -118,6 +135,7 @@ function EventSignup() {
         event={ event }
         handleSubmit={ handleSubmit }
         handleChange={ handleChange }
+        handleCheck={ handleCheck }
         action="Submit"
       />
     </> 

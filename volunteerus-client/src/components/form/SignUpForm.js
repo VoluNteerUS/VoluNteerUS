@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
-import imageCross from "../assets/images/cross.png" 
+import imageCross from "../../assets/images/cross.png" 
 
-function SignUpForm({ questions, response, event, handleSubmit, handleChange, action }) {
+function SignUpForm({ questions, response, event, handleSubmit, handleChange, handleCheck, action }) {
   const navigate = useNavigate();
 
   function inputType(question) {
@@ -14,17 +14,35 @@ function SignUpForm({ questions, response, event, handleSubmit, handleChange, ac
           disabled={action === "View"}               
         /> 
       )
-    } else if (question[2] === "Yes / No") {
+    } else if (question[2] === "MCQ") {
       return (
         <select 
-          required value={response[`${question[0]}`]} 
-          className="border rounded-lg mt-2 md:w-1/2 py-1" 
-          onChange={ (e) => handleChange(e, question)} 
+          required 
+          value={response[`${question[0]}`]}
+          className="border rounded-lg mt-2 py-1" 
+          onChange={ (e) => handleChange(e, question) } 
           disabled={action === "View"}  
         >
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+          { Object.keys(question[3]).filter((key) => question[3][key] !== "").map((key) => (
+            <option value={ question[3][key] }>{ question[3][key] }</option>
+          )) }
         </select>
+      )
+    } else if (question[2] === "MRQ") { 
+      return (
+        Object.keys(question[3]).filter((key) => question[3][key] !== "").map((key) => (
+          <>
+            <div className="flex space-x-3">
+              <input
+                disabled={action==="View"}
+                checked={ response[`${question[0]}`] === undefined ? false : response[`${question[0]}`][key - 1] }
+                type="checkbox"
+                onChange={ (e) => handleCheck(e, key, question) } 
+              />
+              <label className="font-thin">{ question[3][key] }</label>
+            </div>
+          </>
+        ))
       )
     }
   }
@@ -39,11 +57,11 @@ function SignUpForm({ questions, response, event, handleSubmit, handleChange, ac
           </button>
           <div className="grid grid-cols-12 gap-4"> 
             <form onSubmit={ handleSubmit } className="col-span-12 sm:px-12 xl:py-2 mx-0 sm:mx-4">
-              <h1 className="font-bold tracking-tight leading-none text-darkblue-900 sm:text-2xl md:text-3xl xl:text-4xl text-center mb-10">Volunteer for { event?.title }</h1> 
+              <h1 className="font-bold tracking-tight leading-none text-darkblue-900 sm:text-2xl md:text-3xl xl:text-4xl text-center mb-10 text-xl">Volunteer for { event?.title }</h1> 
               {/* form questions */}
               {questions.map((question) => (
                 <div className="flex flex-col mb-10" key={ question[0] }> 
-                  <label className="">{ question[1] }</label> 
+                  <label className="font-semibold">{ question[1] }</label> 
                   { inputType(question) }
                 </div> 
             ))}
@@ -69,7 +87,7 @@ function SignUpForm({ questions, response, event, handleSubmit, handleChange, ac
               {/* form questions */}
               {questions.map((question) => (
                 <div className="flex flex-col mb-10" key={ question[0] }> 
-                  <label className="">{ question[1] }</label> 
+                  <label className="font-semibold">{ question[1] }</label> 
                   { inputType(question) }
                 </div> 
             ))}

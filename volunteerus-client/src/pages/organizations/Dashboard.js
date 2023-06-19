@@ -13,6 +13,7 @@ import { setQuestions } from "../../actions/questionsActions";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
+import { setResponses } from "../../actions/responsesActions";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -144,7 +145,7 @@ function OrganizationDashboard() {
   }, [id]);
 
   const handleDelete = (e, event) => {
-    e.preventDefault();
+    console.log(event);
     setEventToDelete(event);
     setIsDialogOpen(true);
   };
@@ -155,9 +156,28 @@ function OrganizationDashboard() {
   };
 
   const handleConfirmDelete = async () => {
-    // Send DELETE request to delete event and sign up form questions
+    // Send DELETE request to delete event, sign up form questions and responses for this event (if any)
     const eventURL = new URL(`/events/${eventToDelete?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
     const questionURL = new URL(`/questions/${eventToDelete?.questions}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    const responseURL = new URL(`/responses?event_id=${eventToDelete?._id}`, process.env.REACT_APP_BACKEND_API);
+    await axios.get(responseURL).then((res) => {
+      console.log(res);
+      res.data.forEach(async (response) => {
+        const deleteResponseURL = new URL(`/responses/${response?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+        await axios.delete(deleteResponseURL)
+        .then((res) => {
+          console.log(res);
+        }).catch((err) => {
+          console.error(err);
+        });
+      })
+      if (!res.data) {
+        alert('You do not have permission to delete.');
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
 
     await axios.delete(eventURL)
     .then((res) => {
@@ -179,17 +199,21 @@ function OrganizationDashboard() {
     setEventToDelete({});
     setIsDialogOpen(false);
             
-    // Send GET request to get updated event details and sign up form questions
+    // Send GET request to get updated event details, sign up form questions and responses
     const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
     const updatedDetails = axios.get(eventsURL).then((res) => res.data);
     console.log(updatedDetails)
     const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
     const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
     console.log(updatedQuestions);
+    const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(responsesURL).then((res) => res.data);
+    console.log(updatedResponses);
 
-    // Update event details and sign up form questions in redux store
+    // Update event details, sign up form questions and responses in redux store
     dispatch(setEvents(updatedDetails));
     dispatch(setQuestions(updatedQuestions));
+    dispatch(setResponses(updatedResponses));
 
     window.location.reload();
   }
@@ -436,7 +460,7 @@ function OrganizationDashboard() {
                                 Edit
                               </Link>
                               <span className="px-2">|</span>
-                              <button type="button" onClick={() => handleDelete(event) } className="text-primary-600 hover:text-primary-800">
+                              <button type="button" onClick={(e) => handleDelete(e, event) } className="text-primary-600 hover:text-primary-800">
                                 Delete
                               </button>
                             </td>
