@@ -66,82 +66,69 @@ function OrganizationDashboard() {
     };
   };
 
-  useEffect(() => {
-    const getOrganization = async () => {
-      try {
-        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationURL);
-        const organization = res.data;
-        dispatch(setCurrentOrganization(organization));
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    const getUpcomingEvents = async () => {
-      try {
-        const upcomingEventsURL = new URL(
-          `/events/upcoming?organization_id=${organization._id}&page=${paginationState.upcomingEvents.currentPage}&limit=${paginationState.upcomingEvents.limit}`, 
-          process.env.REACT_APP_BACKEND_API
-        );
-        const res = await axios.get(upcomingEventsURL);
-        const paginatedEvents = { ...res.data };
-        console.log(paginatedEvents.result);
-        setUpcomingEvents(paginatedEvents.result);
-        setQueryUpcomingEvents(paginatedEvents.result)
-        setPaginationState({
-          upcomingEvents: {
-            currentPage: paginationState.upcomingEvents.currentPage,
-            limit: paginationState.upcomingEvents.limit,
-            totalItems: paginatedEvents.totalItems,
-            totalPages: paginatedEvents.totalPages,
-          }
-        })
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    const getPastEvents = async () => {
-      try {
-        const pastEventsURL = new URL(
-          `/events/past?organization_id=${organization._id}&page=${paginationState.pastEvents.currentPage}&limit=${paginationState.pastEvents.limit}`, 
-          process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(pastEventsURL);
-        const paginatedEvents = { ...res.data };
-        setPastEvents(paginatedEvents.result);
-        setQueryPastEvents(paginatedEvents.result)
-        setPaginationState({
-          pastEvents: {
-            currentPage: paginationState.pastEvents.currentPage,
-            limit: paginationState.pastEvents.limit,
-            totalItems: paginatedEvents.totalItems,
-            totalPages: paginatedEvents.totalPages,
-          }
-        })
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    const checkUser = async () => {
-      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
-      const checkCommitteeMemberRequestBody = {
-        userId: user.id,
-        organizationId: organization._id
-      }
-
-      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
-      
-      if (response.data) {
-        setRole('COMMITTEE MEMBER');
-      }
-    }
-
-    getOrganization();
-    getUpcomingEvents();
-    getPastEvents();
-    checkUser();
+  useEffect(() => { 
+    const getOrganization = async () => { 
+      try { 
+        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API); 
+        const res = await axios.get(organizationURL); 
+        const organization = res.data; 
+        dispatch(setCurrentOrganization(organization)); 
+      } catch (err) { 
+        console.log(err); 
+      } 
+    }; 
+ 
+    const getUpcomingandPastEvents = async () => { 
+      try { 
+        const upcomingEventsURL = new URL( 
+          `/events/upcoming?organization_id=${organization._id}&page=${paginationState.upcomingEvents.currentPage}&limit=${paginationState.upcomingEvents.limit}`,  
+          process.env.REACT_APP_BACKEND_API 
+        ); 
+        const upcomingRes = await axios.get(upcomingEventsURL); 
+        const paginatedUpcomingEvents = { ...upcomingRes.data }; 
+        setUpcomingEvents(paginatedUpcomingEvents.result); 
+        setQueryUpcomingEvents(paginatedUpcomingEvents.result) 
+        const pastEventsURL = new URL( 
+          `/events/past?organization_id=${organization._id}&page=${paginationState.pastEvents.currentPage}&limit=${paginationState.pastEvents.limit}`,  
+          process.env.REACT_APP_BACKEND_API); 
+        const pastRes = await axios.get(pastEventsURL); 
+        const paginatedPastEvents = { ...pastRes.data }; 
+        setPastEvents(paginatedPastEvents.result); 
+        setQueryPastEvents(paginatedPastEvents.result) 
+        setPaginationState({  
+          pastEvents: { 
+            ...paginationState.pastEvents, 
+            totalItems: paginatedPastEvents.totalItems, 
+            totalPages: paginatedPastEvents.totalPages, 
+          },  
+          upcomingEvents: { 
+            ...paginationState.upcomingEvents, 
+            totalItems: paginatedUpcomingEvents.totalItems, 
+            totalPages: paginatedUpcomingEvents.totalPages, 
+          } 
+        })           
+      } catch (err) { 
+        console.log(err); 
+      } 
+    }; 
+ 
+    const checkUser = async () => { 
+      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API); 
+      const checkCommitteeMemberRequestBody = { 
+        userId: user.id, 
+        organizationId: organization._id 
+      } 
+ 
+      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody); 
+       
+      if (response.data) { 
+        setRole('COMMITTEE MEMBER'); 
+      } 
+    } 
+ 
+    getOrganization(); 
+    getUpcomingandPastEvents(); 
+    checkUser(); 
   }, [id]);
 
   const handleDelete = (e, event) => {
