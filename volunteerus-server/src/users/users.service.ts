@@ -16,6 +16,19 @@ export class UsersService {
   ) { }
 
   public async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    // Check if email is valid
+    if (!createUserDto.email.includes("@")) {
+      throw new HttpException('Please enter a valid email address!', 403, {
+        cause: new Error('Please enter a valid email address!')
+      })
+    }
+
+    if (!createUserDto.email.includes("nus.edu")) {
+      throw new HttpException('Please enter a NUS email address!', 403, {
+        cause: new Error('Please enter a NUS email address!')
+      })
+    }
+
     // Check if user exists in database through email and username
     const email = await this.usersModel.findOne({ email: createUserDto.email });
 

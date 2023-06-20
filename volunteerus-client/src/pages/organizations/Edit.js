@@ -22,6 +22,7 @@ function EditOrganizationPage() {
   // State variables for component
   const [organization, setOrganization] = useState({});
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
+  const [role, setRole] = useState(user.role);
   const [state, setState] = useState({
     profile: {
       name: organization?.name,
@@ -38,9 +39,11 @@ function EditOrganizationPage() {
   });
 
   const getOrganization = async () => {
+    let currentOrganization;
     const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
     await axios.get(organizationURL).then((res) => {
       setOrganization(res.data);
+      currentOrganization = res.data;
       setProfilePicture(res.data.image_url || defaultOrganizationImage);
       setState({
         profile: {
@@ -59,6 +62,19 @@ function EditOrganizationPage() {
     }).catch((err) => {
       console.error({ err });
     });
+
+    // Check if user is a committee member
+    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+    const checkCommitteeMemberRequestBody = {
+      userId: user.id,
+      organizationId: currentOrganization?._id
+    }
+
+    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    
+    if (response.data) {
+      setRole('COMMITTEE MEMBER');
+    }
   }
 
   useEffect(() => {
@@ -124,7 +140,7 @@ function EditOrganizationPage() {
     formData.append("description", state.profile.description);
 
     // Send PATCH request to update organization
-    const organizationURL = new URL(`/organizations/${id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const organizationURL = new URL(`/organizations/${id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
     await axios.patch(organizationURL, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -251,7 +267,7 @@ function EditOrganizationPage() {
 
     if (organization?.contact === null || organization?.contact === undefined) {
       // Send POST request to create contact
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${role}`, process.env.REACT_APP_BACKEND_API);
       await axios.post(organizationContactsURL, state.contacts).then((res) => {
         console.log(res);
         if (!res.data) {
@@ -276,7 +292,7 @@ function EditOrganizationPage() {
       });
     } else {
       // Send PATCH request to update organization
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${role}`, process.env.REACT_APP_BACKEND_API);
       await axios.patch(organizationContactsURL, state.contacts).then((res) => {
         console.log(res);
         if (!res.data) {

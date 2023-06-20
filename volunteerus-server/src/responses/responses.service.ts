@@ -108,7 +108,8 @@ export class ResponsesService {
     return this.responsesModel.findByIdAndUpdate(id, updateResponseDto).exec();
   }
 
-  remove(id: mongoose.Types.ObjectId) {
-    return this.responsesModel.findByIdAndDelete(id).exec();
+  public async remove(id: mongoose.Types.ObjectId): Promise<Response> {
+    const deletedResponse = await this.responsesModel.findByIdAndDelete(id);
+    return deletedResponse;
   }
 }

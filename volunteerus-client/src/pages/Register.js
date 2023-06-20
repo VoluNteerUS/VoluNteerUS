@@ -37,6 +37,11 @@ function Register() {
             return;
         }
 
+        if (!state.email.includes("nus.edu")) {
+            setState({ ...state, error: "Please enter a NUS email address" })
+            return;
+        }
+
         // Check if password is at least 10 characters long with upper and lower case letters and numbers
         if (!state.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{10,}$/)) {
             setState({ ...state, error: "Password must be at least 10 characters long and contain at least one upper case letter, one lower case letter and one number" });

@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
 import { ChevronDownIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
-import SignUpForm from "../../components/SignUpForm";
+import SignUpForm from "../../components/form/SignUpForm";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
@@ -108,6 +108,10 @@ function Responses() {
   }
   
   const handleChange = (e, response) => {
+
+  }
+
+  const handleCheck = (e, key, question) => {
 
   }
 
@@ -271,6 +275,7 @@ function Responses() {
               event={ event }
               handleSubmit={ handleSubmit }
               handleChange={ handleChange }
+              handleCheck={ handleCheck }
               action="View"
             />
             </Disclosure.Panel>

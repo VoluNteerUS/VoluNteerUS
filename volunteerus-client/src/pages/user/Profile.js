@@ -2,12 +2,13 @@ import { Link } from "react-router-dom"
 import { useSelector } from "react-redux"
 import Navbar from "../../components/navigation/Navbar"
 import { EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import AuthProtected from "../../common/protection/AuthProtected";
 
 function UserProfile() {
     const persistedUserState = useSelector((state) => state.user);
     const user = persistedUserState?.user || 'Unknown';
     return (
-        <>
+        <AuthProtected>
             <Navbar />
             <div className="block mx-auto lg:w-3/4">
                 <div className="h-4"></div>
@@ -82,7 +83,7 @@ function UserProfile() {
                     </div>
                 </div>
             </div>
-        </>
+        </AuthProtected>
     )
 }
 

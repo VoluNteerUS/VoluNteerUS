@@ -75,10 +75,16 @@ function Submissions() {
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</td>
           <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">
-            <Link to={`/${obj?.response?._id}/edit`} className="text-primary-600 hover:text-primary-800">
-              Edit
-            </Link>
-            <span className="px-2">|</span>
+            {
+              (obj?.response?.status === "Pending") ? (
+                <>
+                  <button onClick={ e => navigate(`/${obj?.response?._id}/edit`)} disabled={ obj?.response?.status !== "Pending" } className="text-primary-600 hover:text-primary-800">
+                    Edit
+                  </button>
+                  <span className="px-2">|</span>
+                </>
+              ) : null
+            }
             <button type="button" onClick={ e => handleDelete(e, obj) } className="text-primary-600 hover:text-primary-800">
               Delete
             </button>
@@ -147,7 +153,6 @@ function Submissions() {
   }, []);
 
   useEffect(() => {
-    console.log(responses);
     if (responses.length > 0) {
       const responseEvents = Promise.all(responses.map((response) => 
         getEventByResponse(response)

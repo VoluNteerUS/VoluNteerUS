@@ -13,6 +13,7 @@ import { setQuestions } from "../../actions/questionsActions";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
+import { setResponses } from "../../actions/responsesActions";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -39,6 +40,7 @@ function OrganizationDashboard() {
     { name: "Upcoming Events", active: true },
     { name: "Past Events", active: false }
   ]);
+  
   const [upcomingEventsPagination, setUpcomingEventsPagination] = useState({
     currentPage: 1,
     limit: 5,
@@ -65,82 +67,80 @@ function OrganizationDashboard() {
     };
   };
 
-  const getOrganization = async () => {
-    try {
-      const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-      const res = await axios.get(organizationURL);
-      const organization = res.data;
-      dispatch(setCurrentOrganization(organization));
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const getUpcomingEvents = async () => {
-    try {
-      const upcomingEventsURL = new URL(
-        `/events/upcoming?organization_id=${organization._id}&page=${upcomingEventsPagination.currentPage}&limit=${upcomingEventsPagination.limit}`, 
-        process.env.REACT_APP_BACKEND_API
-      );
-      const res = await axios.get(upcomingEventsURL);
-      const paginatedEvents = { ...res.data };
-      console.log(paginatedEvents.result);
-      setUpcomingEvents(paginatedEvents.result);
-      setQueryUpcomingEvents(paginatedEvents.result);
-      setUpcomingEventsPagination({
-        currentPage: upcomingEventsPagination.currentPage,
-        limit: upcomingEventsPagination.limit,
-        totalItems: paginatedEvents.totalItems,
-        totalPages: paginatedEvents.totalPages,
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const getPastEvents = async () => {
-    try {
-      const pastEventsURL = new URL(
-        `/events/past?organization_id=${organization._id}&page=${pastEventsPagination.currentPage}&limit=${pastEventsPagination.limit}`, 
-        process.env.REACT_APP_BACKEND_API);
-      const res = await axios.get(pastEventsURL);
-      const paginatedEvents = { ...res.data };
-      setPastEvents(paginatedEvents.result);
-      setQueryPastEvents(paginatedEvents.result)
-      setPastEventsPagination({
-        currentPage: pastEventsPagination.currentPage,
-        limit: pastEventsPagination.limit,
-        totalItems: paginatedEvents.totalItems,
-        totalPages: paginatedEvents.totalPages,
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const checkUser = async () => {
-    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
-    const checkCommitteeMemberRequestBody = {
-      userId: user.id,
-      organizationId: organization?._id
-    }
-
-    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
-    
-    if (response.data) {
-      setRole('COMMITTEE MEMBER');
-    }
-  }
-
   useEffect(() => {
+    const getOrganization = async () => {
+      try {
+        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+        const res = await axios.get(organizationURL);
+        const organization = res.data;
+        dispatch(setCurrentOrganization(organization));
+      } catch (err) {
+        console.log(err);
+      }
+  
+      // Check if user is a committee member
+      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+      const checkCommitteeMemberRequestBody = {
+        userId: user.id,
+        organizationId: organization?._id
+      }
+  
+      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+      
+      if (response.data) {
+        setRole('COMMITTEE MEMBER');
+      }
+    };
+  
+    const getUpcomingEvents = async () => {
+      try {
+        const upcomingEventsURL = new URL(
+          `/events/upcoming?organization_id=${organization._id}&page=${upcomingEventsPagination.currentPage}&limit=${upcomingEventsPagination.limit}`, 
+          process.env.REACT_APP_BACKEND_API
+        );
+        const res = await axios.get(upcomingEventsURL);
+        const paginatedEvents = { ...res.data };
+        console.log(paginatedEvents.result);
+        setUpcomingEvents(paginatedEvents.result);
+        setQueryUpcomingEvents(paginatedEvents.result);
+        setUpcomingEventsPagination({
+          currentPage: upcomingEventsPagination.currentPage,
+          limit: upcomingEventsPagination.limit,
+          totalItems: paginatedEvents.totalItems,
+          totalPages: paginatedEvents.totalPages,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+  
+    const getPastEvents = async () => {
+      try {
+        const pastEventsURL = new URL(
+          `/events/past?organization_id=${organization._id}&page=${pastEventsPagination.currentPage}&limit=${pastEventsPagination.limit}`, 
+          process.env.REACT_APP_BACKEND_API);
+        const res = await axios.get(pastEventsURL);
+        const paginatedEvents = { ...res.data };
+        setPastEvents(paginatedEvents.result);
+        setQueryPastEvents(paginatedEvents.result)
+        setPastEventsPagination({
+          currentPage: pastEventsPagination.currentPage,
+          limit: pastEventsPagination.limit,
+          totalItems: paginatedEvents.totalItems,
+          totalPages: paginatedEvents.totalPages,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
     getOrganization();
     getUpcomingEvents();
     getPastEvents();
-    checkUser();
   }, [id]);
 
   const handleDelete = (e, event) => {
-    e.preventDefault();
+    console.log(event);
     setEventToDelete(event);
     setIsDialogOpen(true);
   };
@@ -151,9 +151,28 @@ function OrganizationDashboard() {
   };
 
   const handleConfirmDelete = async () => {
-    // Send DELETE request to delete event and sign up form questions
+    // Send DELETE request to delete event, sign up form questions and responses for this event (if any)
     const eventURL = new URL(`/events/${eventToDelete?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
     const questionURL = new URL(`/questions/${eventToDelete?.questions}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    const responseURL = new URL(`/responses?event_id=${eventToDelete?._id}`, process.env.REACT_APP_BACKEND_API);
+    await axios.get(responseURL).then((res) => {
+      console.log(res);
+      res.data.forEach(async (response) => {
+        const deleteResponseURL = new URL(`/responses/${response?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+        await axios.delete(deleteResponseURL)
+        .then((res) => {
+          console.log(res);
+        }).catch((err) => {
+          console.error(err);
+        });
+      })
+      if (!res.data) {
+        alert('You do not have permission to delete.');
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
 
     await axios.delete(eventURL)
     .then((res) => {
@@ -175,17 +194,21 @@ function OrganizationDashboard() {
     setEventToDelete({});
     setIsDialogOpen(false);
             
-    // Send GET request to get updated event details and sign up form questions
+    // Send GET request to get updated event details, sign up form questions and responses
     const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
     const updatedDetails = axios.get(eventsURL).then((res) => res.data);
     console.log(updatedDetails)
     const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
     const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
     console.log(updatedQuestions);
+    const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(responsesURL).then((res) => res.data);
+    console.log(updatedResponses);
 
-    // Update event details and sign up form questions in redux store
+    // Update event details, sign up form questions and responses in redux store
     dispatch(setEvents(updatedDetails));
     dispatch(setQuestions(updatedQuestions));
+    dispatch(setResponses(updatedResponses));
 
     window.location.reload();
   }
@@ -414,7 +437,7 @@ function OrganizationDashboard() {
                                 Edit
                               </Link>
                               <span className="px-2">|</span>
-                              <button type="button" onClick={() => handleDelete(event) } className="text-primary-600 hover:text-primary-800">
+                              <button type="button" onClick={(e) => handleDelete(e, event) } className="text-primary-600 hover:text-primary-800">
                                 Delete
                               </button>
                             </td>

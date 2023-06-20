@@ -258,11 +258,11 @@ function AdminUserDashboard() {
                         </td>
                         <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
                           <div className="flex items-center">
-                            <Link to={`/users/${user._id}/edit`} className="flex items-center space-x-2 text-secondary-600 hover:text-secondary-700 ">
+                            {/* <Link to={`/users/${user._id}/edit`} className="flex items-center space-x-2 text-secondary-600 hover:text-secondary-700 ">
                               <span>Edit</span>
                               <PencilIcon className="w-5 h-5" aria-hidden="true" />
                             </Link>
-                            <span className="px-2">|</span>
+                            <span className="px-2">|</span> */}
                             <button 
                               type="button" 
                               className="flex items-center space-x-2 text-danger-600 hover:text-danger-400"
