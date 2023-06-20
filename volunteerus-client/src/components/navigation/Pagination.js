@@ -15,7 +15,7 @@ export default function Pagination({ totalPages, currentPage, totalItems, limit,
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">{((currentPage - 1) * limit) + 1} </span> to <span className="font-medium">{(currentPage * limit > totalItems) ? totalItems : currentPage * limit}</span> of <span className="font-medium">{totalItems}</span> results
+              Showing <span className="font-medium">{ (totalItems === 0) ? 0 : ((currentPage - 1) * limit) + 1} </span> to <span className="font-medium">{(currentPage * limit > totalItems) ? totalItems : currentPage * limit}</span> of <span className="font-medium">{totalItems}</span> results
             </p>
           </div>
           <div>

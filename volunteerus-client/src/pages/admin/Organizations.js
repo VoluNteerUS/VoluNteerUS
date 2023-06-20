@@ -106,7 +106,7 @@ function AdminOrganizationDashboard() {
 
     getOrganizations();
     getTotalCount();
-  }, [state.currentPage, state.limit, state.searchQuery, selectedSort])
+  }, [state.currentPage, state.limit, state.searchQuery, selectedSort, organizationToDelete])
 
   return (
     <AdminProtected>

@@ -1,9 +1,9 @@
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import axios from "axios";
-import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
+import { setCurrentOrganization } from "../../actions/organizationActions";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import emailIcon from "../../assets/social_media_icons/email.ico"
 import facebookIcon from "../../assets/social_media_icons/facebook.ico"
@@ -17,9 +17,8 @@ import EventCard from "../../components/EventCard";
 function OrganizationDetailsPage(){
     const { id } = useParams();
     const dispatch = useDispatch();
-    const organizationsReducer = useSelector((state) => state.organizations);
-    const organization = organizationsReducer.currentOrganization;
-    const organizationEvents = organizationsReducer.currentOrganizationEvents || [];
+    const [organization, setOrganization] = useState(null);
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
 
     const getIconFor = (platform) => {
         switch (platform) {
@@ -40,28 +39,30 @@ function OrganizationDetailsPage(){
         }
     }
 
+    const getOrganization = async () => {
+        try {
+            const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+            const res = await axios.get(organizationURL);
+            const organization = res.data;
+            setOrganization(organization);
+            dispatch(setCurrentOrganization(organization));
+        } catch (err) {
+            console.error({ err });
+        }
+    }
+
+    const getEventsByOrganization = async () => {
+        try {
+            const upcomingEventsByOrganizationURL = new URL(`/events/upcoming?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
+            const res = await axios.get(upcomingEventsByOrganizationURL);
+            const paginatedEvents = { ...res.data };
+            setUpcomingEvents(paginatedEvents.result);
+        } catch (err) {
+            console.error({ err });
+        }
+    }
+
     useEffect(() => {
-        const getOrganization = async () => {
-            try {
-                const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-                const res = await axios.get(organizationURL);
-                const organization = res.data;
-                dispatch(setCurrentOrganization(organization));
-            } catch (err) {
-                console.error({ err });
-            }
-        }
-        const getEventsByOrganization = async () => {
-            try {
-                const eventsByOrganizationURL = new URL(`/events?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
-                const res = await axios.get(eventsByOrganizationURL);
-                const paginatedEvents = { ...res.data };
-                console.log({ paginatedEvents });
-                dispatch(setCurrentOrganizationEvents(paginatedEvents.result));
-            } catch (err) {
-                console.error({ err });
-            }
-        }
         getOrganization();
         getEventsByOrganization();
     }, []);
@@ -105,9 +106,11 @@ function OrganizationDetailsPage(){
                 {/* Upcoming Events */}
                 <h3 className="text-2xl font-bold text-black">Upcoming Events</h3>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-4 pb-4">
-                    { organizationEvents.length > 0 && organizationEvents.map((event) => (
+                    { upcomingEvents?.length > 0 ? upcomingEvents?.map((event) => (
                         <EventCard event={event} />
-                    ))}
+                    )): (
+                    <p className="text-lg font-medium text-neutral-700">No upcoming events</p>
+                    )}
                 </div>          
             </div>
         </>

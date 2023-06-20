@@ -8,7 +8,13 @@ export class Contact {
     @Prop({ required: true })
     email: string;
 
-    @Prop([{ platform: { type: String }, url: { type: String } }])
+    @Prop({
+        default: [],
+        type: [{
+            platform: { type: String }, 
+            url: { type: String }   
+        }]
+    })
     social_media: {
         platform: string;
         url: string;

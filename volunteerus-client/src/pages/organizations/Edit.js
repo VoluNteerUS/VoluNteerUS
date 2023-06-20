@@ -13,10 +13,14 @@ import CommitteeMemberProtected from "../../common/protection/CommitteeMemberPro
 function EditOrganizationPage() {
   const { id } = useParams(); 
   const dispatch = useDispatch();
-  const [organization, setOrganization] = useState({});
   const navigate = useNavigate();
+  
+  // Get user from redux store
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user || "Unknown";
+  
+  // State variables for component
+  const [organization, setOrganization] = useState({});
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
   const [state, setState] = useState({
     profile: {
@@ -33,30 +37,31 @@ function EditOrganizationPage() {
     committeeMembers: [],
   });
 
-  useEffect(() => {
-    const getOrganization = async () => {
-      const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-      await axios.get(organizationURL).then((res) => {
-        setOrganization(res.data);
-        setProfilePicture(res.data.image_url || defaultOrganizationImage);
-        setState({
-          profile: {
-            name: res.data.name,
-            description: res.data.description,
-            file: null,
-            errors: [],
-          },
-          contacts: {
-            email: res.data.contact?.email || "",
-            social_media: res.data.contact?.social_media || [],
-            errors: [],
-          },
-          committeeMembers: res.data?.committee_members || [],
-        });
-      }).catch((err) => {
-        console.error({ err });
+  const getOrganization = async () => {
+    const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+    await axios.get(organizationURL).then((res) => {
+      setOrganization(res.data);
+      setProfilePicture(res.data.image_url || defaultOrganizationImage);
+      setState({
+        profile: {
+          name: res.data.name,
+          description: res.data.description,
+          file: null,
+          errors: [],
+        },
+        contacts: {
+          email: res.data.contact?.email || "",
+          social_media: res.data.contact?.social_media || [],
+          errors: [],
+        },
+        committeeMembers: res.data?.committee_members || [],
       });
-    }
+    }).catch((err) => {
+      console.error({ err });
+    });
+  }
+
+  useEffect(() => {
     getOrganization();
   }, [id]);
 
@@ -242,7 +247,9 @@ function EditOrganizationPage() {
       return;
     }
 
-    if (organization?.contact === null) {
+    console.log(organization?.contact);
+
+    if (organization?.contact === null || organization?.contact === undefined) {
       // Send POST request to create contact
       const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
       await axios.post(organizationContactsURL, state.contacts).then((res) => {

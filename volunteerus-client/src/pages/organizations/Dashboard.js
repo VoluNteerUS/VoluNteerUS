@@ -22,10 +22,12 @@ function OrganizationDashboard() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  // Usage of reducer as we need the information before the component is rendered
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user || 'user';
   const organizationsReducer = useSelector((state) => state.organizations);
   const organization = organizationsReducer.currentOrganization;
+  // State for the component
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [queryUpcomingEvents, setQueryUpcomingEvents] = useState(upcomingEvents);
@@ -37,19 +39,17 @@ function OrganizationDashboard() {
     { name: "Upcoming Events", active: true },
     { name: "Past Events", active: false }
   ]);
-  const [paginationState, setPaginationState] = useState({
-    upcomingEvents: {
-      currentPage: 1,
-      limit: 5,
-      totalItems: 0,
-      totalPages: 0,
-    },
-    pastEvents: {
-      currentPage: 1,
-      limit: 5,
-      totalItems: 0,
-      totalPages: 0,
-    }
+  const [upcomingEventsPagination, setUpcomingEventsPagination] = useState({
+    currentPage: 1,
+    limit: 5,
+    totalItems: 0,
+    totalPages: 0,
+  });
+  const [pastEventsPagination, setPastEventsPagination] = useState({
+    currentPage: 1,
+    limit: 5,
+    totalItems: 0,
+    totalPages: 0,
   });
 
   const updateTab = (name) => {
@@ -65,78 +65,74 @@ function OrganizationDashboard() {
     };
   };
 
-  useEffect(() => {
-    const getOrganization = async () => {
-      try {
-        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationURL);
-        const organization = res.data;
-        dispatch(setCurrentOrganization(organization));
-      } catch (err) {
-        console.log(err);
-      }
-    };
+  const getOrganization = async () => {
+    try {
+      const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+      const res = await axios.get(organizationURL);
+      const organization = res.data;
+      dispatch(setCurrentOrganization(organization));
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-    const getUpcomingEvents = async () => {
-      try {
-        const upcomingEventsURL = new URL(
-          `/events/upcoming?organization_id=${organization._id}&page=${paginationState.upcomingEvents.currentPage}&limit=${paginationState.upcomingEvents.limit}`, 
-          process.env.REACT_APP_BACKEND_API
-        );
-        const res = await axios.get(upcomingEventsURL);
-        const paginatedEvents = { ...res.data };
-        console.log(paginatedEvents.result);
-        setUpcomingEvents(paginatedEvents.result);
-        setQueryUpcomingEvents(paginatedEvents.result)
-        setPaginationState({
-          upcomingEvents: {
-            currentPage: paginationState.upcomingEvents.currentPage,
-            limit: paginationState.upcomingEvents.limit,
-            totalItems: paginatedEvents.totalItems,
-            totalPages: paginatedEvents.totalPages,
-          }
-        })
-      } catch (err) {
-        console.log(err);
-      }
-    };
+  const getUpcomingEvents = async () => {
+    try {
+      const upcomingEventsURL = new URL(
+        `/events/upcoming?organization_id=${organization._id}&page=${upcomingEventsPagination.currentPage}&limit=${upcomingEventsPagination.limit}`, 
+        process.env.REACT_APP_BACKEND_API
+      );
+      const res = await axios.get(upcomingEventsURL);
+      const paginatedEvents = { ...res.data };
+      console.log(paginatedEvents.result);
+      setUpcomingEvents(paginatedEvents.result);
+      setQueryUpcomingEvents(paginatedEvents.result);
+      setUpcomingEventsPagination({
+        currentPage: upcomingEventsPagination.currentPage,
+        limit: upcomingEventsPagination.limit,
+        totalItems: paginatedEvents.totalItems,
+        totalPages: paginatedEvents.totalPages,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-    const getPastEvents = async () => {
-      try {
-        const pastEventsURL = new URL(
-          `/events/past?organization_id=${organization._id}&page=${paginationState.pastEvents.currentPage}&limit=${paginationState.pastEvents.limit}`, 
-          process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(pastEventsURL);
-        const paginatedEvents = { ...res.data };
-        setPastEvents(paginatedEvents.result);
-        setQueryPastEvents(paginatedEvents.result)
-        setPaginationState({
-          pastEvents: {
-            currentPage: paginationState.pastEvents.currentPage,
-            limit: paginationState.pastEvents.limit,
-            totalItems: paginatedEvents.totalItems,
-            totalPages: paginatedEvents.totalPages,
-          }
-        })
-      } catch (err) {
-        console.log(err);
-      }
-    };
+  const getPastEvents = async () => {
+    try {
+      const pastEventsURL = new URL(
+        `/events/past?organization_id=${organization._id}&page=${pastEventsPagination.currentPage}&limit=${pastEventsPagination.limit}`, 
+        process.env.REACT_APP_BACKEND_API);
+      const res = await axios.get(pastEventsURL);
+      const paginatedEvents = { ...res.data };
+      setPastEvents(paginatedEvents.result);
+      setQueryPastEvents(paginatedEvents.result)
+      setPastEventsPagination({
+        currentPage: pastEventsPagination.currentPage,
+        limit: pastEventsPagination.limit,
+        totalItems: paginatedEvents.totalItems,
+        totalPages: paginatedEvents.totalPages,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-    const checkUser = async () => {
-      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
-      const checkCommitteeMemberRequestBody = {
-        userId: user.id,
-        organizationId: organization._id
-      }
-
-      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
-      
-      if (response.data) {
-        setRole('COMMITTEE MEMBER');
-      }
+  const checkUser = async () => {
+    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+    const checkCommitteeMemberRequestBody = {
+      userId: user.id,
+      organizationId: organization?._id
     }
 
+    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    
+    if (response.data) {
+      setRole('COMMITTEE MEMBER');
+    }
+  }
+
+  useEffect(() => {
     getOrganization();
     getUpcomingEvents();
     getPastEvents();
@@ -195,62 +191,44 @@ function OrganizationDashboard() {
   }
 
   const handleUpcomingEventsPageChange = (page) => {
-    setPaginationState({
-      ...paginationState,
-      upcomingEvents: {
-        ...paginationState.upcomingEvents,
-        currentPage: page
-      }
+    setUpcomingEventsPagination({
+      ...upcomingEventsPagination,
+      currentPage: page
     });
   }
 
   const handleUpcomingEventsNextPage = () => {
-    setPaginationState({ 
-      ...paginationState, 
-      upcomingEvents: {
-        ...paginationState.upcomingEvents,
-        currentPage: paginationState.upcomingEvents.currentPage + 1
-      }
+    setUpcomingEventsPagination({
+      ...upcomingEventsPagination,
+      currentPage: upcomingEventsPagination.currentPage + 1
     });
   }
 
   const handleUpcomingEventsPrevPage = () => {
-    setPaginationState({ 
-      ...paginationState, 
-      upcomingEvents: {
-        ...paginationState.upcomingEvents,
-        currentPage: paginationState.upcomingEvents.currentPage - 1
-      }
+    setUpcomingEventsPagination({
+      ...upcomingEventsPagination,
+      currentPage: upcomingEventsPagination.currentPage - 1
     });
   }
 
   const handlePastEventsPageChange = (page) => {
-    setPaginationState({
-      ...paginationState,
-      pastEvents: {
-        ...paginationState.pastEvents,
-        currentPage: page
-      }
+    setPastEventsPagination({
+      ...pastEventsPagination,
+      currentPage: page
     });
   }
 
   const handlePastEventsNextPage = () => {
-    setPaginationState({ 
-      ...paginationState, 
-      pastEvents: {
-        ...paginationState.pastEvents,
-        currentPage: paginationState.pastEvents.currentPage + 1
-      }
+    setPastEventsPagination({
+      ...pastEventsPagination,
+      currentPage: pastEventsPagination.currentPage + 1
     });
   }
 
   const handlePastEventsPrevPage = () => {
-    setPaginationState({ 
-      ...paginationState, 
-      pastEvents: {
-        ...paginationState.pastEvents,
-        currentPage: paginationState.pastEvents.currentPage - 1
-      }
+    setPastEventsPagination({
+      ...pastEventsPagination,
+      currentPage: pastEventsPagination.currentPage - 1
     });
   }
 
@@ -264,22 +242,22 @@ function OrganizationDashboard() {
             <div className="flex flex-col me-4">
               <div className="flex flex-row items-center">
                 <div className="flex flex-col">
-                  <img src={organization.image_url || defaultOrganizationImage} alt="organization-image" className="w-24 h-24 rounded-full" />
+                  <img src={organization?.image_url || defaultOrganizationImage} alt="organization-image" className="w-24 h-24 rounded-full" />
                 </div>
                 <div className="flex flex-col items-center">
-                  <h1 className="mx-3 font-semibold my-2 ps-4 text-xl lg:text-3xl">{organization.name}</h1>
+                  <h1 className="mx-3 font-semibold my-2 ps-4 text-xl lg:text-3xl">{organization?.name}</h1>
                 </div>
               </div>
             </div>
             {/* Edit Organizational Profile */}
             <div className="flex flex-col items-center">
-              <Link to={`/organizations/${organization._id}/edit`} className="bg-primary-600 hover:bg-primary-800 text-white py-2 px-4 rounded-lg mr-0 text-sm lg:text-base">
+              <Link to={`/organizations/${organization?._id}/edit`} className="bg-primary-600 hover:bg-primary-800 text-white py-2 px-4 rounded-lg mr-0 text-sm lg:text-base">
                 Edit Profile
               </Link>
             </div>
           </div>
           <div className="flex flex-row">
-            <p className="font-light text-sm md:text-base text-justify">{organization.description}</p>
+            <p className="font-light text-sm md:text-base text-justify">{organization?.description}</p>
           </div>
         </div>
         {/* Tab for events */}
@@ -364,17 +342,17 @@ function OrganizationDashboard() {
                 </div>
                 {/* Pagination */}
                 <Pagination
-                  currentPage={paginationState?.upcomingEvents?.currentPage}
-                  limit={paginationState?.upcomingEvents?.limit}
-                  totalItems={paginationState?.upcomingEvents?.totalItems}
-                  totalPages={paginationState?.upcomingEvents?.totalPages}
+                  currentPage={upcomingEventsPagination.currentPage}
+                  limit={upcomingEventsPagination.limit}
+                  totalItems={upcomingEventsPagination.totalItems}
+                  totalPages={upcomingEventsPagination.totalPages}
                   handlePageChange={handleUpcomingEventsPageChange}
                   handleNextPage={handleUpcomingEventsNextPage}
                   handlePrevPage={handleUpcomingEventsPrevPage}
                 />
                 {/* Floating Action Button */}
                 <div className="bottom-0 right-0 my-2 mr-4 px-3">
-                  <Link to="/events/create" state={{ id: organization._id }} className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
+                  <Link to="/events/create" state={{ id: organization?._id }} className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
                     <PlusIcon className="h-7 w-7 text-white mx-auto block" aria-hidden="true" />
                   </Link>
                 </div>
@@ -448,10 +426,10 @@ function OrganizationDashboard() {
                 </div>
                 {/* Pagination */}
                 <Pagination
-                  currentPage={paginationState?.pastEvents?.currentPage}
-                  limit={paginationState?.pastEvents?.limit}
-                  totalItems={paginationState?.pastEvents?.totalItems}
-                  totalPages={paginationState?.pastEvents?.totalPages}
+                  currentPage={pastEventsPagination.currentPage}
+                  limit={pastEventsPagination.limit}
+                  totalItems={pastEventsPagination.totalItems}
+                  totalPages={pastEventsPagination.totalPages}
                   handlePageChange={handlePastEventsPageChange}
                   handleNextPage={handlePastEventsNextPage}
                   handlePrevPage={handlePastEventsPrevPage}

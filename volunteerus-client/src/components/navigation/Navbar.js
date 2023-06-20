@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Bars3Icon, CalendarDaysIcon, CalendarIcon,
-  HomeIcon, MagnifyingGlassIcon, UserGroupIcon, 
+  AdjustmentsHorizontalIcon, Bars3Icon, CalendarDaysIcon, 
+  ChevronDownIcon, ChevronUpIcon, HomeIcon, UserGroupIcon, 
   UserIcon, XMarkIcon
 } from '@heroicons/react/24/outline';
 import logo from '../../assets/images/logo.png';
 import ProfileDropdown from './ProfileDropdown';
+import { Disclosure } from '@headlessui/react';
 import axios from 'axios';
 
 const navigation = [
   { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Events', href: '/events', icon: CalendarDaysIcon },
   { name: 'Organizations', href: '/organizations', icon: UserGroupIcon },
+
   // { name: 'Calendar', href: '#', icon: CalendarIcon },
 ];
 
@@ -106,22 +108,42 @@ export default function Navbar() {
             {item.name}
           </Link>
         ))}
-        {/* Divider */}
-        <div className="border-t border-gray-200 border-2"></div>
-        {/* My Organizations */}
         {
           (state.userOrganizations.length > 0) ? (
-            <span className="px-4 uppercase font-extra-bold">My Organizations</span>
+            <Disclosure>
+              { ({ open }) => (
+                <>
+                  <Disclosure.Button className="flex items-center w-full px-4 py-2 text-sm sm:text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-neutral-200">
+                    <AdjustmentsHorizontalIcon className="h-6 w-6 mr-3" aria-hidden="true" />
+                    Manage
+                    <span className="ml-auto">
+                      {open ? (
+                        <ChevronUpIcon className="h-6 w-6" aria-hidden="true" />
+                      ) : (
+                        <ChevronDownIcon className="h-6 w-6" aria-hidden="true" />
+                      )}
+                    </span>
+                  </Disclosure.Button>
+                  {
+                    state.userOrganizations.map((item) => (
+                      <Disclosure.Panel 
+                        className={classNames(isActive(`/organizations/${item._id}/dashboard`) ? 'bg-pink-300 text-black' : 'text-gray-500 hover:text-gray-900 hover:bg-neutral-200', 'ps-2')}
+                      >
+                        <Link 
+                          key={item._id} 
+                          to={`/organizations/${item._id}/dashboard`} 
+                          className='flex items-center px-4 py-2 text-sm sm:text-base font-medium'
+                        >
+                          <img className="h-6 w-6 mr-3 rounded-full" src={item.image_url} />
+                          <div className="text-ellipsis overflow-hidden whitespace-nowrap">{item.name}</div>
+                        </Link>
+                      </Disclosure.Panel>
+                    ))
+                  }
+                </>
+              )}
+            </Disclosure>
           ) : null
-        }
-        {
-          state.userOrganizations.length > 0 && state.userOrganizations.map((item) => (
-            <Link key={item._id} to={`/organizations/${item._id}/dashboard`} className="flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-neutral-200">
-              {/* <UserGroupIcon className="h-6 w-6 mr-3" aria-hidden="true" /> */}
-              <img className="h-6 w-6 mr-3 rounded-full" src={item.image_url} />
-              <div className="text-ellipsis overflow-hidden whitespace-nowrap">{item.name}</div>
-            </Link>
-          ))
         }
       </div>
 
@@ -156,19 +178,6 @@ export default function Navbar() {
                 alt="VoluNteerUS Logo"
               />
             </div>
-          </div>
-          {/* Search bar */}
-          <div className="hidden md:flex md:basis-1/2 lg:basis-1/3 xl:basis-1/4 items-center justify-center">
-            <form method="GET" className="w-full">
-              <div className="relative text-gray-600 focus-within:text-gray-400">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-                  <button type="submit" className="p-1 focus:outline-none focus:shadow-outline">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
-                  </button>
-                </span>
-                <input type="search" name="q" className="h-10 py-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full" placeholder="Search..." />
-              </div>
-            </form>
           </div>
           {/* Profile dropdown */}
           <div className="flex items-center space-x-4 me-4">

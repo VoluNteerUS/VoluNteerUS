@@ -8,8 +8,12 @@ import { useSelector } from 'react-redux';
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+
+// User Pages
 const Submissions = lazy(() => import('./pages/user/Submissions'))
 const EditResponse = lazy(() => import('./pages/user/EditResponse'))
+const UserDashboard = lazy(() => import('./pages/user/Dashboard'))
+const UserProfile = lazy(() => import('./pages/user/Profile'))
 
 // Events
 const Events = lazy(() => import('./pages/events'));
@@ -52,6 +56,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="profile" element={<UserProfile />} />
           <Route path=":id">
             <Route path="submissions" element={<Submissions />} />
           </Route>
