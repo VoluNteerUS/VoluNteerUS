@@ -44,7 +44,7 @@ function EditResponse() {
     getResponseAndQuestionAndEvent();
   }, [])
 
-  const handleChange = (e,question) => {
+  const handleChange = (e, question) => {
     let newResponse = { ...response };
     if (!newResponse[`${ question[0] }`]) {
       newResponse[`${ question[0] }`] = [""];
@@ -55,16 +55,32 @@ function EditResponse() {
 
   const handleCheck = (e, key, question) => {
     let newResponse = { ...response };
-    const numOfOptions = Object.keys(question[4]).length;
+    const numOfOptions = Object.keys(question[3]).length;
     if (newResponse[`${ question[0] }`] === "") {
       newResponse[`${ question[0] }`] = new Array(numOfOptions).fill(false);
     }
-    newResponse[`${ question[0] }`][key] = e.target.checked;
+    newResponse[`${ question[0] }`][key - 1] = e.target.checked;
     setResponse({ ...newResponse });
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // check that at least one checkbox has been checked for MRQ
+    let toAlert = false;
+    Object.values(questions).filter((question) => question[2] === "MRQ").forEach((question) => {
+      if (!response[`${ question[0] }`]) {
+        toAlert = true;
+      } else if (response[`${ question[0] }`].filter((checked) => checked === true).length === 0) {
+        toAlert = true;
+      } 
+    })
+
+    // alert if MRQ has no checkboxes checked
+    if (toAlert) { 
+      alert("Please choose at least one option for every question.");
+      return;
+    }
 
     // Send request to server
     const requestBody = { ...response, submitted_on: Date.now() };
