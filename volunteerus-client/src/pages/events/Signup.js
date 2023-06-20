@@ -104,6 +104,16 @@ function EventSignup() {
       }
     })
 
+    // Check if there is at least one box ticked for MRQ
+    // questions.filter((question) => question[2] === "MRQ").forEach((question) => {
+    //   console.log(question);
+    //   console.log(response[`${ question[0] }`]);
+    //   if (!response[`${ question[0] }`]) {
+    //     alert("Please select at least one option for each question.");
+    //     return false;
+    //   }
+    // });
+
     // Endpoint for responses
     const responsesURL = new URL(`/responses?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
 

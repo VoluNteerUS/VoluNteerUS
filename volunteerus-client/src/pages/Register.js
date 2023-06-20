@@ -96,7 +96,7 @@ function Register() {
                                 <form onSubmit={ handleRegister }>
                                     <div className="flex flex-col mt-4">
                                         <label className="mb-2 font-medium text-sm sm:text-base md:text-lg text-gray-900">Email</label>
-                                        <input className="px-4 py-2 border border-gray-300 rounded-md text-sm sm:text-base md:text-lg" type="text" placeholder="Enter your email address" onChange={ e => {setState({...state, email: e.target.value}); }} />
+                                        <input className="px-4 py-2 border border-gray-300 rounded-md text-sm sm:text-base md:text-lg" type="text" placeholder="Enter your NUS email address" onChange={ e => {setState({...state, email: e.target.value}); }} />
                                     </div>
                                     <div className="flex flex-col mt-4">
                                         <label className="mb-2 font-medium text-sm sm:text-base md:text-lg text-gray-900">Full Name</label>
@@ -113,7 +113,7 @@ function Register() {
                                     </div>
                                     { errorMessage }
                                     <div className="flex items-center justify-end mt-4">
-                                        <button className="block w-1/3 sm:w-1/4 xl:w-1/3 px-4 py-2 mt-4 text-sm sm:text-base md:text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-800">Sign Up</button>
+                                        <button className="block w-1/3 sm:w-1/4 xl:w-1/3 px-4 py-2 mt-4 text-sm sm:text-base md:text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500">Sign Up</button>
                                     </div>
                                     <div className="flex items-center justify-center mt-6 p-6 text-sm sm:text-base">
                                         <span>Already have an account?&nbsp;</span>

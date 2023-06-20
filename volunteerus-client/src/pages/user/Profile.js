@@ -4,6 +4,8 @@ import Navbar from "../../components/navigation/Navbar"
 import { EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import AuthProtected from "../../common/protection/AuthProtected";
 
+const skills = ["Dialects", "Record Keeping", "Planning"]
+
 function UserProfile() {
     const persistedUserState = useSelector((state) => state.user);
     const user = persistedUserState?.user || 'Unknown';
@@ -27,7 +29,7 @@ function UserProfile() {
                             <div className="flex flex-col items-center">
                                 <img
                                     className="h-20 w-20 rounded-full"
-                                    src={`https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=0D8ABC&color=fff`}
+                                    src={`https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`}
                                     alt="Profile Picture"
                                 />
                                 <h2 className="text-2xl font-semibold py-2">{user.full_name}</h2>
@@ -40,15 +42,24 @@ function UserProfile() {
                                 </div>
                                 <div className="flex items-center py-2">
                                     <PhoneIcon className="h-5 w-5 text-neutral-600" />
-                                    <span className="ml-2 text-neutral-600">{user.phone_number}</span>
+                                    <span className="ml-2 text-neutral-600">{user.phone_number || 91234567}</span>
                                 </div>
                             </div>
                             {/* Skills */}
                             <div className="py-3">
                                 <label className="block text-base font-medium text-neutral-600">Skills</label>
-                                <span className="text-neutral-600">{user.skills ?? 'Not Specified'}</span>
+                                <div class="flex">
+                                    {
+                                        skills.map((skill, index) => (
+                                            <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mr-2">
+                                                {skill}
+                                            </span>
+                                        ))
+                                    }
+                                </div>
+                                {/* <span className="text-neutral-600">{user.skills ?? 'Not Specified'}</span> */}
                             </div>
-                            <Link to="/profile/edit" className="block mx-auto bg-blue-600 text-white text-center hover:bg-blue-500 px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out">Edit Profile</Link>
+                            <Link to="/profile/edit" className="block mx-auto bg-primary-600 text-white text-center hover:bg-primary-500 px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out">Edit Profile</Link>
                         </div>
                     </div>
                     <div className="col-span-12 md:col-span-8 px-3 md:px-0">
@@ -62,22 +73,22 @@ function UserProfile() {
                             {/* Faculty Major */}
                             <div className="py-3">
                                 <label className="block text-base font-medium text-neutral-600">Faculty / Major</label>
-                                <span className="text-neutral-600">{user.faculty ?? 'Not Specified'} / {user.major ?? 'Not Specified'}</span>
+                                <span className="text-neutral-600">{user.faculty ?? 'School of Computing'} / {user.major ?? 'Computer Science'}</span>
                             </div>
                             {/* Year of Study */}
                             <div className="py-3">
                                 <label className="block text-base font-medium text-neutral-600">Year of Study</label>
-                                <span className="text-neutral-600">{user.year_of_study ?? 'Not Specified'}</span>
+                                <span className="text-neutral-600">{user.year_of_study ?? '1'}</span>
                             </div>
                             {/* Telegram Handle */}
                             <div className="py-2">
                                 <label className="block text-base font-medium text-neutral-600">Telegram Handle</label>
-                                <span className="text-neutral-600">{user.telegram_handle ?? 'Not Specified'}</span>
+                                <span className="text-neutral-600">{user.telegram_handle ?? '@aikenIsC00l'}</span>
                             </div>
                             {/* Dietary Preferences */}
                             <div className="py-2">
-                                <label className="block text-base font-medium text-neutral-600">Dietary Preferences</label>
-                                <span className="text-neutral-600">{user.diet ?? 'Not Specified'}</span>
+                                <label className="block text-base font-medium text-neutral-600">Dietary Restrictions</label>
+                                <span className="text-neutral-600">{user.diet ?? 'Not Applicable'}</span>
                             </div>
                         </div>
                     </div>

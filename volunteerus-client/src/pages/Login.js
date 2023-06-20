@@ -91,7 +91,7 @@ function Login() {
                                 <form onSubmit={handleLogin}>
                                     <div className="flex flex-col mt-4">
                                         <label className="mb-2 font-medium text-lg text-gray-900">Email</label>
-                                        <input className="px-4 py-2 border border-gray-300 rounded-md" type="text" placeholder="Enter your email address" onChange={e => { setState({ ...state, email: e.target.value }); }} />
+                                        <input className="px-4 py-2 border border-gray-300 rounded-md" type="text" placeholder="Enter your NUS email address" onChange={e => { setState({ ...state, email: e.target.value }); }} />
                                     </div>
                                     <div className="flex flex-col mt-4">
                                         <label className="mb-2 font-medium text-lg text-gray-900">Password</label>
@@ -100,7 +100,7 @@ function Login() {
                                     {errorMessage}
                                     <div className="flex items-center justify-between mt-4">
                                         <Link to="#" className="text-marine-500 hover:underline">Forgot Password?</Link>
-                                        <button className="block w-1/4 px-4 py-2 mt-4 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-800">Log in</button>
+                                        <button className="block w-1/4 px-4 py-2 mt-4 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500">Log in</button>
                                     </div>
                                     <div className="flex items-center justify-center mt-8 p-8">
                                         <span>Don’t have an account yet?&nbsp;</span>
