@@ -3,8 +3,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationResult } from 'src/types/pagination';
-import { Organization } from 'src/organizations/schemas/organization.schema';
+import { PaginationResult } from '../types/pagination';
+import { Organization } from '../organizations/schemas/organization.schema';
 import mongoose from 'mongoose';
 
 @Controller('users')

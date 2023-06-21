@@ -1,8 +1,8 @@
 import { Type } from "@nestjs/class-transformer";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import mongoose, { Document } from "mongoose"
-import { Question } from "src/questions/schemas/question.schema";
-import { Organization } from "src/organizations/schemas/organization.schema";
+import { Question } from "../../questions/schemas/question.schema";
+import { Organization } from "../../organizations/schemas/organization.schema";
 
 export type EventDocument = Event & Document;
 

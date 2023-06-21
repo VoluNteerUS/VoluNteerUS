@@ -4,8 +4,8 @@ import { UpdateResponseDto } from './dto/update-response.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response, ResponseDocument } from './schemas/response.schema';
 import mongoose, { Model } from 'mongoose';
-import { User } from 'src/users/schemas/user.schema';
-import { PaginationResult } from 'src/types/pagination';
+import { User } from '../users/schemas/user.schema';
+import { PaginationResult } from '../types/pagination';
 
 @Injectable()
 export class ResponsesService {

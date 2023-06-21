@@ -4,9 +4,9 @@ import { CreateResponseDto } from './dto/create-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { Response } from './schemas/response.schema';
 import mongoose from 'mongoose';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
 import { Query } from '@nestjs/common';
-import { PaginationResult } from 'src/types/pagination';
+import { PaginationResult } from '../types/pagination';
 
 @Controller('responses')
 export class ResponsesController {

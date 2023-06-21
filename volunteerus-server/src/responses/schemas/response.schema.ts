@@ -1,8 +1,8 @@
 import { Type } from "@nestjs/class-transformer";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document } from "mongoose";
-import { Event } from "src/events/schemas/event.schema";
-import { User } from "src/users/schemas/user.schema";
+import { Event } from "../../events/schemas/event.schema";
+import { User } from "../../users/schemas/user.schema";
 
 export type ResponseDocument = Response & Document;
 
