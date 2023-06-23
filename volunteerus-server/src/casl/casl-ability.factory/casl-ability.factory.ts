@@ -1,11 +1,11 @@
 import { InferSubjects } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
-import { Event } from "src/events/schemas/event.schema";
-import { Question } from "src/questions/schemas/question.schema";
-import { Response } from "src/responses/schemas/response.schema";
+import { Event } from "../../events/schemas/event.schema";
+import { Question } from "../../questions/schemas/question.schema";
+import { Response } from "../../responses/schemas/response.schema";
 import { AbilityBuilder, createMongoAbility, ExtractSubjectType } from "@casl/ability";
-import { Organization } from "src/organizations/schemas/organization.schema";
-import { User } from "src/users/schemas/user.schema";
+import { Organization } from "../../organizations/schemas/organization.schema";
+import { User } from "../../users/schemas/user.schema";
 
 type Subjects = InferSubjects<typeof Event | typeof Question | typeof Response> | typeof Organization | typeof User | 'all';
 

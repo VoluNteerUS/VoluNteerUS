@@ -6,8 +6,8 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import mongoose from 'mongoose';
-import { PaginationResult } from 'src/types/pagination';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { PaginationResult } from '../types/pagination';
+import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
 
 @Controller('events')
 export class EventsController {
@@ -52,7 +52,7 @@ export class EventsController {
     
     @Get()
     findAll(
-      @Query('organization_id') organization_id: mongoose.Types.ObjectId,
+      @Query('organization_id') organization_id?: mongoose.Types.ObjectId,
       @Query('page') page: number = 1,
       @Query('limit') limit: number = 10,
       @Query('search') search: string = '',

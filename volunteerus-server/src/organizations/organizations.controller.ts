@@ -2,10 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInt
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { FirebasestorageService } from 'src/firebasestorage/firebasestorage.service';
+import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import mongoose from 'mongoose';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
 import { Organization } from './schemas/organization.schema';
 import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
 

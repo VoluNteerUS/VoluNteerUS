@@ -1,8 +1,8 @@
 import { Type } from "@nestjs/class-transformer";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document } from "mongoose";
-import { Contact } from "src/contacts/schemas/contact.schema";
-import { User } from "src/users/schemas/user.schema";
+import { Contact } from "../../contacts/schemas/contact.schema";
+import { User } from "../../users/schemas/user.schema";
 
 export type OrganizationDocument = Organization & Document;
 

@@ -5,8 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Organization, OrganizationDocument } from './schemas/organization.schema';
 import mongoose, { Model } from 'mongoose';
 import { Contact, ContactDocument } from '../contacts/schemas/contact.schema';
-import { PaginationResult } from 'src/types/pagination';
-import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { PaginationResult } from '../types/pagination';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
 
 @Injectable()

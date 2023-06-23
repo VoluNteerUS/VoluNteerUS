@@ -4,10 +4,10 @@ import { Event, EventDocument } from './schemas/event.schema';
 import mongoose, { Model } from 'mongoose';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { PaginationResult } from 'src/types/pagination';
+import { PaginationResult } from '../types/pagination';
 import * as moment from 'moment';
 import { HttpException } from '@nestjs/common';
-import { Question, QuestionDocument } from 'src/questions/schemas/question.schema';
+import { Question, QuestionDocument } from '../questions/schemas/question.schema';
 
 @Injectable()
 export class EventsService {

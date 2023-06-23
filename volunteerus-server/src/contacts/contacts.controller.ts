@@ -3,7 +3,7 @@ import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import mongoose from 'mongoose';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
 import { Query } from '@nestjs/common';
 import { Contact } from './schemas/contact.schema';
 

@@ -5,8 +5,8 @@ import mongoose, { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { PaginationResult } from 'src/types/pagination';
-import { Organization, OrganizationDocument } from 'src/organizations/schemas/organization.schema';
+import { PaginationResult } from '../types/pagination';
+import { Organization, OrganizationDocument } from '../organizations/schemas/organization.schema';
 
 @Injectable()
 export class UsersService {
