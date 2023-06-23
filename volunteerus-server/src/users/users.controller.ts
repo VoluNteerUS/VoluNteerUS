@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './schemas/user.schema';
@@ -6,10 +6,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationResult } from '../types/pagination';
 import { Organization } from '../organizations/schemas/organization.schema';
 import mongoose from 'mongoose';
+import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
-    constructor(private userService: UsersService) { }
+    constructor(
+        private userService: UsersService,
+        private uploadService: FirebasestorageService
+    ) { }
 
     @Post()
     create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -73,8 +78,34 @@ export class UsersController {
         return this.userService.findUserOrganizations(id);
     }
     
-    @Patch()
-    update(id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
+    @Patch(":id")
+    @UseInterceptors(FileInterceptor('file'))
+    async update(@Param('id') id: mongoose.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File): Promise<User> {
+        if (file) {
+            // Check if file is an image
+            if (!file.mimetype.includes('image')) {
+                throw new HttpException('File must be an image', HttpStatus.BAD_REQUEST, {
+                cause: new Error('File must be an image'),
+                });
+            }
+            // Check if file size is greater than 10MB
+            if (file.size > 5 * 1024 * 1024) {
+                throw new HttpException('File size must be less than 5MB', HttpStatus.BAD_REQUEST, {
+                cause: new Error('File size must be less than 5MB'),
+                });
+            }
+            const destination = `users/${id}`;
+            const url = await this.uploadService.uploadFile(file, destination);
+            updateUserDto.profile_picture = url;
+
+            // Delete old profile picture
+            // const user = await this.userService.findOne(id);
+            // if (user.profile_picture) {
+            //     let oldFile = user.profile_picture.split('/').pop();
+            //     await this.uploadService.deleteFile(oldFile, destination);
+            // }
+        }
+
         return this.userService.update(id, updateUserDto);
     }
     

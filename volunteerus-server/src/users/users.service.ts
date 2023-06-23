@@ -166,7 +166,7 @@ export class UsersService {
     return unique_committee_member_ids.length;
   }
 
-  public async update(_id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
+  public async update(_id: mongoose.Types.ObjectId, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.usersModel.findByIdAndUpdate(_id, updateUserDto);
   }
 

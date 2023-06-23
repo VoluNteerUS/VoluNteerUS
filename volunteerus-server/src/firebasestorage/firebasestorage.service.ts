@@ -55,4 +55,10 @@ export class FirebasestorageService {
             blobStream.end(buffer);
         });  
     }
+
+    // async deleteFile(filename: string, folder: string) {
+    //     const bucket = this.storage.bucket();
+    //     const file = bucket.file(`${folder}/${filename}`);
+    //     await file.delete();
+    // }
 }

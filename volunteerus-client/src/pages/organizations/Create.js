@@ -68,6 +68,16 @@ function CreateOrganizationPage() {
     const handleProfilePictureUpload = (event) => {
         event.preventDefault();
         const file = event.target.files[0];
+        // Check if file is an image
+        if (!file.type.startsWith("image/")) {
+            setState({ ...state, profile: { ...state.profile, errors: ["Please upload an image file."] } });
+            return;
+        }
+        // Check if file is too large
+        if (file.size > 5 * 1024 * 1024) {
+            setState({ ...state, profile: { ...state.profile, errors: ["Please upload an image file smaller than 5MB."] } });
+            return;
+        }
         setProfilePicture(URL.createObjectURL(file));
         setState({ ...state, profile: { ...state.profile, file } });
     }

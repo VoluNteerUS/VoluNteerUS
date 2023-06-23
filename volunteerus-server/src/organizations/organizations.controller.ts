@@ -25,6 +25,19 @@ export class OrganizationsController {
     if (ability.can('create', Organization)) {
       const destination = 'organizations';
       if (file) {
+        // Check if file is an image
+        if (!file.mimetype.includes('image')) {
+          throw new HttpException('File must be an image', HttpStatus.BAD_REQUEST, {
+            cause: new Error('File must be an image'),
+          });
+        }
+        // Check if file size is greater than 10MB
+        if (file.size > 5 * 1024 * 1024) {
+          throw new HttpException('File size must be less than 10MB', HttpStatus.BAD_REQUEST, {
+            cause: new Error('File size must be less than 10MB'),
+          });
+        }
+
         const url = await this.uploadService.uploadFile(file, destination);
         createOrganizationDto.image_url = url;
       }
@@ -100,6 +113,18 @@ export class OrganizationsController {
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('update', Organization)) {
       if (file) {
+        // Check if file is an image
+        if (!file.mimetype.includes('image')) {
+          throw new HttpException('File must be an image', HttpStatus.BAD_REQUEST, {
+            cause: new Error('File must be an image'),
+          });
+        }
+        // Check if file size is greater than 10MB
+        if (file.size > 5 * 1024 * 1024) {
+          throw new HttpException('File size must be less than 5MB', HttpStatus.BAD_REQUEST, {
+            cause: new Error('File size must be less than 5MB'),
+          });
+        }
         const destination = 'organizations';
         const url = await this.uploadService.uploadFile(file, destination);
         updateOrganizationDto.image_url = url;

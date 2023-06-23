@@ -48,7 +48,7 @@ export default function ProfileDropdown({ isAuthenticated }) {
                   <span className="sr-only">Open user menu</span>
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={`https://ui-avatars.com/api/?name=${persistedUserState?.user?.full_name ?? ''}&background=0D8ABC&color=fff`}
+                    src={ persistedUserState?.user?.profile_picture === '' ? `https://ui-avatars.com/api/?name=${persistedUserState?.user?.full_name}&background=0D8ABC&color=fff` : persistedUserState?.user?.profile_picture }
                     alt="Profile Picture"
                   />
                 </Menu.Button>
@@ -69,7 +69,7 @@ export default function ProfileDropdown({ isAuthenticated }) {
                 >
                   {/* Profile Picture and Name */}
                   <div className="py-3">
-                    <img className="block mx-auto h-14 w-14 rounded-full" src={`https://ui-avatars.com/api/?name=${persistedUserState?.user?.full_name ?? ''}&background=0D8ABC&color=fff`} alt="Profile Picture" />
+                    <img className="block mx-auto h-14 w-14 rounded-full" src={persistedUserState?.user?.profile_picture === '' ? `https://ui-avatars.com/api/?name=${persistedUserState?.user?.full_name}&background=0D8ABC&color=fff` : persistedUserState?.user?.profile_picture} alt="Profile Picture" />
                     <div className="text-center px-4 pt-2">
                       <p className="font-semibold text-gray-900">{persistedUserState?.user?.full_name ?? ''}</p>
                     </div>

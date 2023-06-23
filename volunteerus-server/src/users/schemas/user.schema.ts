@@ -16,6 +16,27 @@ export class User {
     @Exclude()
     password: string;
 
+    @Prop({ default: '' })
+    profile_picture: string;
+
+    @Prop({ default: '' })
+    phone_number: string;
+
+    @Prop({ default: '' })
+    telegram_handle: string;
+
+    @Prop({ default: '' })
+    faculty: string;
+
+    @Prop({ default: '' })
+    major: string;
+
+    @Prop({ default: 1 })
+    year_of_study: number;
+
+    @Prop({ default: '' })
+    dietary_restrictions: string;
+
     @Prop({ default: Date.now() })
     registered_on: Date;
 

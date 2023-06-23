@@ -48,7 +48,14 @@ function Login() {
                     full_name: user.full_name,
                     id: user._id,
                     role: user.role,
-                    registered_on: user.registered_on
+                    registered_on: user.registered_on,
+                    profile_picture: user.profile_picture,
+                    phone_number: user.phone_number,
+                    telegram_handle: user.telegram_handle,
+                    faculty: user.faculty,
+                    major: user.major,
+                    year_of_study: user.year_of_study,
+                    dietary_restrictions: user.dietary_restrictions,
                 }));
                 // If user is admin, redirect to admin dashboard
                 if (user.role === "ADMIN") {

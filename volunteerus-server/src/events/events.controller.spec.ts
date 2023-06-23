@@ -10,6 +10,7 @@ import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.fa
 
 describe('EventsController', () => {
   let controller: EventsController;
+  let service: EventsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

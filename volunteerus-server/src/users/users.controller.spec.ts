@@ -7,6 +7,7 @@ import { OrganizationsService } from '../organizations/organizations.service';
 import { Organization } from '../organizations/schemas/organization.schema';
 import { ContactsService } from '../contacts/contacts.service';
 import { Contact } from '../contacts/schemas/contact.schema';
+import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -27,6 +28,7 @@ describe('UsersController', () => {
           provide: getModelToken(Contact.name),
           useValue: jest.fn(),
         },
+        FirebasestorageService,
       ],
     }).compile();
 

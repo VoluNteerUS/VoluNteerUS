@@ -23,6 +23,9 @@ function EditOrganizationPage() {
   const [organization, setOrganization] = useState({});
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
   const [role, setRole] = useState(user.role);
+  const [profileSuccessMessage, setProfileSuccessMessage] = useState("");
+  const [contactsSuccessMessage, setContactsSuccessMessage] = useState("");
+  const [committeeMembersSuccessMessage, setCommitteeMembersSuccessMessage] = useState("");
   const [state, setState] = useState({
     profile: {
       name: organization?.name,
@@ -81,21 +84,7 @@ function EditOrganizationPage() {
     getOrganization();
   }, [id]);
 
-
-  const handleProfilePictureUpload = (event) => {
-    event.preventDefault();
-    const file = event.target.files[0];
-    setProfilePicture(URL.createObjectURL(file));
-    setState({
-      ...state,
-      profile: { ...state.profile, file: file }
-    });
-  }
-
-  const handleSaveProfileChanges = async (event) => {
-    event.preventDefault();
-
-    // Reset errors
+  const clearProfileErrors = () => {
     setState({
       ...state,
       profile: {
@@ -103,6 +92,54 @@ function EditOrganizationPage() {
         errors: [],
       },
     });
+  };
+
+
+  const handleProfilePictureUpload = (event) => {
+    event.preventDefault();
+    const file = event.target.files[0];
+    // Reset success message
+    setProfileSuccessMessage("");
+    // Reset errors
+    clearProfileErrors();
+    // Check if file is an image
+    if (!file?.type.startsWith("image/")) {
+      setState({
+        ...state,
+        profile: {
+          ...state.profile,
+          errors: [
+            "Please upload an image file.",
+          ],
+        },
+      });
+      return;
+    } else if (file.size > 5 * 1024 * 1024) {
+      setState({
+        ...state,
+        profile: {
+          ...state.profile,
+          errors: [
+            "Please upload an image file smaller than 5MB.",
+          ],
+        },
+      });
+      return;
+    } else {
+      setProfilePicture(URL.createObjectURL(file));
+      setState({
+        ...state,
+        profile: { ...state.profile, file: file }
+      });
+    }
+  }
+
+  const handleSaveProfileChanges = async (event) => {
+    event.preventDefault();
+    // Reset success message
+    setProfileSuccessMessage("");
+    // Reset errors
+    clearProfileErrors();
 
     // Validate form
     if (state.profile.name === "") {
@@ -111,7 +148,6 @@ function EditOrganizationPage() {
         profile: {
           ...state.profile,
           errors: [
-            ...state.profile.errors,
             "Please enter a name for your organization."
           ]
         }
@@ -125,7 +161,6 @@ function EditOrganizationPage() {
         profile: {
           ...state.profile,
           errors: [
-            ...state.profile.errors,
             "Please enter a description for your organization."
           ]
         }
@@ -152,7 +187,8 @@ function EditOrganizationPage() {
         navigate('/');
       } else {
         // Alert user of successful update
-        alert("Successfully updated organization!");
+        // alert("Successfully updated organization!");
+        setProfileSuccessMessage("Successfully updated organization!");
       }
     }).catch((err) => {
       // Add errors to state
@@ -239,6 +275,9 @@ function EditOrganizationPage() {
   const handleSaveContactChanges = async (event) => {
     event.preventDefault();
 
+    // Reset success message
+    setContactsSuccessMessage("");
+
     // Reset errors
     setState({
       ...state,
@@ -274,6 +313,7 @@ function EditOrganizationPage() {
           alert('You do not have permission to create contact.');
           navigate('/');
         } else {
+          setContactsSuccessMessage("Successfully created contact!");
           alert("Successfully created contact!");
         }
       }).catch((err) => {
@@ -299,7 +339,7 @@ function EditOrganizationPage() {
           alert('You do not have permission to update contacts.')
           navigate('/');
         } else {
-          alert("Successfully updated contact!");
+          setContactsSuccessMessage("Successfully updated contact!");
         }
       }).catch((err) => {
         const { data } = err.response;
@@ -330,6 +370,8 @@ function EditOrganizationPage() {
 
   // Save committee members changes
   const handleChildData = (data) => {
+    // Clear success message
+    setCommitteeMembersSuccessMessage("");
     
     const committeeMembersURL = new URL(`/organizations/${id}/committeeMembers?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     const committeeMembers = getCommitteeMembers();
@@ -342,7 +384,8 @@ function EditOrganizationPage() {
       // Send POST request to create committee members
       axios.post(committeeMembersURL, body).then((res) => {
         console.log(res);
-        alert("Successfully created committee members!");
+        // alert("Successfully created committee members!");
+        setCommitteeMembersSuccessMessage("Successfully created committee members!");
       }).catch((err) => {
         console.log(err);
       });
@@ -350,7 +393,8 @@ function EditOrganizationPage() {
       // Send PATCH request to update committee members
       axios.patch(committeeMembersURL, body).then((res) => {
         console.log(res);
-        alert("Successfully updated committee members!");
+        // alert("Successfully updated committee members!");
+        setCommitteeMembersSuccessMessage("Successfully updated committee members!");
       }).catch((err) => {
         console.log(err);
       });
@@ -425,6 +469,15 @@ function EditOrganizationPage() {
                           ))
                         }
                       </ul>
+                    </div>
+                  </div>
+                )
+              }
+              {
+                profileSuccessMessage !== "" && (
+                  <div className="col-span-2">
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                      <span className="block sm:inline">{profileSuccessMessage}</span>
                     </div>
                   </div>
                 )
@@ -531,6 +584,16 @@ function EditOrganizationPage() {
                       </div>
                     )
                   }
+                  {/* Display success message */}
+                  {
+                    contactsSuccessMessage !== "" && (
+                      <div className="col-span-2">
+                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                          <span className="block sm:inline">{contactsSuccessMessage}</span>
+                        </div>
+                      </div>
+                    )
+                  }
                   <div className="flex flex-row gap-2 ml-auto my-2">
                     {/* Add Social Media */}
                     <Link
@@ -574,6 +637,16 @@ function EditOrganizationPage() {
                   />
                 </div>
               </div>
+              {/* Display success message */}
+                {
+                  committeeMembersSuccessMessage !== "" && (
+                    <div className="col-span-2">
+                      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                        <span className="block sm:inline">{committeeMembersSuccessMessage}</span>
+                      </div>
+                    </div>
+                  )
+                }
             </div>
           </div>
         </AdminVisible>
