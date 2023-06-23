@@ -7,8 +7,23 @@ function CreateEventPart1({ details, setDetails, error, setError, setPage }) {
   const handleNext = (event) => {
     event.preventDefault();
     setError("")
-    if (new Date(details.date[0]).getTime() > new Date(details.date[1]).getTime()) {
-      setError("Start date cannot be later than End date");
+    // validate form
+    if (!details.title.replace(/\s/g, '').length) {
+      setError("Please enter a title for the event.");
+    } else if (!details.description.replace(/\s/g, '').length) {
+      setError("Please enter a description for the event.");
+    } else if (!details.location.replace(/\s/g, '').length) {
+      setError("Please enter a location for the event.");
+    } else if (!details.category.length) {
+      setError("Please select at least one category for the event.");
+    } else if (details.date.filter((date) => date !== "").length !== 4) {
+      setError("Please complete the start/end date/time for the event.");
+    } else if (!details.signup_by.length) {
+      setError("Please enter a closing date for the sign up.");
+    } else if (!details.file) {
+      setError("Please select a thumbnail image for the event.");
+    } else if (new Date(details.date[0]).getTime() > new Date(details.date[1]).getTime()) {
+      setError("Start date cannot be later than End date.");
     } else {
       setPage(2);
     }
@@ -42,15 +57,15 @@ function CreateEventPart1({ details, setDetails, error, setError, setPage }) {
                   <div className="flex flex-row space-x-10">
                     <div className="w-1/2 flex flex-col justify-evenly">
                       <label className="font-semibold">Event title</label>
-                      <input required type="text" value={ details.title } placeholder="Event title" className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, title: e.target.value}); }} />
+                      <input type="text" value={ details.title } placeholder="Event title" className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, title: e.target.value}); }} />
                       <label className="font-semibold">Description</label>
-                      <textarea required rows={8} value={ details.description } placeholder="Description" className="p-1 border border-grey-600 rounded-md" onChange={ e => {setDetails({...details, description: e.target.value}); }} />
+                      <textarea rows={8} value={ details.description } placeholder="Description" className="p-1 border border-grey-600 rounded-md" onChange={ e => {setDetails({...details, description: e.target.value}); }} />
                       <label className="font-semibold">Location</label>
-                      <input required type="text" value={ details.location } placeholder="Location of Event" className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, location: e.target.value}); }}/>
+                      <input type="text" value={ details.location } placeholder="Location of Event" className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, location: e.target.value}); }}/>
                     </div>
                     <div className="w-1/2 flex flex-col justify-evenly">
                       <label className="font-semibold">Category (select all that applies)</label>
-                      <select required multiple={ true } value={ details.category } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {
+                      <select multiple={ true } value={ details.category } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {
                         const options = [...e.target.selectedOptions];
                         const values = options.map(option => option.value);
                         setDetails({...details, category: values}); }}
@@ -68,28 +83,28 @@ function CreateEventPart1({ details, setDetails, error, setError, setPage }) {
                       <div className="flex space-x-2">
                         <div className="flex flex-col w-1/2">
                           <label className="font-semibold">Start date</label>
-                          <input required type="date" value={ details.date[0] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [e.target.value, details.date[1], details.date[2], details.date[3]]}); }} />
+                          <input type="date" value={ details.date[0] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [e.target.value, details.date[1], details.date[2], details.date[3]]}); }} />
                         </div>
                         <div className="flex flex-col w-1/2">
                           <label className="font-semibold">End date</label>
-                          <input required type="date" value={ details.date[1] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [details.date[0], e.target.value, details.date[2], details.date[3]]}); }} />
+                          <input type="date" value={ details.date[1] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [details.date[0], e.target.value, details.date[2], details.date[3]]}); }} />
                         </div>
                       </div>
                       <div className="flex space-x-2">
                         <div className="flex flex-col w-1/2">
                           <label className="font-semibold">Start time</label>
-                          <input required type="time" value={ details.date[2] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [details.date[0], details.date[1], e.target.value, details.date[3]]}); }} />
+                          <input type="time" value={ details.date[2] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [details.date[0], details.date[1], e.target.value, details.date[3]]}); }} />
                         </div>
                         <div className="flex flex-col w-1/2">
                           <label className="font-semibold">End time</label>
-                          <input required type="time" value={ details.date[3] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [details.date[0], details.date[1], details.date[2], e.target.value]}); }} />
+                          <input type="time" value={ details.date[3] } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, date: [details.date[0], details.date[1], details.date[2], e.target.value]}); }} />
                         </div>
                       </div>
                       <label className="font-semibold">Form closing date</label>
-                      <input required type="date" value={ moment(`${details.signup_by}`).format('yyyy-MM-DD') } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, signup_by: e.target.value}); }} />
+                      <input type="date" value={ moment(`${details.signup_by}`).format('yyyy-MM-DD') } className="p-1 border border-grey-600 rounded-md mb-2" onChange={ e => {setDetails({...details, signup_by: e.target.value}); }} />
                       <label className="font-semibold">Thumbnail image</label>
-                      <input required type="file" accept="image/*" files className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => {setDetails({...details, file: e.target.files[0]}); }} />
-                      <p className="text-red-600 text-xs">{ error }</p>
+                      <input type="file" accept="image/*" files className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => {setDetails({...details, file: e.target.files[0]}); }} />
+                      { error !== "" ? <p className="bg-red-100 border border-red-400 text-red-700 px-2 py-1 rounded relative" role="alert">{ error }</p> : "" }
                     </div>
                   </div>
                   <button type="submit" className="bg-pink-400 rounded-lg px-6 py-1 self-end text-white">
