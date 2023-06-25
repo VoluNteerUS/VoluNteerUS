@@ -1,5 +1,6 @@
+import { Organization } from "../../schemas/organization.schema";
+import { PaginationResult } from "../../../types/pagination";
 import mongoose from "mongoose";
-import { Organization } from "src/organizations/schemas/organization.schema";
 
 export const organizationStub = (): Organization => {
     return {
@@ -16,4 +17,8 @@ export const organizationStub = (): Organization => {
 
 export const organizationIdStub = (): mongoose.Types.ObjectId => {
     return new mongoose.Types.ObjectId("5f9d88d3d13f8b0e3c5d7d1f");
+};
+
+export const paginatedOrganizationStub = (): PaginationResult<Organization> => {
+    return new PaginationResult<Organization>([organizationStub()], 1, 1, 1);
 };

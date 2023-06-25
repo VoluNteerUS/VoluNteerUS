@@ -72,7 +72,7 @@ export class OrganizationsController {
     // Check if user has permission to create committee member for an organization
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('create', Organization)) {
-      this.organizationsService.addCommitteeMembersToOrganization(organizationId, committeeMemberData);
+      return this.organizationsService.addCommitteeMembersToOrganization(organizationId, committeeMemberData);
     } else {
       throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }

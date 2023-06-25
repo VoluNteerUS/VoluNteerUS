@@ -1,21 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../../users/users.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { User } from '../users/schemas/user.schema';
-import { OrganizationsService } from '../organizations/organizations.service';
-import { Organization } from '../organizations/schemas/organization.schema';
-import { ContactsService } from '../contacts/contacts.service';
-import { Contact } from '../contacts/schemas/contact.schema';
+import { User } from '../../users/schemas/user.schema';
+import { OrganizationsService } from '../../organizations/organizations.service';
+import { Organization } from '../../organizations/schemas/organization.schema';
+import { ContactsService } from '../../contacts/contacts.service';
+import { Contact } from '../../contacts/schemas/contact.schema';
 
-describe('AuthController', () => {
-  let controller: AuthController;
+describe('AuthService', () => {
+  let service: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
       providers: [
         AuthService,
         JwtService,
@@ -34,10 +32,10 @@ describe('AuthController', () => {
       ],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    service = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 });
