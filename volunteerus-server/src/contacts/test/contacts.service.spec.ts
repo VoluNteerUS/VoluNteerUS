@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContactsService } from './contacts.service';
+import { ContactsService } from '../contacts.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Contact } from './schemas/contact.schema';
+import { Contact } from '../schemas/contact.schema';
 
 describe('ContactsService', () => {
   let service: ContactsService;

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventsService } from './events.service';
+import { EventsService } from '../events.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { QuestionsService } from '../questions/questions.service';
-import { Event } from './schemas/event.schema';
-import { Question } from '../questions/schemas/question.schema';
+import { QuestionsService } from '../../questions/questions.service';
+import { Event } from '../schemas/event.schema';
+import { Question } from '../../questions/schemas/question.schema';
 
 describe('EventsService', () => {
   let service: EventsService;

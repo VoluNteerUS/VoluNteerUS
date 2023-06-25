@@ -3,11 +3,13 @@ import { UsersController } from '../users.controller';
 import { UsersService } from '../users.service';
 import { User } from '../schemas/user.schema';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { userStub } from '../test/stubs/user.stub';
+import { userIdStub, userStub } from '../test/stubs/user.stub';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { PaginationResult } from 'src/types/pagination';
+import { PaginationResult } from '../../types/pagination';
 import mongoose from 'mongoose';
 import { FirebasestorageService } from '../../firebasestorage/firebasestorage.service';
+import { Organization } from '../../organizations/schemas/organization.schema';
+import { organizationStub } from '../../organizations/test/stubs/organization.stub';
 
 jest.mock('../users.service');
 
@@ -195,4 +197,38 @@ describe('UsersController', () => {
       })
     })
   })
+
+  describe('findUserOrganizations', () => {
+    describe('when findUserOrganizations is called', () => {
+      let organizations: Organization[];
+      beforeEach(async () => {
+        organizations = await controller.findUserOrganizations(userIdStub().toString());
+      });
+
+      test('then it should call usersService', () => {
+        expect(usersService.findUserOrganizations).toBeCalledWith(userIdStub().toString());
+      });
+
+      test('then it should return organizations', () => {
+        expect(organizations).toEqual([organizationStub()]);
+      });
+    });
+  });
+
+  describe('remove', () => {
+    describe('when remove is called', () => {
+      let user: User;
+      beforeEach(async () => {
+        user = await controller.remove(userIdStub());
+      });
+
+      test('then it should call usersService', () => {
+        expect(usersService.delete).toBeCalledWith(userIdStub());
+      });
+
+      test('then it should return a user', () => {
+        expect(user).toEqual(userStub());
+      });
+    });
+  });
 });
