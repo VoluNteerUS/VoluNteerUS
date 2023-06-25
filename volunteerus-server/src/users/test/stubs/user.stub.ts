@@ -1,23 +1,23 @@
-import { User } from '../../schemas/user.schema';
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import { User } from "../../schemas/user.schema";
 
 export const userStub = (): User => {
-    return {
-        full_name: 'Test User',
-        email: 'test@u.nus.edu',
-        password: 'Test_User_123',
-        profile_picture: "",
-        phone_number: "91234567",
-        telegram_handle: "@testuser",
-        faculty: "Faculty of Arts and Social Sciences",
-        major: "Economics",
-        year_of_study: 1,
-        dietary_restrictions: "",
-        registered_on: new Date("2023-06-23T06:04:41.967+00:00"),
-        role: 'USER'
-    };
-}
+  return {
+    full_name: "Full name",
+    email: "test@gmail.com",
+    password: "",
+    registered_on: new Date("2023-06-23T06:04:41.967+00:00"),
+    role: "USER",
+    profile_picture: '',
+    phone_number: '',
+    telegram_handle: '',
+    faculty: '',
+    major: '',
+    year_of_study: 1,
+    dietary_restrictions: '',
+  }      
+};
 
 export const userIdStub = (): mongoose.Types.ObjectId => {
-    return new mongoose.Types.ObjectId('649536167a852a140aff2426');
-}
+  return new mongoose.Types.ObjectId("645fac0625f4bbf51f8f42e1");
+};

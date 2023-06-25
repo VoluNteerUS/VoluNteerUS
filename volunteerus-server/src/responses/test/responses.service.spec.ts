@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ResponsesService } from './responses.service';
+import { ResponsesService } from '../responses.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Response } from './schemas/response.schema';
+import { Response } from '../schemas/response.schema';
 
 describe('ResponsesService', () => {
   let service: ResponsesService;
