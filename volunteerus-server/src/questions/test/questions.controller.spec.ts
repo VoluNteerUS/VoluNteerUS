@@ -4,17 +4,16 @@ import { QuestionsService } from '../questions.service';
 import { Question } from '../schemas/question.schema';
 import { getModelToken } from '@nestjs/mongoose';
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory';
-import { createQuestionDtoStub, questionIdStub, questionStub, updateQuestionDtoStub } from './stubs/question.stub';
+import mongoose from 'mongoose';
+import { questionStub, updatedQuestionStub } from './stubs/question.stub';
+import { CreateQuestionDto } from '../dto/create-question.dto';
+import { UpdateQuestionDto } from '../dto/update-question.dto';
 
 jest.mock('../questions.service');
 
 describe('QuestionsController', () => {
   let controller: QuestionsController;
-  let service: QuestionsService;
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+  let questionsService: QuestionsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,91 +29,123 @@ describe('QuestionsController', () => {
     }).compile();
 
     controller = module.get<QuestionsController>(QuestionsController);
-    service = module.get<QuestionsService>(QuestionsService);
+    questionsService = module.get<QuestionsService>(QuestionsService);
     jest.clearAllMocks();
   });
 
-  describe("create", () => {
-    describe("when create is called", () => {
-      let question: Question;
-
-      beforeEach(async () => {
-        question = await controller.create("COMMITTEE MEMBER", createQuestionDtoStub());
-      });
-
-      test("then it should call questionService", () => {
-        expect(service.create).toBeCalledWith(createQuestionDtoStub());
-      });
-
-      test("then it should return a question", () => {
-        expect(question).toEqual(questionStub());
-      });
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+    expect(questionsService).toBeDefined();
   });
 
-  describe("findAll", () => {
-    describe("when findAll is called", () => {
+  describe('findOne', () => {
+    describe('When findOne is called', () => {
+      let question: Question;
+      const questionId = new mongoose.Types.ObjectId("645fac0625f4bbf51f8f42e1")
+
+      beforeEach(async () => {
+        question = await controller.findOne(questionId)
+      })
+
+      test('then it should call questionsService', () => {
+        expect(questionsService.findOne).toBeCalledWith(questionId)
+      })
+
+      test('then it should return a question', () => {
+        expect(question).toEqual(questionStub());
+      })
+    })
+  })
+
+  describe('findAll', () => {
+    describe('when findAll is called', () => {
       let questions: Question[];
 
       beforeEach(async () => {
         questions = await controller.findAll();
-      });
+      })
 
-      test("then it should call questionService", () => {
-        expect(service.findAll).toBeCalled();
-      });
+      test('then it should call questionsService', () => {
+        expect(questionsService.findAll).toHaveBeenCalled();
+      })
 
-      test("then it should return questions", () => {
+      test('then it should return questions', () => {
         expect(questions).toEqual([questionStub()]);
-      });
-    });
-  });
+      })
+    })
+  })
 
-  describe("findOne", () => {
-    describe("when findOne is called", () => {
+  describe('createQuestion', () => {
+    describe('when create is called', () => {
       let question: Question;
+      let createQuestionDto: CreateQuestionDto;
 
       beforeEach(async () => {
-        question = await controller.findOne(questionIdStub());
-      });
+        createQuestionDto = {
+          1: ["Test Question 1", "Open Ended"],
+          2: ["Test Question 2", "MCQ"],
+          3: ["Test Question 3", "MCQ"],
+          4: ["Test Question 4", "MCQ"],
+          5: ["Test Question 5", "MCQ"],
+          6: ["Test Question 6", "MCQ"],
+        }
+        question = await controller.create("COMMITTEE MEMBER", createQuestionDto);
+      })
 
-      test("then it should call questionService", () => {
-        expect(service.findOne).toBeCalledWith(questionIdStub());
-      });
+      test('then it should call questionsService', () => {
+        expect(questionsService.create).toHaveBeenCalledWith(createQuestionDto);
+      })
 
-      test("then it should return a question", () => {
+      test('then it should return a question', () => {
         expect(question).toEqual(questionStub());
-      });
-    });
-  });
+      })
+    })
+  })
 
-  describe("update", () => {
-    describe("when update is called", () => {
+  describe('updateQuestion', () => {
+    describe('when update is called', () => {
       let question: Question;
+      let updateQuestionDto: UpdateQuestionDto;
+      const questionId = new mongoose.Types.ObjectId("645fac0625f4bbf51f8f42e1");
 
       beforeEach(async () => {
-        question = await controller.update(questionIdStub(), "COMMITTEE MEMBER", updateQuestionDtoStub());
-      });
+        updateQuestionDto = {
+          1: ["Test Question 1", "Open Ended"],
+          2: ["Test Question 2", "MCQ"],
+          3: ["Test Question 3", "MCQ"],
+          4: ["Test Question 4", "MCQ"],
+          5: ["Test Question 5", "MCQ"],
+          6: [],
+        }
+        question = await controller.update(questionId, "COMMITTEE MEMBER", updateQuestionDto);
+      })
 
-      test("then it should call questionService", () => {
-        expect(service.update).toBeCalledWith(questionIdStub(), updateQuestionDtoStub());
-      });
+      test('then it should call questionsService', () => {
+        expect(questionsService.update).toHaveBeenCalledWith(questionId, updateQuestionDto);
+      })
 
-      test("then it should return a question", () => {
-        expect(question).toEqual(updateQuestionDtoStub());
-      });
-    });
-  });
+      test('then it should return a question', () => {
+        expect(question).toEqual(updatedQuestionStub());
+      })
+    })
+  })
 
-  describe("remove", () => {
-    describe("when remove is called", () => {
+  describe('remove', () => {
+    describe('When remove is called', () => {
+      let question: Question;
+      const questionId = new mongoose.Types.ObjectId("645fac0625f4bbf51f8f42e1")
+
       beforeEach(async () => {
-        await controller.remove("COMMITTEE MEMBER", questionIdStub());
-      });
+        question = await controller.remove("COMMITTEE MEMBER", questionId)
+      })
 
-      test("then it should call questionService", () => {
-        expect(service.remove).toBeCalledWith(questionIdStub());
-      });
-    });
-  });
+      test('then it should call questionsService', () => {
+        expect(questionsService.remove).toBeCalledWith(questionId)
+      })
+
+      test('then it should return the deleted question', () => {
+        expect(question).toEqual(questionStub());
+      })
+    })
+  })
 });

@@ -43,8 +43,12 @@ export class EventsController {
         // return this.eventService.create(createEventDto);
 
         // split the string into individual array elements
-        event.date = event.date.split(',');
-        event.category = event.category.split(',');
+        if (typeof event.date === "string") {
+          event.date = event.date.split(',');
+        }
+        if (typeof event.cateogry === "string") {
+          event.category = event.category.split(',');
+        }
 
         return this.eventService.create(event);
       } 
@@ -141,8 +145,12 @@ export class EventsController {
           const url = await this.uploadService.uploadFile(file, destination);
           event.image_url = url;
         }
-        event.date = event.date.split(',');
-        event.category = event.category.split(',');
+        if (typeof event.date === "string") {
+          event.date = event.date.split(',');
+        }
+        if (typeof event.cateogry === "string") {
+          event.category = event.category.split(',');
+        }
 
         return this.eventService.update(id, event);
       }

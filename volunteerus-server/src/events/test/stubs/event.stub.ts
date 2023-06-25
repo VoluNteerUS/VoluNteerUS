@@ -1,7 +1,8 @@
 import { Event } from "../../schemas/event.schema"
 import { organizationStub } from "../../../organizations/test/stubs/organization.stub"
-import { questionStub } from "../../../questions/test/stubs/question.stub"
+import { questionStub, updatedQuestionStub } from "../../../questions/test/stubs/question.stub"
 import mongoose from "mongoose";
+import { PaginationResult } from "../../../types/pagination";
 
 export const eventStub = (): Event => {
     return {
@@ -19,4 +20,20 @@ export const eventStub = (): Event => {
 
 export const eventIdStub = (): mongoose.Types.ObjectId => {
     return new mongoose.Types.ObjectId("645fac0625f4bbf51f8f42e1");
+}
+
+export const paginatedEventStub = (): PaginationResult<Event> => {
+    return new PaginationResult<Event>([eventStub()], 1, 1, 1);
+};
+
+export const updatedEventStub = (): Event => {
+    return { ...eventStub(), questions: updatedQuestionStub() }
+};
+
+export const stringifyEventDate = (): String[] => {
+    return [eventStub().date[0].toISOString(), eventStub().date[1].toISOString()]
+}
+
+export const stringifySignupByDate = (): String => {
+    return eventStub().signup_by.toISOString()
 }
