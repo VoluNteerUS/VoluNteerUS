@@ -1,16 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventsController } from './events.controller';
-import { EventsService } from './events.service';
+import { EventsController } from '../events.controller';
+import { EventsService } from '../events.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { QuestionsService } from '../questions/questions.service';
-import { Event } from './schemas/event.schema';
-import { Question } from '../questions/schemas/question.schema';
-import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
-import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
+import { QuestionsService } from '../../questions/questions.service';
+import { Event } from '../schemas/event.schema';
+import { Question } from '../../questions/schemas/question.schema';
+import { FirebasestorageService } from '../../firebasestorage/firebasestorage.service';
+import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory';
+
+jest.mock('../events.service');
 
 describe('EventsController', () => {
   let controller: EventsController;
   let service: EventsService;
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,9 +37,6 @@ describe('EventsController', () => {
 
     controller = module.get<EventsController>(EventsController);
     service = module.get<EventsService>(EventsService);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+    jest.clearAllMocks();
   });
 });
