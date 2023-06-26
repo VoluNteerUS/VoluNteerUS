@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import {useSelector } from "react-redux";
 
 function CommitteeMemberProtected({ children, user }) {
     const token = localStorage.getItem("token");

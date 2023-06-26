@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../../components/navigation/Navbar"
@@ -7,7 +7,7 @@ import defaultOrganizationImage from "../../assets/images/organization-icon.png"
 import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
 import { Tab } from '@headlessui/react'
-import { setCurrentOrganization, setCurrentOrganizationEvents } from "../../actions/organizationActions";
+import { setCurrentOrganization, setCurrentOrganizationEvents, setOrganizations } from "../../actions/organizationActions";
 import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
@@ -27,8 +27,9 @@ function OrganizationDashboard() {
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user || 'user';
   const organizationsReducer = useSelector((state) => state.organizations);
-  const organization = organizationsReducer.currentOrganization;
+  // const organization = organizationsReducer.currentOrganization;
   // State for the component
+  const [organization, setOrganization] = useState(organizationsReducer.currentOrganization);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [queryUpcomingEvents, setQueryUpcomingEvents] = useState(upcomingEvents);
@@ -73,24 +74,25 @@ function OrganizationDashboard() {
         const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
         const res = await axios.get(organizationURL);
         const organization = res.data;
+        setOrganization(organization);
         dispatch(setCurrentOrganization(organization));
+
+        // Check if user is a committee member
+        const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+        const checkCommitteeMemberRequestBody = {
+          userId: user.id,
+          organizationId: organization?._id
+        }
+    
+        const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+      
+        if (response.data) {
+          setRole('COMMITTEE MEMBER');
+        }
       } catch (err) {
         console.log(err);
       }
-  
-      // Check if user is a committee member
-      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
-      const checkCommitteeMemberRequestBody = {
-        userId: user.id,
-        organizationId: organization?._id
-      }
-  
-      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
-      
-      if (response.data) {
-        setRole('COMMITTEE MEMBER');
-      }
-    };
+  };
   
     const getUpcomingEvents = async () => {
       try {
@@ -256,7 +258,7 @@ function OrganizationDashboard() {
   }
 
   return (
-    <CommitteeMemberProtected user={user}>
+    <CommitteeMemberProtected user={user} organization_id={id}>
       <Navbar />
       <div className="bg-pink-300 py-2 min-h-screen h-full">
         {/* Organizational Profile */}

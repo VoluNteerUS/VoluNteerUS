@@ -4,13 +4,14 @@ import {
   ArrowLeftOnRectangleIcon, BellIcon, ClipboardIcon, 
   Cog6ToothIcon, FolderIcon, UserIcon, 
 } from '@heroicons/react/24/outline'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { removeUser } from '../../actions/userActions'
 
 export default function ProfileDropdown({ isAuthenticated }) {
   const persistedUserState = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const userNavigation = [
     { name: 'Profile', href: '/profile', icon: UserIcon },
@@ -26,11 +27,14 @@ export default function ProfileDropdown({ isAuthenticated }) {
     localStorage.removeItem("full_name");
     // Clear user from redux store
     dispatch(removeUser());
+    // Redirect to Home
+    navigate("/", { replace: true });
     // Reload page
     window.location.reload();
   }
 
   if (isAuthenticated) {
+    // If user is authenticated, show profile dropdown
     return (
       <>
         <button
@@ -104,6 +108,7 @@ export default function ProfileDropdown({ isAuthenticated }) {
       </>
     );
   } else {
+    // If user is not authenticated, show Sign In button
     return <Link to="/login" className="block px-4 py-2 text-base font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500">Sign in</Link>;
   }
 }
