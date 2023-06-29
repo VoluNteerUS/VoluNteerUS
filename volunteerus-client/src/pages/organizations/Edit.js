@@ -74,7 +74,6 @@ function EditOrganizationPage() {
     }
 
     const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
-    
     if (response.data) {
       setRole('COMMITTEE MEMBER');
     }
@@ -415,7 +414,7 @@ function EditOrganizationPage() {
   }
 
   return (
-    <CommitteeMemberProtected user={ user }>
+    <CommitteeMemberProtected user={user} organization_id={id}>
       <Navbar />
       <div className="bg-pink-300 py-4 px-4 md:px-0">
         {/*  Organizational Profile */}

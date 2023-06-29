@@ -10,13 +10,14 @@ import SignUpForm from "../../components/form/SignUpForm";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
+import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
 function Responses() {
-  const { id } = useParams();
+  const { id, eventId } = useParams();
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user || 'Unknown';
   const [event, setEvent] = useState({});
@@ -53,7 +54,7 @@ function Responses() {
 
   const getResponseInformation = async () => {
     try {
-      const eventURL = new URL(`/events/${id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+      const eventURL = new URL(`/events/${eventId}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
       const eventRes = await axios.get(eventURL);
       const event = eventRes.data;
       setEvent(event);
@@ -63,17 +64,17 @@ function Responses() {
       const questions = questionsRes.data;
       setQuestions(questions);
 
-      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${id}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
+      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
       const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
       setAcceptedResponses(paginatedAcceptedResponses.result);
 
-      const rejectedResponsesURL = new URL(`/responses/rejected?event_id=${id}&page=${paginationState.rejected.currentPage}&limit=${paginationState.rejected.limit}`, process.env.REACT_APP_BACKEND_API);
+      const rejectedResponsesURL = new URL(`/responses/rejected?event_id=${eventId}&page=${paginationState.rejected.currentPage}&limit=${paginationState.rejected.limit}`, process.env.REACT_APP_BACKEND_API);
       const rejectedResponsesRes = await axios.get(rejectedResponsesURL);
       const paginatedRejectedResponses = { ...rejectedResponsesRes.data };
       setRejectedResponses(paginatedRejectedResponses.result);
 
-      const pendingResponsesURL = new URL(`/responses/pending?event_id=${id}&page=${paginationState.pending.currentPage}&limit=${paginationState.pending.limit}`, process.env.REACT_APP_BACKEND_API);
+      const pendingResponsesURL = new URL(`/responses/pending?event_id=${eventId}&page=${paginationState.pending.currentPage}&limit=${paginationState.pending.limit}`, process.env.REACT_APP_BACKEND_API);
       const pendingResponsesRes = await axios.get(pendingResponsesURL);
       const paginatedPendingResponses = { ...pendingResponsesRes.data };
       setPendingResponses(paginatedPendingResponses.result);
@@ -286,7 +287,7 @@ function Responses() {
   }
 
   return (
-    <>
+    <CommitteeMemberProtected user={user} organization_id={id}>
       <Navbar />
       <div className="w-screen lg:w-5/6 block mx-auto">
         <div className="text-2xl my-10 font-bold flex space-x-3">
@@ -372,7 +373,7 @@ function Responses() {
           handleClose={handleCancelUpdate}
         />
       )}
-    </>
+    </CommitteeMemberProtected>
   )
 }
 

@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { removeUser } from '../../actions/userActions'
+import { removeUser, removeUserOrganizations } from '../../actions/userActions'
 
 export default function ProfileDropdown({ isAuthenticated }) {
   const persistedUserState = useSelector((state) => state.user);
@@ -27,6 +27,8 @@ export default function ProfileDropdown({ isAuthenticated }) {
     localStorage.removeItem("full_name");
     // Clear user from redux store
     dispatch(removeUser());
+    // Clear user's organizations from redux store
+    dispatch(removeUserOrganizations());
     // Redirect to Home
     navigate("/", { replace: true });
     // Reload page

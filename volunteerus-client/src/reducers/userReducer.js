@@ -1,5 +1,6 @@
 const initialState = {
-    user: null
+    user: null,
+    organizations: []
 }
 
 const userReducer = (state = initialState, action) => {
@@ -14,6 +15,16 @@ const userReducer = (state = initialState, action) => {
                 ...state, 
                 user: null 
             };
+        case "SET_USER_ORGANIZATIONS":
+            return {
+                ...state,
+                organizations: action.payload
+            }
+        case "REMOVE_USER_ORGANIZATIONS":
+        return {
+            ...state,
+            organizations: []
+        }
         default:
             return state;
     }

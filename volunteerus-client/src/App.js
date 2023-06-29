@@ -58,11 +58,18 @@ function App() {
           <Route path="register" element={<Register />} />
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="profile" element={<UserProfile />} />
+          {/* id === user_id */}
           <Route path=":id">
             <Route path="submissions" element={<Submissions />} />
           </Route>
+          {/* id === response_id */}
           <Route path=":id">
             <Route path="edit" element={<EditResponse />} />
+          </Route>
+          {/* id === organization_id */}
+          <Route path=":id">
+            <Route path=":eventId/edit" element={<EditEventDetails />} />
+            <Route path=":eventId/responses" element={<ViewResponses />} />
           </Route>
           <Route path="organizations">
             <Route index element={<OrganizationsPage />} />
@@ -87,22 +94,8 @@ function App() {
           </Route>
           <Route path="events">
             <Route index element={<Events />} />
-            <Route path=":id" element={<EventSignup />} />
-              <Route path=":id/edit" element={
-                <CommitteeMemberProtected user={user}>
-                  <EditEventDetails />
-                </CommitteeMemberProtected>
-              } />
-              <Route path=":id/responses" element={
-                <CommitteeMemberProtected user={user}>
-                  <ViewResponses />
-                </CommitteeMemberProtected>
-              } />
-              <Route path="create" element={
-                <CommitteeMemberProtected user={user}>
-                  <CreateEvent />
-                </CommitteeMemberProtected>
-              } />
+              <Route path=":id" element={<EventSignup />} />
+              <Route path="create" element={<CreateEvent />} />
           </Route>
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<PageNotFound />} />

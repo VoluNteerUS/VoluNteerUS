@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
 import { Organization } from './schemas/organization.schema';
 import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
+import { GetUserOrganizationsDto } from './dto/get-user-organizations';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -50,6 +51,11 @@ export class OrganizationsController {
   @Post('checkCommitteeMember')
   async checkCommitteeMember(@Body() data: CheckCommitteeMemberDto) {
     return this.organizationsService.checkCommitteeMember(data);
+  }
+
+  @Post('getUserOrganizations')
+  async getUserOrganizations(@Body() data: GetUserOrganizationsDto) {
+    return this.organizationsService.getUserOrganizations(data);
   }
 
   @Post(':id/contacts')

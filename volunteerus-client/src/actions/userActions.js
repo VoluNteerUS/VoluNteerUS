@@ -10,3 +10,16 @@ export const removeUser = () => {
         type: "REMOVE_USER"
     }
 };
+
+export const setUserOrganizations = (organizations) => {
+    return {
+        type: "SET_USER_ORGANIZATIONS",
+        payload: organizations
+    }
+};
+
+export const removeUserOrganizations = () => {
+    return {
+        type: "REMOVE_USER_ORGANIZATIONS",
+    }
+};

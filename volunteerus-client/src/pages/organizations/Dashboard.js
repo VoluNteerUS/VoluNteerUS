@@ -81,7 +81,7 @@ function OrganizationDashboard() {
         const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
         const checkCommitteeMemberRequestBody = {
           userId: user.id,
-          organizationId: organization?._id
+          organizationId: id
         }
     
         const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
@@ -97,7 +97,7 @@ function OrganizationDashboard() {
     const getUpcomingEvents = async () => {
       try {
         const upcomingEventsURL = new URL(
-          `/events/upcoming?organization_id=${organization._id}&page=${upcomingEventsPagination.currentPage}&limit=${upcomingEventsPagination.limit}`, 
+          `/events/upcoming?organization_id=${id}&page=${upcomingEventsPagination.currentPage}&limit=${upcomingEventsPagination.limit}`, 
           process.env.REACT_APP_BACKEND_API
         );
         const res = await axios.get(upcomingEventsURL);
@@ -119,7 +119,7 @@ function OrganizationDashboard() {
     const getPastEvents = async () => {
       try {
         const pastEventsURL = new URL(
-          `/events/past?organization_id=${organization._id}&page=${pastEventsPagination.currentPage}&limit=${pastEventsPagination.limit}`, 
+          `/events/past?organization_id=${id}&page=${pastEventsPagination.currentPage}&limit=${pastEventsPagination.limit}`, 
           process.env.REACT_APP_BACKEND_API);
         const res = await axios.get(pastEventsURL);
         const paginatedEvents = { ...res.data };
@@ -347,11 +347,11 @@ function OrganizationDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                              <Link to={`/events/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
+                              <Link to={`/${id}/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
                                 Responses
                               </Link>
                               <span className="px-2">|</span>
-                              <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
+                              <Link to={`/${id}/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
                                 Edit
                               </Link>
                               <span className="px-2">|</span>
@@ -377,7 +377,7 @@ function OrganizationDashboard() {
                 />
                 {/* Floating Action Button */}
                 <div className="bottom-0 right-0 my-2 mr-4 px-3">
-                  <Link to="/events/create" state={{ id: organization?._id }} className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
+                  <Link to="/events/create" state={{ id: id }} className="flex items-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-800 text-white ml-auto">
                     <PlusIcon className="h-7 w-7 text-white mx-auto block" aria-hidden="true" />
                   </Link>
                 </div>
@@ -431,11 +431,11 @@ function OrganizationDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm a')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('MMMM Do YYYY, h:mm a')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                              <Link to={`/events/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
+                              <Link to={`/${id}/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
                                 Responses
                               </Link>
                               <span className="px-2">|</span>
-                              <Link to={`/events/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
+                              <Link to={`/${id}/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
                                 Edit
                               </Link>
                               <span className="px-2">|</span>

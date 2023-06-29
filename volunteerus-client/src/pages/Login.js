@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setUser } from "../actions/userActions";
+import { setUser, setUserOrganizations } from "../actions/userActions";
 
 function Login() {
     const [state, setState] = useState(
@@ -38,7 +38,7 @@ function Login() {
             // Save token to local storage
             localStorage.setItem("token", response.data["access_token"]);
             // Get user from token
-            axios.get(profileURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((response) => {
+            axios.get(profileURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then( async (response) => {
                 // Save user to redux store
                 console.log(response.data);
                 localStorage.setItem("full_name", response.data["full_name"]);
@@ -56,11 +56,22 @@ function Login() {
                     major: user.major,
                     year_of_study: user.year_of_study,
                     dietary_restrictions: user.dietary_restrictions,
-                }));
+                }))
                 // If user is admin, redirect to admin dashboard
                 if (user.role === "ADMIN") {
                     navigate("/admin", { replace: true });
                 } else {
+                    // Get user's organizations
+                    const getUserOrganizationsURL = new URL(`/organizations/getUserOrganizations`, process.env.REACT_APP_BACKEND_API);
+                    const getUserOrganizationRequestBody = {
+                        userId: user._id
+                    };
+                    const userOrganizationsRes = await axios.post(getUserOrganizationsURL, getUserOrganizationRequestBody);
+                    // Save user's organizations to redux store
+                    if (userOrganizationsRes.data) {
+                        dispatch(setUserOrganizations(userOrganizationsRes.data));
+                    }
+                    console.log(userOrganizationsRes)
                     // Else, redirect to home page
                     navigate("/", { replace: true });
                 }

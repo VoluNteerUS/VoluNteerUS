@@ -8,6 +8,7 @@ import { Contact, ContactDocument } from '../contacts/schemas/contact.schema';
 import { PaginationResult } from '../types/pagination';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
+import { GetUserOrganizationsDto } from './dto/get-user-organizations';
 
 @Injectable()
 export class OrganizationsService {
@@ -46,6 +47,22 @@ export class OrganizationsService {
       });
     }
     return organization.committee_members.includes(user._id);
+  }
+
+  async getUserOrganizations(data: GetUserOrganizationsDto) : Promise<Organization[]> {
+    const organizations = await this.organizationsModel.find().exec();
+    if (!organizations) {
+      throw new HttpException('Organization not found', HttpStatus.NOT_FOUND, {
+        cause: new Error('Organization not found'),
+      });
+    }
+    const user = await this.usersModel.findById(data.userId).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND, {
+        cause: new Error('User not found'),
+      });
+    }
+    return organizations.filter((organization) => organization.committee_members.includes(user._id));
   }
 
   async addContactToOrganization(organizationId: mongoose.Types.ObjectId, contactData: any) {

@@ -7,9 +7,10 @@ import axios from "axios";
 import { setQuestions } from "../../actions/questionsActions";
 import CreateEventPart1 from "../../components/form/CreateEventPart1";
 import CreateEventPart2 from "../../components/form/CreateEventPart2";
+import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 
 function EditEventDetails() {
-  const { id } = useParams();
+  const { id, eventId } = useParams();
   const [error, setError] =useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,14 +40,14 @@ function EditEventDetails() {
   useEffect(() => {
       const getEvent = async () => {
         try {
-          const eventURL = new URL(`/events/${id}`, process.env.REACT_APP_BACKEND_API);
+          const eventURL = new URL(`/events/${eventId}`, process.env.REACT_APP_BACKEND_API);
           const res = await axios.get(eventURL);
           const event = res.data;
           // check user
           const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
           const checkCommitteeMemberRequestBody = {
-            userId: user.id,
-            organizationId: event.organized_by
+            userId: user.id,  
+            organizationId: id
           }
           const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
           setDetails(
@@ -70,7 +71,7 @@ function EditEventDetails() {
       }
       const getQuestions = async () => {
         try {
-          const eventURL = new URL(`/events/${id}`, process.env.REACT_APP_BACKEND_API);
+          const eventURL = new URL(`/events/${eventId}`, process.env.REACT_APP_BACKEND_API);
           const res = await axios.get(eventURL);
           const event = res.data;
           const questionId = event.questions;
@@ -89,7 +90,7 @@ function EditEventDetails() {
       }
       getEvent();
       getQuestions();
-  }, [id]);
+  }, [eventId]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -118,7 +119,7 @@ function EditEventDetails() {
     const requestBody = questionObject;
 
     // Send PATCH request to update event and sign up form questions
-    const eventURL = new URL(`/events/${id}?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
+    const eventURL = new URL(`/events/${eventId}?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
     const questionURL = new URL(`/questions/${details.questions}?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
     await axios.patch(eventURL, eventData, {
       headers: {
@@ -154,26 +155,28 @@ function EditEventDetails() {
   }
 
   return ( 
-    <div> 
-      <Navbar /> 
-      { page === 1 
-          ? <CreateEventPart1
-          details={ details }
-          setDetails={ setDetails }
-          error={ error }
-          setError={ setError }
-          setPage={ setPage }
-        />
-        : <CreateEventPart2
-            formQuestions={ formQuestions }
-            setFormQuestions={ setFormQuestions }
+    <CommitteeMemberProtected user={user} organization_id={id}>
+      <div> 
+        <Navbar /> 
+        { page === 1 
+            ? <CreateEventPart1
+            details={ details }
+            setDetails={ setDetails }
             error={ error }
             setError={ setError }
             setPage={ setPage }
-            handleSubmit={ handleSubmit }
           />
-      }
-    </div> 
+          : <CreateEventPart2
+              formQuestions={ formQuestions }
+              setFormQuestions={ setFormQuestions }
+              error={ error }
+              setError={ setError }
+              setPage={ setPage }
+              handleSubmit={ handleSubmit }
+            />
+        }
+      </div> 
+    </CommitteeMemberProtected>
   ) 
 }
 
