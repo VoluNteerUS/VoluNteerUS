@@ -1,157 +1,133 @@
-import { XMarkIcon, MinusCircleIcon, PlusIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
+import moment from "moment";
 
-function CreateEventPart2({ formQuestions, setFormQuestions, error, setError, setPage, handleSubmit }) {
-    const handleAddQuestion = () => {
-      setError("");
-      let length = Object.keys(formQuestions).length;
-      if (length > 5) {
-        setError("Maximum number of questions reached!")
-      } else {
-        let newQuestions = { ...formQuestions };
-        newQuestions[`${ length + 1 }`] = [length + 1, "", "Open-ended", { "1" : "" }];
-        setFormQuestions({ ...newQuestions });
-      }
+function CreateEventPart2({ details, setDetails, error, setError, setPage }) {
+  const handleNext = (event) => {
+    event.preventDefault();
+    setError("")
+    // validate form
+    if (!details.title.replace(/\s/g, '').length) {
+      setError("Please enter a title for the event.");
+    } else if (!details.category.length) {
+      setError("Please select at least one category for the event.");
+    } else if (details.date.filter((date) => date !== "").length !== 4) {
+      setError("Please complete the start/end date/time for the event.");
+    } else if (!details.signup_by.length) {
+      setError("Please enter a closing date for the sign up.");
+    } else if (new Date(details.date[0]).getTime() > new Date(details.date[1]).getTime()) {
+      setError("Start date cannot be later than End date.");
+    } else {
+      setPage(3);
     }
-    
-    const handleRemoveQuestion = (e, question) => {
-      setError("");
-      let newQuestions = { ...formQuestions };
-      let length = Object.keys(formQuestions).length;
-      let start = question[0] + 1;
-      delete newQuestions[`${ question[0] }`];
-      while (start <= length) {
-        // assign new key = old key - 1
-        Object.defineProperty(newQuestions, `${ start - 1 }`, Object.getOwnPropertyDescriptor(newQuestions, `${ start }`));
-        delete newQuestions[`${ start }`];
-        newQuestions[`${ start - 1 }`][0] = start - 1; 
-        start = start + 1;
-      }
-      setFormQuestions({ ...newQuestions });
-    }
-    
-    const handleQuestionChange = (e, question) => {
-      setError("");
-      let newQuestions = { ...formQuestions };
-      newQuestions[`${ question[0] }`][1] = `${ e.target.value.slice(0, 1).toUpperCase() }` + `${ e.target.value.slice(1) }`;
-      setFormQuestions({ ...newQuestions });
-    }
+  }
 
-    const handleAddChoice = (e, question) => {
-      setError("");
-      let length = Object.keys(question[3]).length;
-      let newQuestions = { ...formQuestions };
-      newQuestions[`${ question[0] }`][3][`${ length + 1 }`] = "";
-      setFormQuestions({ ...newQuestions });
-    }
-    
-    const handleRemoveChoice = (e, key, question) => {
-      setError("");
-      let newChoices = { ...question[3] };
-      let length = Object.keys(question[3]).length;
-      let start = Number(key) + 1;
-      delete newChoices[key];
-      while (start <= length) {
-        // assign new key = old key - 1
-        Object.defineProperty(newChoices, `${ start - 1 }`, Object.getOwnPropertyDescriptor(newChoices, `${ start }`));
-        delete newChoices[`${ start }`]; 
-        start = start + 1;
-      }
-      let newQuestions = { ...formQuestions };
-      newQuestions[`${ question[0] }`][3] = newChoices;
-      setFormQuestions({ ...newQuestions });
-    }
-
-    const handleChoiceChange = (e, key, question) => {
-      setError("");
-      let newQuestions = { ...formQuestions };
-      newQuestions[`${ question[0] }`][3][key] = e.target.value
-      setFormQuestions({ ...newQuestions });
-    }
-    
-    const handleTypeChange = (e, question) => {
-      setError("");
-      let newQuestions = { ...formQuestions };
-      newQuestions[`${ question[0] }`][2] = e.target.value
-      setFormQuestions({ ...newQuestions });
-    }
-
-    const handleBack = () => {
-      setError("");
-      setPage(1);
-    }
+  const handleBack = (event) => {
+    event.preventDefault();
+    setError("")
+    setPage(1);
+  }
 
   return (
-    <div className="bg-pink-100 py-10"> 
-          <div className="flex items-center min-h-screen justify-center"> 
-            <div className="bg-white pb-5 rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2 flex flex-col px-3"> 
-              <div className="flex flex-row justify-between">
-                <button onClick={ handleBack } className="p-3 mt-3 mx-3">
-                  <ArrowLeftIcon className="w-6 h-6" />
-                </button>
-                <Link to="/" className="p-3 mt-3 mx-3 rounded-full bg-white/70 hover:bg-slate-500 self-end">
-                  <XMarkIcon className="w-6 h-6 text-gray-700" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-12 gap-4"> 
-                <div className="col-span-12 sm:px-12 xl:py-2 mx-0 sm:mx-4 flex flex-col"> 
-                  <h1 className="font-bold font-serif tracking-tight leading-none text-darkblue-900 sm:text-xl md:text-2xl xl:text-3xl mb-10">Create sign up form for event</h1> 
-                  {/* form progress bar */}
-                  <ol className="flex justify-center">
-                    <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-pink-400 after:border-4 after:inline-block">
-                      <span className="flex items-center justify-center w-10 h-10 bg-pink-400 rounded-full lg:h-12 lg:w-12 shrink-0">
-                        <p className="text-white">1</p>
-                      </span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="flex items-center justify-center w-10 h-10 bg-pink-400 rounded-full lg:h-12 lg:w-12 shrink-0">
-                        <p className="text-white">2</p>
-                      </span>
-                    </li>
-                  </ol>
-                  {/* Event sign up form questions */}
-                  <h1 className="font-bold my-5">Sign Up Form Questions</h1>
-                  <form onSubmit={ handleSubmit } className="flex flex-col space-y-5">
-                    {Object.values(formQuestions).map((question) => ( 
-                      <>
-                        <div key={ question[0] } className="flex space-x-3">
-                          <input type="text" value={ question[1] } onChange={ e => handleQuestionChange(e, question) } placeholder={`Question ${ question[0] }`} className="border border-grey-600 p-1 rounded-lg w-2/3"/>
-                          <select value={ question[2] } onChange={ e => handleTypeChange(e, question) } className="border border-grey-600 p-1 rounded-lg">
-                            <option value="Open-ended">Open-ended</option>
-                            <option value="MCQ">MCQ</option>
-                            <option value="MRQ">MRQ</option>
-                          </select>
-                          <button type="button" onClick={ e => handleRemoveQuestion(e, question) } className="bg-red-700 text-white rounded-lg px-2">Remove</button>
-                        </div>
-                        <div>
-                        {question[2] !== "Open-ended"
-                          ? 
-                            <div className="flex flex-col space-y-3">
-                              <div className="flex flex-wrap md:flex-row flex-col">
-                              {Object.keys(question[3]).map((key) => (
-                                <div className="flex space-x-3">
-                                  <input type="text" value={ question[3][key] } onChange={e => handleChoiceChange(e, key, question)} placeholder="Enter a choice" className="border border-grey-600 p-1 rounded-lg ml-5"/>
-                                  <button type="button" onClick={ e => handleRemoveChoice(e, key, question) }><MinusCircleIcon width={30} height={30} className="text-red-700"/></button>
-                                </div>
-                              ))}
-                              </div>
-                              <button type="button" onClick={ e => handleAddChoice(e, question) }><PlusIcon width={30} height={30} className="text-grey-800"/></button>
-                            </div>                  
-                          : null} 
-                        </div>
-                      </>
-                    ))}
-                    <p className="text-red-700">{ error }</p>
-                    <div className="flex space-x-2 justify-end py-10">
-                      <button type="button" onClick={ handleAddQuestion } className="bg-grey-800 text-white rounded-lg px-2 py-1">Add Question</button>
-                      <button type="submit" className="bg-pink-400 text-white rounded-lg px-3 py-1">Submit</button>
+    // Make it appear behind the navbar but in front of the background and top of the page
+    <div className="bg-pink-100 min-h-screen">
+      <div className="block mx-auto px-3 py-6 lg:py-12 xl:py-16 md:px-0 md:w-3/4 lg:w-3/5 2xl:w-1/2">
+        <div className="bg-white rounded-lg">
+          <div className="flex flex-row justify-between">
+            <button onClick={handleBack} className="p-3 mt-3 mx-3">
+              <ArrowLeftIcon className="w-6 h-6" />
+            </button>
+            <Link to="/" className="p-3 mt-3 mx-3 rounded-full bg-white/70 hover:bg-slate-500 self-end">
+              <XMarkIcon className="w-6 h-6 text-gray-700" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 px-6 sm:px-12 xl:py-2 mx-0 sm:mx-4 flex flex-col">
+              <h1 className="font-bold font-serif tracking-tight leading-none text-darkblue-900 text-xl md:text-2xl xl:text-3xl mb-6">Create event</h1>
+              {/* form progress bar */}
+              <ol className="flex justify-center">
+                <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-pink-400 after:border-4 after:inline-block">
+                  <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-pink-400 rounded-full lg:h-12 lg:w-12 shrink-0">
+                    <p className="text-white text-sm sm:text-base">1</p>
+                  </span>
+                </li>
+                <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-grey-800 after:border-4 after:inline-block">
+                  <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-pink-400 rounded-full lg:h-12 lg:w-12 shrink-0">
+                    <p className="text-white text-sm sm:text-base">2</p>
+                  </span>
+                </li>
+                <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-grey-800 after:border-4 after:inline-block">
+                  <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-grey-800 rounded-full lg:h-12 lg:w-12 shrink-0">
+                    <p className="text-white text-sm sm:text-base">3</p>
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-grey-800 rounded-full lg:h-12 lg:w-12 shrink-0">
+                    <p className="text-white text-sm sm:text-base">4</p>
+                  </span>
+                </li>
+              </ol>
+              {/* Create event details form questions */}
+              <form onSubmit={handleNext} className="flex flex-col my-5 space-y-5">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col justify-evenly">
+                    <label className="font-semibold">Event title</label>
+                    <input type="text" value={details.title} placeholder="Event title" disabled className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => { setDetails({ ...details, title: e.target.value }); }} />
+                  </div>
+                  <div className="flex flex-col justify-evenly">
+                    <label className="font-semibold">Category (select all that applies)</label>
+                    <select multiple={true} value={details.category} className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => {
+                      const options = [...e.target.selectedOptions];
+                      const values = options.map(option => option.value);
+                      setDetails({ ...details, category: values });
+                    }}
+                    >
+                      <option value="Elderly">Elderly</option>
+                      <option value="Migrant Workers">Migrant Workers</option>
+                      <option value="Patients">Patients</option>
+                      <option value="PWID">PWID</option>
+                      <option value="Youth">Youth</option>
+                      <option value="Local">Local</option>
+                      <option value="Overseas">Overseas</option>
+                      <option value="Special project">Special project</option>
+                      <option value="Regular project">Regular project</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-12 gap-3">
+                    <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col">
+                      <label className="font-semibold">Start date</label>
+                      <input type="date" value={details.date[0]} className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => { setDetails({ ...details, date: [e.target.value, details.date[1], details.date[2], details.date[3]] }); }} />
                     </div>
-                  </form>
+                    <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col">
+                      <label className="font-semibold">Start time</label>
+                      <input type="time" value={details.date[2]} className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => { setDetails({ ...details, date: [details.date[0], details.date[1], e.target.value, details.date[3]] }); }} />
+                    </div>
+                    <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col">
+                      <label className="font-semibold">End date</label>
+                      <input type="date" value={details.date[1]} className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => { setDetails({ ...details, date: [details.date[0], e.target.value, details.date[2], details.date[3]] }); }} />
+                    </div>
+                    <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col">
+                      <label className="font-semibold">End time</label>
+                      <input type="time" value={details.date[3]} className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => { setDetails({ ...details, date: [details.date[0], details.date[1], details.date[2], e.target.value] }); }} />
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-evenly">
+                    <label className="font-semibold">Form closing date</label>
+                    <input type="date" value={moment(`${details.signup_by}`).format('yyyy-MM-DD')} className="p-1 border border-grey-600 rounded-md mb-2" onChange={e => { setDetails({ ...details, signup_by: e.target.value }); }} />
+                  </div>
                 </div>
-              </div>
+                {
+                  error !== "" ? <p className="bg-red-100 border border-red-400 text-red-700 px-2 py-1 rounded relative" role="alert">{error}</p> : ""
+                }
+                <button type="submit" className="bg-pink-400 text-white font-semibold rounded-lg px-6 py-2 self-end">
+                  Next
+                </button>
+              </form>
             </div>
           </div>
         </div>
+      </div>
+    </div>
   )
 }
 
