@@ -67,6 +67,7 @@ function Submissions() {
   }
 
   const body = (obj) => {
+    console.log(obj);
     return (
       <tbody key={obj?.response?._id}>
         <tr className="text-sm grid grid-cols-5 border-b items-center">
@@ -167,6 +168,7 @@ function Submissions() {
     for (let i = 0; i < responses.length; i++) {
       currResponseAndEvent = [...currResponseAndEvent, { response: responses[i], event: events[i] }];
     }
+    console.log(currResponseAndEvent);
     setResponseAndEvent(currResponseAndEvent);
   }, [events, responses]);  
 

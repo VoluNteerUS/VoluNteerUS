@@ -383,7 +383,6 @@ function EditOrganizationPage() {
       // Send POST request to create committee members
       axios.post(committeeMembersURL, body).then((res) => {
         console.log(res);
-        // alert("Successfully created committee members!");
         setCommitteeMembersSuccessMessage("Successfully created committee members!");
       }).catch((err) => {
         console.log(err);
@@ -392,7 +391,28 @@ function EditOrganizationPage() {
       // Send PATCH request to update committee members
       axios.patch(committeeMembersURL, body).then((res) => {
         console.log(res);
-        // alert("Successfully updated committee members!");
+        // Send GET request to get updated organization
+        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
+        axios.get(organizationURL).then((res) => {
+          setOrganization(res.data);
+          setProfilePicture(res.data.image_url || defaultOrganizationImage);
+          setState({
+            profile: {
+              name: res.data.name,
+              description: res.data.description,
+              file: null,
+              errors: [],
+            },
+            contacts: {
+              email: res.data.contact?.email || "",
+              social_media: res.data.contact?.social_media || [],
+              errors: [],
+            },
+            committeeMembers: res.data?.committee_members || [],
+          });
+        }).catch((err) => {
+          console.error({ err });
+        });
         setCommitteeMembersSuccessMessage("Successfully updated committee members!");
       }).catch((err) => {
         console.log(err);
