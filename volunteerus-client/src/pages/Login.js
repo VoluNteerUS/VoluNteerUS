@@ -38,7 +38,7 @@ function Login() {
             // Save token to local storage
             localStorage.setItem("token", response.data["access_token"]);
             // Get user from token
-            axios.get(profileURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then( async (response) => {
+            axios.get(profileURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then(async (response) => {
                 // Save user to redux store
                 console.log(response.data);
                 localStorage.setItem("full_name", response.data["full_name"]);
@@ -75,11 +75,10 @@ function Login() {
                     // Else, redirect to home page
                     navigate("/", { replace: true });
                 }
-            })
-                .catch((error) => {
-                    console.log(error.response.data.message);
-                    setState({ ...state, error: error.response.data.message });
-                });
+            }).catch((error) => {
+                console.log(error.response.data.message);
+                setState({ ...state, error: error.response.data.message });
+            });
         }).catch((error) => {
             console.log(error.response.data.message);
             setState({ ...state, error: error.response.data.message });

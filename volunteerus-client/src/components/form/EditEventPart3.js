@@ -2,15 +2,15 @@ import { ArrowLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-function CreateEventPart3({ details, setDetails, error, setError, setPage }) {
-    const [thumbnailImage, setThumbnailImage] = useState(null);
+function EditEventPart3({ details, setDetails, error, setError, setPage }) {
+    const [thumbnailImage, setThumbnailImage] = useState(details.image_url);
 
     const handleNext = (event) => {
         event.preventDefault();
         setError("")
-        if (!details.file) {
-            setError("Please select a thumbnail image for the event.");
-        } else if (!details.file?.type.startsWith("image/")) {
+        // validate form
+        // Check file type
+        if (details.image_url != thumbnailImage && !details.file?.type.startsWith("image/")) {
             setError("Please select an image file.");
         } else if (details.file?.size > 5 * 1024 * 1024) {
             setError("Please select an image file smaller than 5MB.");
@@ -45,7 +45,7 @@ function CreateEventPart3({ details, setDetails, error, setError, setPage }) {
                     </div>
                     <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 px-6 sm:px-12 xl:py-2 mx-0 sm:mx-4 flex flex-col">
-                            <h1 className="font-bold font-serif tracking-tight leading-none text-darkblue-900 text-xl md:text-2xl xl:text-3xl mb-6">Create event</h1>
+                            <h1 className="font-bold font-serif tracking-tight leading-none text-darkblue-900 text-xl md:text-2xl xl:text-3xl mb-6">Edit event</h1>
                             {/* form progress bar */}
                             <ol className="flex justify-center">
                                 <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-pink-400 after:border-4 after:inline-block">
@@ -78,9 +78,7 @@ function CreateEventPart3({ details, setDetails, error, setError, setPage }) {
                                     </div>
                                     <div className="flex flex-col justify-evenly">
                                         <label className="font-semibold">Thumbnail Image</label>
-                                        {
-                                            thumbnailImage !== null ? <img src={thumbnailImage} className="block mx-auto w-60 py-4" /> : ""
-                                        }
+                                        <img src={thumbnailImage} className="block mx-auto w-60 py-4" />
                                         <input 
                                             type="file" 
                                             accept="image/*" 
@@ -89,8 +87,7 @@ function CreateEventPart3({ details, setDetails, error, setError, setPage }) {
                                             onChange={ 
                                                 e => { 
                                                     setDetails({ ...details, file: e.target.files[0] });
-                                                    setThumbnailImage(URL.createObjectURL(e.target.files[0]));
-                                                    setError(""); 
+                                                    setThumbnailImage(URL.createObjectURL(e.target.files[0])); 
                                                 }
                                             } 
                                         />
@@ -111,4 +108,4 @@ function CreateEventPart3({ details, setDetails, error, setError, setPage }) {
     )
 }
 
-export default CreateEventPart3;
+export default EditEventPart3;

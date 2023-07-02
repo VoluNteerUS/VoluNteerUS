@@ -5,8 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setEvents } from "../../actions/eventActions";
 import axios from "axios";
 import { setQuestions } from "../../actions/questionsActions";
-import CreateEventPart1 from "../../components/form/CreateEventPart1";
-import CreateEventPart2 from "../../components/form/CreateEventPart2";
+import EditEventPart1 from "../../components/form/EditEventPart1";
+import EditEventPart2 from "../../components/form/EditEventPart2";
+import EditEventPart3 from "../../components/form/EditEventPart3";
+import EditEventPart4 from "../../components/form/EditEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import CreateEventPart3 from "../../components/form/CreateEventPart3";
 
@@ -170,34 +172,40 @@ function EditEventDetails() {
 
   return ( 
     <CommitteeMemberProtected user={user} organization_id={id}>
-      <div> 
-        <Navbar /> 
-        { page === 1 
-            ? <CreateEventPart1
+      <Navbar /> 
+      { page === 1 
+          ? <EditEventPart1
+          details={ details }
+          setDetails={ setDetails }
+          error={ error }
+          setError={ setError }
+          setPage={ setPage }
+        />
+        : page === 2 
+          ? <EditEventPart2
             details={ details }
             setDetails={ setDetails }
             error={ error }
             setError={ setError }
             setPage={ setPage }
           />
-          : page === 2
-            ? <CreateEventPart2
-              formQuestions={ formQuestions }
-              setFormQuestions={ setFormQuestions }
+          : page === 3
+            ? <EditEventPart3
+              details={ details }
+              setDetails={ setDetails }
               error={ error }
               setError={ setError }
               setPage={ setPage }
             />
-            : <CreateEventPart3
-                details={ details }
-                setDetails={ setDetails }
-                error={ error }
-                setError={ setError }
-                setPage={ setPage }
-                handleSubmit={ handleSubmit }
-              />
-        }
-      </div> 
+          : <EditEventPart4
+            formQuestions={ formQuestions }
+            setFormQuestions={ setFormQuestions }
+            error={ error }
+            setError={ setError }
+            setPage={ setPage }
+            handleSubmit={ handleSubmit }
+          />
+      }
     </CommitteeMemberProtected>
   ) 
 }

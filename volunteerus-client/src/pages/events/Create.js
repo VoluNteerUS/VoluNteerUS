@@ -7,6 +7,8 @@ import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
 import CreateEventPart1 from "../../components/form/CreateEventPart1";
 import CreateEventPart2 from "../../components/form/CreateEventPart2";
+import CreateEventPart3 from "../../components/form/CreateEventPart3";
+import CreateEventPart4 from "../../components/form/CreateEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import CreateEventPart3 from "../../components/form/CreateEventPart3";
 
@@ -154,29 +156,37 @@ function CreateEvent() {
         <Navbar /> 
         { page === 1 
           ? <CreateEventPart1
+          details={ details }
+          setDetails={ setDetails }
+          error={ error }
+          setError={ setError }
+          setPage={ setPage }
+        />
+        : page === 2 
+          ? <CreateEventPart2
+            details={ details }
+            setDetails={ setDetails }
+            error={ error }
+            setError={ setError }
+            setPage={ setPage }
+          />
+          : page === 3
+            ? <CreateEventPart3
               details={ details }
               setDetails={ setDetails }
               error={ error }
               setError={ setError }
               setPage={ setPage }
             />
-          : page === 2
-            ? <CreateEventPart2
-              formQuestions={ formQuestions }
-              setFormQuestions={ setFormQuestions }
-              error={ error }
-              setError={ setError }
-              setPage={ setPage }
-            />
-            : <CreateEventPart3
-              details={ details }
-              setDetails={ setDetails }
-              error={ error }
-              setError={ setError }
-              setPage={ setPage }
-              handleSubmit={ handleSubmit }
-            />
-        }
+          : <CreateEventPart4
+            formQuestions={ formQuestions }
+            setFormQuestions={ setFormQuestions }
+            error={ error }
+            setError={ setError }
+            setPage={ setPage }
+            handleSubmit={ handleSubmit }
+          />
+      }
       </div> 
     </CommitteeMemberProtected>
   ) 
