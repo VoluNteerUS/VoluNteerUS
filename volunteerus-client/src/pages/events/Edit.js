@@ -8,6 +8,7 @@ import { setQuestions } from "../../actions/questionsActions";
 import CreateEventPart1 from "../../components/form/CreateEventPart1";
 import CreateEventPart2 from "../../components/form/CreateEventPart2";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
+import CreateEventPart3 from "../../components/form/CreateEventPart3";
 
 function EditEventDetails() {
   const { id, eventId } = useParams();
@@ -33,7 +34,8 @@ function EditEventDetails() {
       "image_url": "",
       "signup_by": "",
       "questions": null,
-      "role": user?.role
+      "role": user?.role,
+      "group": ["", "", ""]
     }
   );
 
@@ -62,7 +64,8 @@ function EditEventDetails() {
               "signup_by": event.signup_by,
               "questions": event.questions,
               "file": event.file,
-              "role": `${ response.data ? 'COMMITTEE MEMBER' : 'USER' }`
+              "role": `${ response.data ? 'COMMITTEE MEMBER' : 'USER' }`,
+              "group": event.group
             }
           );
         } catch (err) {
@@ -94,6 +97,16 @@ function EditEventDetails() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // validate grouping questions
+    if (details.group[0] === "Yes") {
+      if (details.group[1] === "-") {
+        setError("Please select a grouping type");
+        return;
+      } else if (details.group[2] === 1) {
+        setError("Group size cannot be 1");
+        return;
+      }
+    }
           
     // event details
     const eventData = new FormData();
@@ -107,6 +120,7 @@ function EditEventDetails() {
     eventData.append('image_url', details.image_url);
     eventData.append('file', details.file);
     eventData.append('questions', details.questions);
+    eventData.append('group', details.group);
 
     // event sign up form questions 
     const eventQuestions = Object.values(formQuestions).filter(question => question[1] !== "");
@@ -166,14 +180,22 @@ function EditEventDetails() {
             setError={ setError }
             setPage={ setPage }
           />
-          : <CreateEventPart2
+          : page === 2
+            ? <CreateEventPart2
               formQuestions={ formQuestions }
               setFormQuestions={ setFormQuestions }
               error={ error }
               setError={ setError }
               setPage={ setPage }
-              handleSubmit={ handleSubmit }
             />
+            : <CreateEventPart3
+                details={ details }
+                setDetails={ setDetails }
+                error={ error }
+                setError={ setError }
+                setPage={ setPage }
+                handleSubmit={ handleSubmit }
+              />
         }
       </div> 
     </CommitteeMemberProtected>

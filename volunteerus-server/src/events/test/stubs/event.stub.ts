@@ -15,6 +15,7 @@ export const eventStub = (): Event => {
         description: "Our food distribution programmes are run with sustainable charity in mind.",
         image_url: "Test Image URL",
         questions: questionStub(),
+        group: ["No", "-", 1]
     }
 };
 

@@ -8,6 +8,7 @@ import { setQuestions } from "../../actions/questionsActions";
 import CreateEventPart1 from "../../components/form/CreateEventPart1";
 import CreateEventPart2 from "../../components/form/CreateEventPart2";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
+import CreateEventPart3 from "../../components/form/CreateEventPart3";
 
 function CreateEvent() { 
   const navigate = useNavigate()
@@ -29,7 +30,9 @@ function CreateEvent() {
       "image_url": "",
       "file": null,
       "signup_by": "",
-      "role": user?.role
+      "role": user?.role,
+      // group[yes/no, group type, group size]
+      "group": ["No", "-", 1]
     }
   )
 
@@ -70,6 +73,16 @@ function CreateEvent() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // validate grouping questions
+    if (details.group[0] === "Yes") {
+      if (details.group[1] === "-") {
+        setError("Please select a grouping type");
+        return;
+      } else if (details.group[2] === 1) {
+        setError("Group size cannot be 1");
+        return;
+      }
+    }
     // create event
     try {
       // Update user role if is a committee member
@@ -107,6 +120,7 @@ function CreateEvent() {
           eventData.append('image_url', details.image_url);
           eventData.append('file', details.file);
           eventData.append('questions', response.data._id);
+          eventData.append('group', details.group);
 
           let eventsURL = new URL(`/events?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
           eventsURL = new URL(`/events?role=${"COMMITTEE MEMBER"}`, process.env.REACT_APP_BACKEND_API);
@@ -146,9 +160,17 @@ function CreateEvent() {
               setError={ setError }
               setPage={ setPage }
             />
-          : <CreateEventPart2
+          : page === 2
+            ? <CreateEventPart2
               formQuestions={ formQuestions }
               setFormQuestions={ setFormQuestions }
+              error={ error }
+              setError={ setError }
+              setPage={ setPage }
+            />
+            : <CreateEventPart3
+              details={ details }
+              setDetails={ setDetails }
               error={ error }
               setError={ setError }
               setPage={ setPage }

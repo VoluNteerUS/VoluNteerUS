@@ -11,4 +11,5 @@ export class CreateEventDto {
   description: string
   image_url: string
   questions: Question;
+  group: any[]
 }

@@ -36,6 +36,9 @@ export class Event {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Question.name })
     @Type(() => Question)
     questions: Question
+
+    @Prop()
+    group: any[]
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

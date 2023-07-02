@@ -49,6 +49,9 @@ export class EventsController {
         if (typeof event.cateogry === "string") {
           event.category = event.category.split(',');
         }
+        if (typeof event.group === "string") {
+          event.group = event.group.split(',');
+        }
 
         return this.eventService.create(event);
       } 
@@ -150,6 +153,9 @@ export class EventsController {
         }
         if (typeof event.cateogry === "string") {
           event.category = event.category.split(',');
+        }
+        if (typeof event.group === "string") {
+          event.group = event.group.split(',');
         }
 
         return this.eventService.update(id, event);
