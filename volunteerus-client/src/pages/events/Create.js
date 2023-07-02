@@ -10,7 +10,7 @@ import CreateEventPart2 from "../../components/form/CreateEventPart2";
 import CreateEventPart3 from "../../components/form/CreateEventPart3";
 import CreateEventPart4 from "../../components/form/CreateEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
-import CreateEventPart3 from "../../components/form/CreateEventPart3";
+import CreateEventPart5 from "../../components/form/CreateEventPart5";
 
 function CreateEvent() { 
   const navigate = useNavigate()
@@ -178,14 +178,22 @@ function CreateEvent() {
               setError={ setError }
               setPage={ setPage }
             />
-          : <CreateEventPart4
-            formQuestions={ formQuestions }
-            setFormQuestions={ setFormQuestions }
-            error={ error }
-            setError={ setError }
-            setPage={ setPage }
-            handleSubmit={ handleSubmit }
-          />
+            : page === 4
+              ? <CreateEventPart4
+                formQuestions={ formQuestions }
+                setFormQuestions={ setFormQuestions }
+                error={ error }
+                setError={ setError }
+                setPage={ setPage }
+              />
+              : <CreateEventPart5
+                details={ details }
+                setDetails={ setDetails }
+                error={ error }
+                setError={ setError }
+                setPage={ setPage }
+                handleSubmit={ handleSubmit }
+              />
       }
       </div> 
     </CommitteeMemberProtected>

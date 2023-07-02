@@ -63,10 +63,15 @@ function CreateEventPart3({ details, setDetails, error, setError, setPage }) {
                                         <p className="text-white">3</p>
                                     </span>
                                 </li>
+                                <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-grey-800 after:border-4 after:inline-block">
+                                  <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-grey-800 rounded-full lg:h-12 lg:w-12 shrink-0">
+                                    <p className="text-white">4</p>
+                                  </span>
+                                </li>
                                 <li className="flex items-center">
-                                    <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-grey-800 rounded-full lg:h-12 lg:w-12 shrink-0">
-                                        <p className="text-white">4</p>
-                                    </span>
+                                  <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-grey-800 rounded-full lg:h-12 lg:w-12 shrink-0">
+                                    <p className="text-white">5</p>
+                                  </span>
                                 </li>
                             </ol>
                             {/* Create event details form questions */}

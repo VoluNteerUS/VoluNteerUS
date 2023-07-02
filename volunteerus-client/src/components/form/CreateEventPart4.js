@@ -1,7 +1,13 @@
 import { XMarkIcon, MinusCircleIcon, PlusIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 
-function CreateEventPart4({ formQuestions, setFormQuestions, error, setError, setPage, handleSubmit }) {
+function CreateEventPart4({ formQuestions, setFormQuestions, error, setError, setPage }) {
+    const handleNext = (event) => {
+        event.preventDefault();
+        setError("");
+        setPage(5);
+    }
+
     const handleAddQuestion = () => {
         setError("");
         let length = Object.keys(formQuestions).length;
@@ -113,15 +119,20 @@ function CreateEventPart4({ formQuestions, setFormQuestions, error, setError, se
                                         <p className="text-white">3</p>
                                     </span>
                                 </li>
-                                <li className="flex items-center">
+                                <li className="flex items-center w-1/6 after:content-[''] after:w-full after:h-1 after:border-b after:border-grey-800 after:border-4 after:inline-block">
                                     <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-pink-400 rounded-full lg:h-12 lg:w-12 shrink-0">
                                         <p className="text-white">4</p>
+                                    </span>
+                                </li>
+                                <li className="flex items-center">
+                                    <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-grey-800 rounded-full lg:h-12 lg:w-12 shrink-0">
+                                        <p className="text-white">5</p>
                                     </span>
                                 </li>
                             </ol>
                             {/* Event sign up form questions */}
                             <h1 className="font-bold my-5">Sign Up Form Questions</h1>
-                            <form onSubmit={handleSubmit} className="flex flex-col space-y-5">
+                            <form onSubmit={handleNext} className="flex flex-col space-y-5">
                                 {Object.values(formQuestions).map((question) => (
                                     <>
                                         <div key={question[0]} className="flex space-x-3">
@@ -154,7 +165,7 @@ function CreateEventPart4({ formQuestions, setFormQuestions, error, setError, se
                                 <p className="text-red-700">{error}</p>
                                 <div className="flex space-x-2 justify-end py-10">
                                     <button type="button" onClick={handleAddQuestion} className="bg-grey-800 text-white rounded-lg px-2 py-1">Add Question</button>
-                                    <button type="submit" className="bg-pink-400 text-white rounded-lg px-3 py-1">Submit</button>
+                                    <button type="submit" className="bg-pink-400 text-white rounded-lg px-3 py-1">Next</button>
                                 </div>
                             </form>
                         </div>

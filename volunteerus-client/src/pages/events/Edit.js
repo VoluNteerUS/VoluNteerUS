@@ -10,7 +10,7 @@ import EditEventPart2 from "../../components/form/EditEventPart2";
 import EditEventPart3 from "../../components/form/EditEventPart3";
 import EditEventPart4 from "../../components/form/EditEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
-import CreateEventPart3 from "../../components/form/CreateEventPart3";
+import EditEventPart5 from "../../components/form/EditEventPart5";
 
 function EditEventDetails() {
   const { id, eventId } = useParams();
@@ -197,14 +197,22 @@ function EditEventDetails() {
               setError={ setError }
               setPage={ setPage }
             />
-          : <EditEventPart4
-            formQuestions={ formQuestions }
-            setFormQuestions={ setFormQuestions }
-            error={ error }
-            setError={ setError }
-            setPage={ setPage }
-            handleSubmit={ handleSubmit }
-          />
+            : page === 4
+              ? <EditEventPart4
+                formQuestions={ formQuestions }
+                setFormQuestions={ setFormQuestions }
+                error={ error }
+                setError={ setError }
+                setPage={ setPage } 
+              />
+              : <EditEventPart5
+                details={ details }
+                setDetails={ setDetails }
+                error={ error }
+                setError={ setError }
+                setPage={ setPage }
+                handleSubmit={ handleSubmit }
+              />
       }
     </CommitteeMemberProtected>
   ) 
