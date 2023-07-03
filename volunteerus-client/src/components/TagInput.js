@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 
-function TagInput({ onChildData, searchCallback, populateDataCallback, getTag, getData }) {
+function TagInput({ onChildData, searchCallback, populateDataCallback, getTag, getData, buttonLabel }) {
     const [tags, setTags] = useState([]);
     const [data, setData] = useState([]); // [ {id: 1}, {id: 2}
     const [input, setInput] = useState('');
@@ -119,7 +119,7 @@ function TagInput({ onChildData, searchCallback, populateDataCallback, getTag, g
                   className="bg-pink-500 hover:bg-pink-700 text-white text-center font-semibold py-2 px-6 rounded-lg block ml-auto"
                   onClick={sendDataToParent}
                 >
-                  Save Committee Members
+                  { buttonLabel }
                 </button>
             </div>
         </>

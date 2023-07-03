@@ -10,6 +10,7 @@ export class CreateResponseDto {
     4: any[];
     5: any[];
     6: any[];
+    selected_users: User[];
     status: string;
     submitted_on: Date;
 }

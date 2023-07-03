@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import imageCross from "../../assets/images/cross.png" 
 
-function SignUpForm({ questions, response, event, handleSubmit, handleChange, handleCheck, action }) {
+function SignUpPart2({ questions, response, event, handleSubmit, handleChange, handleCheck, action, setPage }) {
   const navigate = useNavigate();
 
   function inputType(question) {
@@ -50,11 +50,11 @@ function SignUpForm({ questions, response, event, handleSubmit, handleChange, ha
   return (
     action !== "View" 
       ? <div className="bg-pink-100"> 
-      <div className="flex items-center h-screen justify-center"> 
+      <div className="flex items-center min-h-screen justify-center"> 
         <div className="bg-white rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2 px-3"> 
           <button onClick={ () => navigate(-1) }>
             <img src={ imageCross } alt="cross" className="h-10 w-10 m-3 fill-pink-400"/> 
-          </button>
+          </button> 
           <div className="grid grid-cols-12 gap-4"> 
             <form onSubmit={ handleSubmit } className="col-span-12 sm:px-12 xl:py-2 mx-0 sm:mx-4">
               <h1 className="font-bold tracking-tight leading-none text-darkblue-900 sm:text-2xl md:text-3xl xl:text-4xl text-center mb-10 text-xl">Volunteer for { event?.title }</h1> 
@@ -64,17 +64,17 @@ function SignUpForm({ questions, response, event, handleSubmit, handleChange, ha
                   <label className="font-semibold">{ question[1] }</label> 
                   { inputType(question) }
                 </div> 
-            ))}
-            <div className="flex flex-row space-x-2 mb-10"> 
-              <input className="w-8 h-8" 
-                required  
-                type="checkbox"              
-              /> 
-              <label className="font-semibold">Confirm attendance</label> 
-            </div> 
-            <div className="flex justify-end"> 
-                <button type="submit" className="bg-pink-400 rounded-md text-white py-1 px-3 mb-10">{ action }</button> 
-            </div> 
+              ))}
+              <div className="flex flex-row space-x-2 mb-10"> 
+                <input className="w-8 h-8" 
+                  required  
+                  type="checkbox"              
+                /> 
+                <label className="font-semibold">Confirm attendance</label> 
+              </div> 
+              <div className="flex justify-end"> 
+                  <button type="submit" className="bg-pink-500 hover:bg-pink-700 text-white text-center font-semibold py-2 px-6 rounded-lg block ml-auto my-10">{ action }</button> 
+              </div> 
             </form> 
           </div> 
         </div> 
@@ -98,4 +98,4 @@ function SignUpForm({ questions, response, event, handleSubmit, handleChange, ha
   )
 }
 
-export default SignUpForm;
+export default SignUpPart2;

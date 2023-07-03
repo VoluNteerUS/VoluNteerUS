@@ -34,6 +34,9 @@ export class Response {
     @Prop()
     6: any[];
 
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
+    selected_users: User[];
+
     @Prop({ default: "Pending" })
     status: string;
 

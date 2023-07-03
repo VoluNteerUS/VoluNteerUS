@@ -653,6 +653,7 @@ function EditOrganizationPage() {
                     getTag={ (item) => `${item.full_name} <${item.email}>` }
                     getData={ (item) => item._id }
                     populateDataCallback = { getCommitteeMembers }
+                    buttonLabel="Save Committee Members"
                   />
                 </div>
               </div>

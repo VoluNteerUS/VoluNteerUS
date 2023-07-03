@@ -6,11 +6,11 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
 import { ChevronDownIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
-import SignUpForm from "../../components/form/SignUpForm";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
+import SignUpPart2 from "../../components/form/SignUpPart2";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -270,7 +270,7 @@ function Responses() {
               <ChevronDownIcon width={25} height={25}/>
             </Disclosure.Button>
             <Disclosure.Panel className="col-span-6">
-            <SignUpForm
+            <SignUpPart2
               questions={ Object.values(questions).filter((question) => question.length > 1 && question != event.questions) }
               response={ response }
               event={ event }

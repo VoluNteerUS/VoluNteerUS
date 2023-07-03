@@ -5,7 +5,8 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvent } from "../../actions/eventActions";
 import { setResponses } from "../../actions/responsesActions";
-import SignUpForm from "../../components/form/SignUpForm";
+import SignUpPart1 from "../../components/form/SignUpPart1";
+import SignUpPart2 from "../../components/form/SignUpPart2";
  
 function EventSignup() { 
   const { id } = useParams();
@@ -21,7 +22,8 @@ function EventSignup() {
   const user = persistedUserState?.user || "Unknown";
   const user_id = user?.id;
 
-  const [response, setResponse] = useState({ "user": user_id });
+  const [response, setResponse] = useState({ "user": user_id, selected_users: [] });
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     // check if user has submitted a response
@@ -144,16 +146,38 @@ function EventSignup() {
 
   return ( 
     <> 
-      <Navbar /> 
-      <SignUpForm
-        questions={ questions }
-        response={ response }
-        event={ event }
-        handleSubmit={ handleSubmit }
-        handleChange={ handleChange }
-        handleCheck={ handleCheck }
-        action="Submit"
-      />
+      <Navbar />
+      { event?.group[1] === "With friends"
+        ? page === 1
+          ? <SignUpPart1
+              response={ response }
+              setResponse={ setResponse }
+              event={ event }
+              handleSubmit={ handleSubmit }
+              action="Submit"
+              setPage={ setPage }
+            />
+          : <SignUpPart2
+            questions={ questions }
+            response={ response }
+            event={ event }
+            handleSubmit={ handleSubmit }
+            handleChange={ handleChange }
+            handleCheck={ handleCheck }
+            action="Submit"
+            setPage={ setPage }
+          />
+        : <SignUpPart2
+          questions={ questions }
+          response={ response }
+          event={ event }
+          handleSubmit={ handleSubmit }
+          handleChange={ handleChange }
+          handleCheck={ handleCheck }
+          action="Submit"
+          setPage={ setPage }
+        />
+      } 
     </> 
   ) 
 } 

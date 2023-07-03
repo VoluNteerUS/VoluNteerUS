@@ -20,7 +20,7 @@ export class ResponsesService {
   }
 
   public async findOne(id: mongoose.Types.ObjectId): Promise<Response> {
-    const response = await this.responsesModel.findById(id).exec();
+    const response = await this.responsesModel.findById(id).populate("selected_users", "-password -registered_on -role -__v").exec();
     return response;
   }
 

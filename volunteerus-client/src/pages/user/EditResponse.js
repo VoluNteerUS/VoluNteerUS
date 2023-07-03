@@ -2,15 +2,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import SignUpForm from "../../components/form/SignUpForm";
 import { useSelector, useDispatch } from "react-redux";
 import { setResponses } from "../../actions/responsesActions";
+import SignUpPart2 from "../../components/form/SignUpPart2";
+import SignUpPart1 from "../../components/form/SignUpPart1";
 
 function EditResponse() {
   const { id } = useParams();
   const [response, setResponse] = useState({});
   const [questions, setQuestions] = useState({});
   const [event, setEvent] = useState({});
+  const [page, setPage] = useState(1);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -34,7 +36,8 @@ function EditResponse() {
       const questionsURL = new URL(`/questions/${ question_id }`, process.env.REACT_APP_BACKEND_API);
       const questionsRes = await axios.get(questionsURL);
       const question = questionsRes.data;
-      setQuestions(question);
+      const finalQuestions = Object.values(question).filter(q => q.length > 2 && q[1] !== "" && q !== question_id);
+      setQuestions(finalQuestions);
     } catch (err) {
       console.error({ err });
     }
@@ -113,15 +116,37 @@ function EditResponse() {
   return (
     <>
       <Navbar />
-      <SignUpForm
-        questions={ Object.values(questions).filter((question) => question.length > 1 && question !== event.questions) }
-        response={ response }
-        event={ event }
-        handleSubmit={ handleSubmit }
-        handleChange={ handleChange }
-        handleCheck={ handleCheck }
-        action="Update"
-      />
+      { !event?.group ? "" : event?.group[1] === "With friends"
+        ? page === 1
+          ? <SignUpPart1
+              response={ response }
+              setResponse={ setResponse }
+              event={ event }
+              handleSubmit={ handleSubmit }
+              action="Submit"
+              setPage={ setPage }
+            />
+          : <SignUpPart2
+            questions={ questions }
+            response={ response }
+            event={ event }
+            handleSubmit={ handleSubmit }
+            handleChange={ handleChange }
+            handleCheck={ handleCheck }
+            action="Submit"
+            setPage={ setPage }
+          />
+        : <SignUpPart2
+          questions={ questions }
+          response={ response }
+          event={ event }
+          handleSubmit={ handleSubmit }
+          handleChange={ handleChange }
+          handleCheck={ handleCheck }
+          action="Submit"
+          setPage={ setPage }
+        />
+      } 
     </>
   )
 }
