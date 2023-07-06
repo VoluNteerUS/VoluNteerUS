@@ -69,7 +69,7 @@ function App() {
           {/* id === organization_id */}
           <Route path=":id">
             <Route path=":eventId/edit" element={<EditEventDetails />} />
-            <Route path=":eventId/responses" element={<ViewResponses />} />
+            <Route path=":eventId/volunteers" element={<ViewResponses />} />
           </Route>
           <Route path="organizations">
             <Route index element={<OrganizationsPage />} />

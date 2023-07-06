@@ -42,6 +42,9 @@ export class Response {
 
     @Prop()
     submitted_on: Date;
+
+    @Prop({ default: "Not applicable" })
+    attendance: string;
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(Response);

@@ -5,7 +5,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
-import { ChevronDownIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ClipboardDocumentCheckIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
@@ -18,7 +18,7 @@ function classNames(...classes) {
 
 function Responses() {
   const { id, eventId } = useParams();
-  const persistedUserState = useSelector((state) => state.user);
+  const persistedUserState = useSelector((state) => state?.user);
   const user = persistedUserState?.user || 'Unknown';
   const [event, setEvent] = useState({});
   const [questions, setQuestions] = useState([]);
@@ -29,6 +29,7 @@ function Responses() {
   const tabs = ["Accepted", "Pending", "Rejected"];
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [role, setRole] = useState(user.role);
   const [responseToUpdate, setResponseToUpdate] = useState({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [paginationState, setPaginationState] = useState({
@@ -54,12 +55,12 @@ function Responses() {
 
   const getResponseInformation = async () => {
     try {
-      const eventURL = new URL(`/events/${eventId}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+      const eventURL = new URL(`/events/${eventId}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
       const eventRes = await axios.get(eventURL);
       const event = eventRes.data;
       setEvent(event);
 
-      const questionsURL = new URL(`/questions/${event.questions}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+      const questionsURL = new URL(`/questions/${event?.questions}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
       const questionsRes = await axios.get(questionsURL);
       const questions = questionsRes.data;
       setQuestions(questions);
@@ -95,6 +96,18 @@ function Responses() {
           totalPages: paginatedPendingResponses.totalPages,
         }
       })
+
+      // Check if user is a committee member
+      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+      const checkCommitteeMemberRequestBody = {
+        userId: user.id,
+        organizationId: id
+      }
+
+      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+      if (response.data) {
+        setRole('COMMITTEE MEMBER');
+      }
     } catch (err) {
       console.error({ err });
     }
@@ -102,7 +115,7 @@ function Responses() {
 
   useEffect(() => {
     getResponseInformation();
-  }, [])
+  }, [acceptedResponses])
 
   const handleSubmit = () => {
 
@@ -131,10 +144,15 @@ function Responses() {
 
   const handleConfirmUpdate = async () => {
     // Send request to server
-    const requestBody = { ...responseToUpdate, status: `${ action }ed` };
-
+    let requestBody;
+    if (action === "Accept") {
+      requestBody = { ...responseToUpdate, status: `Accepted`, attendance: "Present" };
+    } else {
+      requestBody = { ...responseToUpdate, status: `Rejected`, attendance: "Not applicable" };
+    }
+    
     // Endpoint for responses
-    const responsesURL = new URL(`/responses/${ responseToUpdate?._id }?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
+    const responsesURL = new URL(`/responses/${ responseToUpdate?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
 
     // Send PATCH request to update response
     await axios.patch(responsesURL, requestBody).then((res) => {
@@ -271,7 +289,7 @@ function Responses() {
             </Disclosure.Button>
             <Disclosure.Panel className="col-span-6">
             <SignUpPart2
-              questions={ Object.values(questions).filter((question) => question.length > 1 && question != event.questions) }
+              questions={ Object.values(questions).filter((question) => question.length > 1 && question !== event.questions) }
               response={ response }
               event={ event }
               handleSubmit={ handleSubmit }
@@ -286,10 +304,41 @@ function Responses() {
     );
   }
 
+  const handleAttendance = async (e, response, attendance) => {
+    e.preventDefault();
+
+    // Send request to server
+    const requestBody = { ...response, attendance: `${attendance}`};
+
+    // Endpoint for responses
+    const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
+
+    // Send PATCH request to update response
+    await axios.patch(responsesURL, requestBody).then((res) => {
+      console.log(res);
+      if (!res.data) {
+        alert(`You do not have permission to ${ action }.`);
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
+
+    setResponseToUpdate({});
+    setIsDialogOpen(false);
+            
+    // Send GET request to get updated responses
+    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+
+    // Update responses in redux store
+    dispatch(updateResponses(updatedResponses));
+  }
+
   return (
     <CommitteeMemberProtected user={user} organization_id={id}>
       <Navbar />
-      <div className="w-screen lg:w-5/6 block mx-auto">
+      <div className="w-screen lg:w-5/6 p-3 block mx-auto">
         <div className="text-2xl my-10 font-bold flex space-x-3">
           <h1>{ event?.title } responses</h1>
           <ClipboardDocumentListIcon width={25} height={25} />
@@ -361,6 +410,37 @@ function Responses() {
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
+        <div>
+          <div className="text-2xl mt-20 font-bold flex space-x-3">
+            <h1>{ event?.title } attendance</h1>
+            <ClipboardDocumentCheckIcon width={25} height={25} />
+          </div>
+          <p className="text-sm font-extralight mb-10">P: Present, A: Absent, L: Late</p>
+          <div className="pb-10 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 rounded-lg bg-grey-100">
+            {acceptedResponses.filter((response) => response?.status === "Accepted").map((response) => {
+              return (
+                <div className="max-w-sm flex flex-col border py-5 justify-center text-center m-3 rounded-lg bg-white shadow-md">
+                  <img className="h-14 w-14 rounded-full m-auto" src={ response?.user["profile_picture"] === "" ? `https://ui-avatars.com/api/?name=${response?.user["full_name"]}&background=0D8ABC&color=fff` : response?.user["profile_picture"] } alt="Profile Picture" />
+                  <p className="my-3">{ response?.user["full_name"] }</p>
+                  <div className="space-x-3 mt-2">
+                    <button onClick={ (e) => handleAttendance(e, response, "Present") } className={ response?.attendance === "Present"
+                      ? 'w-10 h-10 rounded-full p-2 border bg-green-500 border-green-900 text-white'
+                      : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
+                      }>P</button>
+                    <button onClick={ (e) => handleAttendance(e, response, "Absent") } className={ response?.attendance === "Absent"
+                      ? 'w-10 h-10 rounded-full p-2 border bg-red-500 border-red-900 text-white'
+                      : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
+                      }>A</button>
+                    <button onClick={ (e) => handleAttendance(e, response, "Late") } className={ response?.attendance === "Late"
+                      ? 'w-10 h-10 rounded-full p-2 border bg-yellow-500 border-yellow-900 text-white'
+                      : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
+                      }>L</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
       {isDialogOpen && (
         <AppDialog

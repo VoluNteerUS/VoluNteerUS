@@ -347,8 +347,8 @@ function OrganizationDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                              <Link to={`/${id}/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
-                                Responses
+                              <Link to={`/${id}/${event._id}/volunteers`} className="text-primary-600 hover:text-primary-800">
+                                Volunteers
                               </Link>
                               <span className="px-2">|</span>
                               <Link to={`/${id}/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">
@@ -431,8 +431,8 @@ function OrganizationDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm a')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${event.date[1]} ${event.date[3]}`).format('MMMM Do YYYY, h:mm a')}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                              <Link to={`/${id}/${event._id}/responses`} className="text-primary-600 hover:text-primary-800">
-                                Responses
+                              <Link to={`/${id}/${event._id}/volunteers`} className="text-primary-600 hover:text-primary-800">
+                                Volunteers
                               </Link>
                               <span className="px-2">|</span>
                               <Link to={`/${id}/${event._id}/edit`} className="text-primary-600 hover:text-primary-800">

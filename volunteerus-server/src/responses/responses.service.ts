@@ -70,7 +70,7 @@ export class ResponsesService {
   public async getAcceptedResponsesByEvent(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Response>> {
     const skip = (page - 1) * limit;
     const [data, totalItems] = await Promise.all([
-      this.responsesModel.find({ event: id }).populate('user', 'full_name').skip(skip).limit(limit).exec(),
+      this.responsesModel.find({ event: id }).populate('user', "-password -registered_on -role -__v").skip(skip).limit(limit).exec(),
       this.responsesModel.countDocuments({ event: id, status: "Accepted" }).exec()
     ]);
     const totalPages = Math.ceil(totalItems / limit);
