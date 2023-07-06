@@ -57,6 +57,7 @@ describe('EventsService', () => {
             description: eventStub().description,
             image_url: eventStub().image_url,
             questions: eventStub().questions,
+            group: eventStub().group,
         }
         event = await service.create(newEvent);
       });

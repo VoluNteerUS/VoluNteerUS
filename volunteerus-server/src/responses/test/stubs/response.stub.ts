@@ -16,7 +16,8 @@ export const responseStub = (): Response => {
         6: [],
         selected_users: [],
         status: "Pending",
-        submitted_on: new Date("2023-06-24T12:38:00.000+08:00")
+        submitted_on: new Date("2023-06-24T12:38:00.000+08:00"),
+        attendance: "Not applicable"
     }
 };
 
@@ -40,6 +41,7 @@ export const updatedResponseStub = (): Response => {
         6: [],
         selected_users: [],
         status: "Approved",
-        submitted_on: new Date("2023-06-24T12:38:00.000+08:00")
+        submitted_on: new Date("2023-06-24T12:38:00.000+08:00"),
+        attendance: "Present"
     }
 }
