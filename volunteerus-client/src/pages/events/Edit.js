@@ -37,7 +37,7 @@ function EditEventDetails() {
       "signup_by": "",
       "questions": null,
       "role": user?.role,
-      "group": ["", "", ""]
+      "groupSettings": ["", "", ""]
     }
   );
 
@@ -67,7 +67,7 @@ function EditEventDetails() {
               "questions": event.questions,
               "file": event.file,
               "role": `${ response.data ? 'COMMITTEE MEMBER' : 'USER' }`,
-              "group": event.group
+              "groupSettings": event.groupSettings
             }
           );
         } catch (err) {
@@ -100,11 +100,11 @@ function EditEventDetails() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     // validate grouping questions
-    if (details.group[0] === "Yes") {
-      if (details.group[1] === "-") {
+    if (details.groupSettings[0] === "Yes") {
+      if (details.groupSettings[1] === "-") {
         setError("Please select a grouping type");
         return;
-      } else if (details.group[2] === 1) {
+      } else if (details.groupSettings[2] === 1) {
         setError("Group size cannot be 1");
         return;
       }
@@ -122,7 +122,7 @@ function EditEventDetails() {
     eventData.append('image_url', details.image_url);
     eventData.append('file', details.file);
     eventData.append('questions', details.questions);
-    eventData.append('group', details.group);
+    eventData.append('groupSettings', details.groupSettings);
 
     // event sign up form questions 
     const eventQuestions = Object.values(formQuestions).filter(question => question[1] !== "");
@@ -172,48 +172,50 @@ function EditEventDetails() {
 
   return ( 
     <CommitteeMemberProtected user={user} organization_id={id}>
-      <Navbar /> 
-      { page === 1 
-          ? <EditEventPart1
-          details={ details }
-          setDetails={ setDetails }
-          error={ error }
-          setError={ setError }
-          setPage={ setPage }
-        />
-        : page === 2 
-          ? <EditEventPart2
+      <div className="bg-pink-100 min-h-screen">
+        <Navbar /> 
+        { page === 1 
+            ? <EditEventPart1
             details={ details }
             setDetails={ setDetails }
             error={ error }
             setError={ setError }
             setPage={ setPage }
           />
-          : page === 3
-            ? <EditEventPart3
+          : page === 2 
+            ? <EditEventPart2
               details={ details }
               setDetails={ setDetails }
               error={ error }
               setError={ setError }
               setPage={ setPage }
             />
-            : page === 4
-              ? <EditEventPart4
-                formQuestions={ formQuestions }
-                setFormQuestions={ setFormQuestions }
-                error={ error }
-                setError={ setError }
-                setPage={ setPage } 
-              />
-              : <EditEventPart5
+            : page === 3
+              ? <EditEventPart3
                 details={ details }
                 setDetails={ setDetails }
                 error={ error }
                 setError={ setError }
                 setPage={ setPage }
-                handleSubmit={ handleSubmit }
               />
-      }
+              : page === 4
+                ? <EditEventPart4
+                  formQuestions={ formQuestions }
+                  setFormQuestions={ setFormQuestions }
+                  error={ error }
+                  setError={ setError }
+                  setPage={ setPage } 
+                />
+                : <EditEventPart5
+                  details={ details }
+                  setDetails={ setDetails }
+                  error={ error }
+                  setError={ setError }
+                  setPage={ setPage }
+                  handleSubmit={ handleSubmit }
+                />
+        }
+      </div>
     </CommitteeMemberProtected>
   ) 
 }

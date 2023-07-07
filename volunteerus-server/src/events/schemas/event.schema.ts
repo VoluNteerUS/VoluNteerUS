@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import mongoose, { Document } from "mongoose"
 import { Question } from "../../questions/schemas/question.schema";
 import { Organization } from "../../organizations/schemas/organization.schema";
+import { Group } from "../../types/group";
 
 export type EventDocument = Event & Document;
 
@@ -38,7 +39,10 @@ export class Event {
     questions: Question
 
     @Prop()
-    group: any[]
+    groupSettings: any[]
+
+    @Prop()
+    groups: Group[]
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

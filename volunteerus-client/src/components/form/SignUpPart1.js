@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom"
-import imageCross from "../../assets/images/cross.png" 
+import { useNavigate } from "react-router-dom";
+import imageCross from "../../assets/images/cross.png"; 
 import TagInput from "../TagInput";
 import axios from "axios";
 
@@ -8,7 +8,7 @@ function SignUpPart1({ response, setResponse, event, handleSubmit, action, setPa
 
   const searchUsers = async (search) => {
     const usersURL = new URL(`/users/search?query=${search}`, process.env.REACT_APP_BACKEND_API);
-    const users = await axios.get(usersURL).then((res) => res.data);
+    let users = await axios.get(usersURL).then((res) => res.data);
     return users;
   }
 

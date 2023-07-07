@@ -3,6 +3,7 @@ import { organizationStub } from "../../../organizations/test/stubs/organization
 import { questionStub, updatedQuestionStub } from "../../../questions/test/stubs/question.stub"
 import mongoose from "mongoose";
 import { PaginationResult } from "../../../types/pagination";
+import { group } from "console";
 
 export const eventStub = (): Event => {
     return {
@@ -15,7 +16,8 @@ export const eventStub = (): Event => {
         description: "Our food distribution programmes are run with sustainable charity in mind.",
         image_url: "Test Image URL",
         questions: questionStub(),
-        group: ["No", "-", "1"]
+        groupSettings: ["No", "-", "1"],
+        groups: []
     }
 };
 

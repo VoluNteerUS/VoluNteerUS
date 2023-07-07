@@ -70,34 +70,37 @@ export class ResponsesService {
   public async getAcceptedResponsesByEvent(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Response>> {
     const skip = (page - 1) * limit;
     const [data, totalItems] = await Promise.all([
-      this.responsesModel.find({ event: id }).populate('user', "-password -registered_on -role -__v").skip(skip).limit(limit).exec(),
+      this.responsesModel.find({ event: id, status: "Accepted" }).populate('user', "-password -registered_on -role -__v").skip(skip).limit(limit).exec(),
       this.responsesModel.countDocuments({ event: id, status: "Accepted" }).exec()
     ]);
     const totalPages = Math.ceil(totalItems / limit);
-    const acceptedResponses = data.filter(response => response.status === "Accepted");
-    return new PaginationResult<Response>(acceptedResponses, page, totalItems, totalPages);
+    // const acceptedResponses = data.filter(response => response.status === "Accepted");
+    // return new PaginationResult<Response>(acceptedResponses, page, totalItems, totalPages);
+    return new PaginationResult<Response>(data, page, totalItems, totalPages);
   }
 
   public async getPendingResponsesByEvent(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Response>> {
     const skip = (page - 1) * limit;
     const [data, totalItems] = await Promise.all([
-      this.responsesModel.find({ event: id }).populate('user', 'full_name').skip(skip).limit(limit).exec(),
+      this.responsesModel.find({ event: id, status: "Pending" }).populate('user', 'full_name').skip(skip).limit(limit).exec(),
       this.responsesModel.countDocuments({ event: id, status: "Pending" }).exec()
     ]);
     const totalPages = Math.ceil(totalItems / limit);
-    const pendingResponses = data.filter(response => response.status === "Pending");
-    return new PaginationResult<Response>(pendingResponses, page, totalItems, totalPages);
+    // const pendingResponses = data.filter(response => response.status === "Pending");
+    // return new PaginationResult<Response>(pendingResponses, page, totalItems, totalPages);
+    return new PaginationResult<Response>(data, page, totalItems, totalPages);
   }
 
   public async getRejectedResponsesByEvent(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Response>> {
     const skip = (page - 1) * limit;
     const [data, totalItems] = await Promise.all([
-      this.responsesModel.find({ event: id }).populate('user', 'full_name').skip(skip).limit(limit).exec(),
+      this.responsesModel.find({ event: id, status: "Rejected" }).populate('user', 'full_name').skip(skip).limit(limit).exec(),
       this.responsesModel.countDocuments({ event: id, status: "Rejected" }).exec()
     ]);
     const totalPages = Math.ceil(totalItems / limit);
-    const rejectedResponses = data.filter(response => response.status === "Rejected");
-    return new PaginationResult<Response>(rejectedResponses, page, totalItems, totalPages);
+    // const rejectedResponses = data.filter(response => response.status === "Rejected");
+    // return new PaginationResult<Response>(rejectedResponses, page, totalItems, totalPages);
+    return new PaginationResult<Response>(data, page, totalItems, totalPages);
   }
 
   findOneByUser(user: User): Promise<Response> {

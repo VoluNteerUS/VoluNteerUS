@@ -34,7 +34,7 @@ function CreateEvent() {
       "signup_by": "",
       "role": user?.role,
       // group[yes/no, group type, group size]
-      "group": ["No", "-", 1]
+      "groupSettings": ["No", "-", 1]
     }
   )
 
@@ -76,11 +76,11 @@ function CreateEvent() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     // validate grouping questions
-    if (details.group[0] === "Yes") {
-      if (details.group[1] === "-") {
+    if (details.groupSettings[0] === "Yes") {
+      if (details.groupSettings[1] === "-") {
         setError("Please select a grouping type");
         return;
-      } else if (details.group[2] === 1) {
+      } else if (details.groupSettings[2] === 1) {
         setError("Group size cannot be 1");
         return;
       }
@@ -122,7 +122,7 @@ function CreateEvent() {
           eventData.append('image_url', details.image_url);
           eventData.append('file', details.file);
           eventData.append('questions', response.data._id);
-          eventData.append('group', details.group);
+          eventData.append('groupSettings', details.groupSettings);
 
           let eventsURL = new URL(`/events?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
           eventsURL = new URL(`/events?role=${"COMMITTEE MEMBER"}`, process.env.REACT_APP_BACKEND_API);
@@ -152,7 +152,7 @@ function CreateEvent() {
 
   return ( 
     <CommitteeMemberProtected user={user} organization_id={id}>
-      <div> 
+      <div className="bg-pink-100 min-h-screen"> 
         <Navbar /> 
         { page === 1 
           ? <CreateEventPart1

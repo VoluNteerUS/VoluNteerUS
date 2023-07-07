@@ -68,7 +68,7 @@ function TagInput({ onChildData, searchCallback, populateDataCallback, getTag, g
                             </div>
                         ))}
                         <input
-                            className="text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none"
+                            className={tags.length == 0 ? "w-screen text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none" : "text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none" }
                             value={input}
                             onChange={(event) => { 
                                 setInput(event.target.value);

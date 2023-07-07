@@ -67,7 +67,6 @@ function Submissions() {
   }
 
   const body = (obj) => {
-    console.log(obj);
     return (
       <tbody key={obj?.response?._id}>
         <tr className="text-sm grid grid-cols-5 border-b items-center">
@@ -158,6 +157,7 @@ function Submissions() {
       const responseEvents = Promise.all(responses.map((response) => 
         getEventByResponse(response)
       )).then((eventResults) => {
+        console.log(eventResults);
         setEvents(eventResults);
     })
     }

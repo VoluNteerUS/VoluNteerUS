@@ -8,6 +8,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import mongoose from 'mongoose';
 import { PaginationResult } from '../types/pagination';
 import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.factory';
+import { CreateGroupingDto } from './dto/create-grouping.dto';
 
 @Controller('events')
 export class EventsController {
@@ -46,15 +47,23 @@ export class EventsController {
         if (typeof event.date === "string") {
           event.date = event.date.split(',');
         }
-        if (typeof event.cateogry === "string") {
+        if (typeof event.category === "string") {
           event.category = event.category.split(',');
         }
-        if (typeof event.group === "string") {
-          event.group = event.group.split(',');
+        if (typeof event.groupSettings === "string") {
+          event.groupSettings = event.groupSettings.split(',');
         }
 
         return this.eventService.create(event);
       } 
+    }
+
+    @Post('/groupings/create')
+    async createGroupings(@Query('role') role: string, @Body() createGroupingsDto: CreateGroupingDto) {
+      const ability = this.caslAbilityFactory.createForUser(role);
+      if (ability.can('create', Event)) {
+        return this.eventService.createGroupings(createGroupingsDto);
+      }
     }
     
     @Get()
@@ -93,7 +102,9 @@ export class EventsController {
     findUpcomingEvents(
       @Query('organization_id') organization_id: mongoose.Types.ObjectId,
       @Query('page') page: number = 1,
-      @Query('limit') limit: number = 10
+      @Query('limit') limit: number = 10,
+      @Query('search') search: string = '',
+      @Query('categories') categories: string = ''
     ): Promise<PaginationResult<Event>> {
       const parsedPage = parseInt(page.toString(), 10) || 1;
       const parsedLimit = parseInt(limit.toString(), 10) || 10;
@@ -106,7 +117,10 @@ export class EventsController {
       if (organization_id) {
         return this.eventService.getUpcomingEventsByOrganization(organization_id, parsedPage, parsedLimit);
       }
-      return this.eventService.findUpcomingEvents(parsedPage, parsedLimit);
+      let parsedCategories = (categories === '') ? [] : categories.split(',');
+      // console.log(parsedCategories);
+      // console.log(parsedCategories.length);
+      return this.eventService.findUpcomingEvents(search, parsedCategories, parsedPage, parsedLimit);
     }
 
     @Get('/past')
@@ -151,11 +165,11 @@ export class EventsController {
         if (typeof event.date === "string") {
           event.date = event.date.split(',');
         }
-        if (typeof event.cateogry === "string") {
+        if (typeof event.category === "string") {
           event.category = event.category.split(',');
         }
-        if (typeof event.group === "string") {
-          event.group = event.group.split(',');
+        if (typeof event.groupSettings === "string") {
+          event.groupSettings = event.groupSettings.split(',');
         }
 
         return this.eventService.update(id, event);

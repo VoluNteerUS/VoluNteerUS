@@ -44,7 +44,6 @@ function Home() {
             axios.get(eventsURL)
                 .then((res) => {
                     const events = res.data.result;
-                    console.log({ events });
                     setAllEvents(events);
                 })
                 .catch(err => console.error({ err }));

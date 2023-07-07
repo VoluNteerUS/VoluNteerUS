@@ -46,56 +46,92 @@ function Events() {
     totalPages: 0,
     category: [...filters],
     sort: [...sorts.slice(0, 1)],
-    queryEvents: "",
   })
 
   useEffect(() => {
     getAllEvents();
-  }, [state.currentPage]);
+  }, [state.currentPage, queryEvents, filteredCategory]);
 
   const getAllEvents = () => {
-    const eventsURL = new URL(`/events?page=${state.currentPage}&limit=${state.limit}`, process.env.REACT_APP_BACKEND_API);
-    axios.get(eventsURL)
+    const upcomingEventsURL = new URL(`/events/upcoming?page=${state.currentPage}&limit=${state.limit}&search=${queryEvents}&categories=${filteredCategory}`, process.env.REACT_APP_BACKEND_API);
+    axios.get(upcomingEventsURL)
       .then((res) => {
         const paginatedEvents = { ...res.data };
+        console.log(paginatedEvents);
         const events = paginatedEvents.result;
         setAllEvents(events);
-        setState({ 
-          ...state, 
+        setState({
+          ...state,
           events: paginatedEvents.result,
           totalItems: paginatedEvents.totalItems,
           totalPages: paginatedEvents.totalPages
         });
       })
-    .catch(err => console.error({ err }));
+      .catch(err => console.error({ err }));
+
+    // const eventsURL = new URL(`/events?page=${state.currentPage}&limit=${state.limit}`, process.env.REACT_APP_BACKEND_API);
+    // axios.get(eventsURL)
+    //   .then((res) => {
+    //     const paginatedEvents = { ...res.data };
+    //     const events = paginatedEvents.result;
+    //     setAllEvents(events);
+    //     setState({ 
+    //       ...state, 
+    //       events: paginatedEvents.result,
+    //       totalItems: paginatedEvents.totalItems,
+    //       totalPages: paginatedEvents.totalPages
+    //     });
+    //   })
+    // .catch(err => console.error({ err }));
+  }
+
+  const getEvent = (title) => {
+    const upcomingEventsURL = new URL(`/events/upcoming?page=${state.currentPage}&limit=${state.limit}&search=${title}&categories=${filteredCategory}`, process.env.REACT_APP_BACKEND_API);
+    axios.get(upcomingEventsURL)
+      .then((res) => {
+        const paginatedEvents = { ...res.data };
+        console.log(paginatedEvents);
+        const events = paginatedEvents.result;
+        setAllEvents(events);
+        setState({
+          ...state,
+          events: paginatedEvents.result,
+          totalItems: paginatedEvents.totalItems,
+          totalPages: paginatedEvents.totalPages
+        });
+      })
+      .catch(err => console.error({ err }));
   }
 
   useEffect(() => {
-    getAllEvents();
+    // getAllEvents();
     // if user clicked on an event to navigate to detailed event
     if (location?.state) {
+      getEvent(location.state.title);
       setQueryEvents(location.state.title);
     }
   }, []);
 
   // sort + filter according to search query
   useEffect(() => {
-    let newAllEvents = allEvents.filter(event => toFilter(event));
+    // let newAllEvents = allEvents.filter(event => toFilter(event));
+    let newAllEvents = allEvents
     sort === 'Event title' ? newAllEvents.sort((a, b) => a.title - b.title)
-      : sort === 'Date: latest to earliest' 
-      ? newAllEvents.sort((a, b) => new Date(a.date[0]).getTime() === new Date(b.date[0]).getTime()
-        ? b.date[2] - a.date[2] 
-        : new Date(b.date[0]).getTime() - new Date(a.date[0]).getTime())
-      : newAllEvents.sort((a, b) => new Date(a.date[0]).getTime() === new Date(b.date[0]).getTime()
-        ? a.date[2] - b.date[2] 
-        : new Date(a.date[0]).getTime() - new Date(b.date[0]).getTime());
+      : sort === 'Date: latest to earliest'
+        ? newAllEvents.sort((a, b) => new Date(a.date[0]).getTime() === new Date(b.date[0]).getTime()
+          ? b.date[2] - a.date[2]
+          : new Date(b.date[0]).getTime() - new Date(a.date[0]).getTime())
+        : newAllEvents.sort((a, b) => new Date(a.date[0]).getTime() === new Date(b.date[0]).getTime()
+          ? a.date[2] - b.date[2]
+          : new Date(a.date[0]).getTime() - new Date(b.date[0]).getTime());
 
-    console.log(queryEvents);
-    const searchEvents = queryEvents ? newAllEvents.filter((event) => {
-      return event.title.toLowerCase().includes(queryEvents.toLowerCase());
-    }) : newAllEvents;
-    
-    setFilteredEvents(searchEvents);
+    // console.log(queryEvents);
+    // const searchEvents = queryEvents ? newAllEvents.filter((event) => {
+    //   return event.title.toLowerCase().includes(queryEvents.toLowerCase());
+    // }) : newAllEvents;
+
+    // setFilteredEvents(searchEvents);
+    setFilteredEvents(newAllEvents);
   }, [filteredCategory, allEvents, sort, queryEvents])
 
   const toFilter = ((event) => {
@@ -132,11 +168,11 @@ function Events() {
                   <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 object-contain" aria-hidden="true" />
                 </button>
               </span>
-              <input 
-                type="search" 
-                className="h-10 py-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full" 
+              <input
+                type="search"
+                className="h-10 py-2 pe-2 text-sm text-gray-700 bg-white rounded-md pl-10 focus:outline-blue-500 w-full"
                 placeholder="Search events"
-                value= { queryEvents }
+                value={queryEvents}
                 onChange={(e) => {
                   setQueryEvents(e.target.value);
                 }}
@@ -145,86 +181,86 @@ function Events() {
           </form>
           <div className="flex flex-row space-x-2">
             {/* filter button */}
-            <div className="flex flex-col"> 
+            <div className="flex flex-col">
               <Listbox value={filteredCategory} onChange={setFilteredCategory} multiple>
-                <Listbox.Button className="bg-white rounded-3xl p-2 border border-black flex items-center space-x-1 shadow-md">
-                  <p>Filter</p>
-                  <FunnelIcon className="fill-black w-5 h-5 flex" aria-hidden="true" />
-                </Listbox.Button>
-                
-                <Listbox.Options className="overflow-auto shadow-lg bg-white">
-                  {filters.map((filter) => (
-                    <Listbox.Option 
-                      key={filter} 
-                      value={filter}
-                      className={({ active }) =>
-                        `relative select-none py-2 px-2 ${
-                        active ? 'bg-pink-400 text-white' : 'text-black'
-                        }`
-                      } >
-              
-                      <div className="flex flex-row">
-                      {filteredCategory.includes(filter) ? (
-                        <span className="text-black">
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        ) : null}
-                        <span
-                          className={`block truncate ${
-                            filteredCategory.includes(filter) ? 'font-medium' : 'font-normal'
-                          }`}
-                        >
-                        {filter}
-                        </span>
-                      </div>      
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
+                <div className="relative">
+                  <Listbox.Button className="relative bg-white rounded-3xl p-2 border border-black flex items-center space-x-1 shadow-md">
+                    <p>Filter</p>
+                    <FunnelIcon className="fill-black w-5 h-5 flex" aria-hidden="true" />
+                  </Listbox.Button>
+
+                  <Listbox.Options className="absolute overflow-auto shadow-lg bg-white">
+                    {filters.map((filter) => (
+                      <Listbox.Option
+                        key={filter}
+                        value={filter}
+                        className={({ active }) =>
+                          `relative select-none py-2 px-2 ${active ? 'bg-pink-400 text-white' : 'text-black'
+                          }`
+                        } >
+
+                        <div className="flex flex-row">
+                          {filteredCategory.includes(filter) ? (
+                            <span className="text-black">
+                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : null}
+                          <span
+                            className={`block truncate ${filteredCategory.includes(filter) ? 'font-medium' : 'font-normal'
+                              }`}
+                          >
+                            {filter}
+                          </span>
+                        </div>
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
               </Listbox>
             </div>
             {/*  sort button */}
-            <div className="flex flex-col"> 
+            <div className="flex flex-col">
               <Listbox value={sort} onChange={setSort} >
-                <Listbox.Button className="bg-white rounded-3xl p-2 border border-black flex items-center space-x-1 shadow-md">
-                  <p>Sort</p>
-                  <ArrowsUpDownIcon className="fill-black w-5 h-5 flex" aria-hidden="true" />
-                </Listbox.Button>
-                
-                <Listbox.Options className="overflow-auto shadow-lg bg-white">
-                  {sorts.map((s) => (
-                    <Listbox.Option 
-                      key={s} 
-                      value={s}
-                      className={({ active }) =>
-                        `relative select-none py-2 px-2 ${
-                        active ? 'bg-pink-400 text-white' : 'text-black'
-                        }`
-                      } >
-              
-                      <div className="flex flex-row">
-                      {sort.includes(s) ? (
-                        <span className="text-black">
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        ) : null}
-                        <span
-                          className={`block truncate ${
-                            sort.includes(s) ? 'font-medium' : 'font-normal'
-                          }`}
-                        >
-                        {s}
-                        </span>
-                      </div>      
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
+                <div className="relative">
+                  <Listbox.Button className="relative bg-white rounded-3xl p-2 border border-black flex items-center space-x-1 shadow-md">
+                    <p>Sort</p>
+                    <ArrowsUpDownIcon className="fill-black w-5 h-5 flex" aria-hidden="true" />
+                  </Listbox.Button>
+
+                  <Listbox.Options className="absolute overflow-auto shadow-lg bg-white">
+                    {sorts.map((s) => (
+                      <Listbox.Option
+                        key={s}
+                        value={s}
+                        className={({ active }) =>
+                          `relative select-none py-2 px-2 ${active ? 'bg-pink-400 text-white' : 'text-black'
+                          }`
+                        } >
+
+                        <div className="flex flex-row">
+                          {sort.includes(s) ? (
+                            <span className="text-black">
+                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : null}
+                          <span
+                            className={`block truncate ${sort.includes(s) ? 'font-medium' : 'font-normal'
+                              }`}
+                          >
+                            {s}
+                          </span>
+                        </div>
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
               </Listbox>
             </div>
           </div>
-        </div>   
+        </div>
       </section>
       <div className="flex flex-row">
-        <img src={imagePerson} alt="asthetics" className="w-15 h-40 -translate-y-20 -m-2"/>
+        <img src={imagePerson} alt="asthetics" className="w-15 h-40 -translate-y-20 -m-2" />
         {/* List of all events */}
         <div>
           {filteredEvents.map((event, key) => (
@@ -247,7 +283,7 @@ function Events() {
                       <p>{event.location}</p>
                     </div>
                     <div className="flex flex-row space-x-3">
-                      <img src={ imageOrganization } alt="Organization icon" className="w-5 h-5" />
+                      <img src={imageOrganization} alt="Organization icon" className="w-5 h-5" />
                       <p>{event.organized_by["name"]}</p>
                     </div>
                     <div className="flex flex-row space-x-3">
@@ -258,7 +294,7 @@ function Events() {
                       <LockClosedIcon className="w-5 h-5" />
                       <p>{moment(`${event.signup_by}`).format('LL')}</p>
                     </div>
-                    <Link to={`/events/${ event._id }`}>
+                    <Link to={`/events/${event._id}`}>
                       <button className="bg-pink-400 text-white rounded-lg py-1 lg:px-20 px-10 shadow-md">
                         Sign up
                       </button>
@@ -271,7 +307,7 @@ function Events() {
         </div>
       </div>
       {/* Pagination */}
-      <Pagination 
+      <Pagination
         currentPage={state.currentPage}
         limit={state.limit}
         totalItems={state.totalItems}

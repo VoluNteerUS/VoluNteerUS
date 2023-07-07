@@ -8,18 +8,111 @@ import { PaginationResult } from '../types/pagination';
 import * as moment from 'moment';
 import { HttpException } from '@nestjs/common';
 import { Question, QuestionDocument } from '../questions/schemas/question.schema';
+import { Response, ResponseDocument } from '../responses/schemas/response.schema';
+import { Graph, groupVolunteers } from '../types/graph';
+import { User, UserDocument } from '../users/schemas/user.schema';
+import { Group } from '../types/group';
+import { CreateGroupingDto } from './dto/create-grouping.dto';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectModel(Event.name) private eventsModel: Model<EventDocument>,
-    @InjectModel(Question.name) private questionsModel: Model<QuestionDocument>
+    @InjectModel(Question.name) private questionsModel: Model<QuestionDocument>,
+    @InjectModel(Response.name) private responsesModel: Model<ResponseDocument>,
+    @InjectModel(User.name) private usersModel: Model<UserDocument>
   ){ }
 
   public async create(@Body() createEventDto: CreateEventDto): Promise<Event> {
     const newEvent = new this.eventsModel(createEventDto);
     return newEvent.save();
   }
+
+  public async createGroupings(@Body() createGroupingDto: CreateGroupingDto) {
+    const id = createGroupingDto.eventId;
+    const event = await this.eventsModel.findById(id).exec();
+    let acceptedResponses = await this.responsesModel.find({ event: id, status: 'Accepted' }).exec();
+    let groupingType = createGroupingDto.groupingType;
+    let groupSize = createGroupingDto.groupSize;
+    // groupingType = "Random";
+    if (groupingType === 'Random') {
+      let volunteers = acceptedResponses.map(response => response.user);
+      volunteers = volunteers.sort(() => Math.random() - 0.5);
+      const numGroups = Math.ceil(volunteers.length / groupSize);
+      const groupings = [];
+      for (let i = 0; i < numGroups; i++) {
+        groupings.push(volunteers.slice(i * groupSize, (i + 1) * groupSize));
+      }
+
+      const groups: Group[] = [];
+      for (let i = 0; i < groupings.length; i++) {
+        let volunteers: User[] = [];
+        for (let volunteer of groupings[i]) {
+          volunteers.push(await this.usersModel.findById(volunteer).exec());
+        }
+        let group: Group = {
+          number: i + 1,
+          members: volunteers
+        }
+        groups.push(group);
+      }
+      console.log(groups);
+      return this.eventsModel.findByIdAndUpdate(id, 
+        { 
+          groups: groups, 
+          groupSettings: [
+            event.groupSettings[0],
+            groupingType,
+            groupSize
+          ]
+        }
+      ).exec();
+    } else if (groupingType === 'With friends') {
+      let graph: Graph<string> = new Graph<string>();
+
+      for (let response of acceptedResponses) {
+        let volunteer: string = response.user.toString();
+        graph.addVertex(volunteer);
+      }
+
+      for (let response of acceptedResponses) {
+        let volunteer: string = response.user.toString();
+        let friends: string[] = response.selected_users.map(user => user.toString());
+        for (let friend of friends) {
+          graph.addEdge(volunteer, friend);
+        }
+      }
+
+      console.log(graph);
+
+      const groupings = groupVolunteers(graph, groupSize);
+      const groups: Group[] = [];
+      for (let i = 0; i < groupings.length; i++) {
+        let volunteers: User[] = [];
+        for (let volunteer of groupings[i]) {
+          volunteers.push(await this.usersModel.findById(volunteer).exec());
+        }
+        let group: Group = {
+          number: i + 1,
+          members: volunteers
+        }
+        groups.push(group);
+      }
+
+      console.log(groups);
+
+      return this.eventsModel.findByIdAndUpdate(id, 
+        { 
+          groups: groups,
+          groupSettings: [
+            event.groupSettings[0],
+            groupingType,
+            groupSize
+          ] 
+        }
+      ).exec();
+    }
+  } 
 
   public async getCategories(): Promise<String[]> {
     return this.eventsModel.find().distinct('category').exec();
@@ -68,19 +161,29 @@ export class EventsService {
     return data;
   }
 
-  public async findUpcomingEvents(page: number, limit: number): Promise<PaginationResult<Event>> {
+  public async findUpcomingEvents(search: string, categories: string[], page: number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const data = await this.eventsModel.find({
-      "date.0": {
-        $gte: moment().format('YYYY-MM-DD')
-      },
-    }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
+    const [data, totalItems] = await Promise.all([
+      this.eventsModel.find({
+        title: { $regex: search, $options: 'i' },
+        category: { $in: categories },
+        signup_by: {
+          $gte: moment().format('YYYY-MM-DD')
+        },
+      }).populate('organized_by', 'name').skip(skip).limit(limit).exec(),
+      this.eventsModel.countDocuments({
+        title: { $regex: search, $options: 'i' },
+        category: { $in: categories },
+        signup_by: {
+          $gte: moment().format('YYYY-MM-DD')
+        },
+      }).exec()
+    ]);
     // Filter out events that are upcoming
-    const upcomingEvents = data;
+    // const upcomingEvents = data;
     // const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
-    const totalItems = upcomingEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(upcomingEvents, page, totalItems, totalPages);
+    return new PaginationResult<Event>(data, page, totalItems, totalPages);
   }
 
   public async findPastEvents(page: number, limit: number): Promise<PaginationResult<Event>> {
