@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import { Fragment, useEffect, useState } from "react";
 import axios from "axios";
@@ -319,7 +319,11 @@ function Responses() {
     return (
       <div key={response?._id}>
         <div className="text-sm grid grid-cols-6 border-b items-center">
-          <div className="px-6 py-4 text-sm md:text-base text-neutral-600 font-bold col-span-2">{response?.user["full_name"]}</div>
+          <div className="px-6 py-4 text-sm md:text-base text-neutral-600 font-bold col-span-2">
+            <Link to={`/users/${response?.user["_id"]}`} className="hover:text-neutral-500">
+              {response?.user["full_name"]}
+            </Link>
+          </div>
           <div className="px-6 py-4 text-xs md:text-sm text-neutral-500 font-light col-span-2">~ {moment(`${response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</div>
           <div className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium col-span-1">
             <button type="button" onClick={ e => handleAction(e, response, "Accept") } className="text-primary-600 hover:text-primary-800">

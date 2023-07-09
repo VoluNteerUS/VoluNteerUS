@@ -17,7 +17,7 @@ function EventCard({event}) {
                         </h3>
                         <div className="flex items-center">
                             <img src={CalendarIcon} alt="calendar-icon" className="h-5 w-5 inline-block me-2" />
-                            {new moment(`${event.date[0]} ${event.date[2]}`).format('MMMM Do YYYY, h:mm A')}
+                            {new moment(`${event.date[0]} ${event.date[2]}`).format('Do MMM YYYY, h:mm A')}
                         </div>
                         <div className="flex items-center">
                             <img src={LocationIcon} alt="calendar-icon" className="h-5 w-5 inline-block me-2" />

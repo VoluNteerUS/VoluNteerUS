@@ -1,5 +1,5 @@
 import Navbar from "../../components/navigation/Navbar"; 
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,6 +7,29 @@ import { setEvent } from "../../actions/eventActions";
 import { setResponses } from "../../actions/responsesActions";
 import SignUpPart1 from "../../components/form/SignUpPart1";
 import SignUpPart2 from "../../components/form/SignUpPart2";
+import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import moment from "moment";
+
+const FormSubmittedMessage = ({event, submission}) => {
+  return (
+    <div className="block mx-auto lg:w-3/4 p-4 md:p-8">
+      <div className="bg-yellow-100 border border-yellow-500 text-yellow-700 px-4 py-3 rounded-md flex items-center" role="alert">
+        <ExclamationCircleIcon className="w-6 h-6 mr-2" aria-hidden="true" />
+        <p className="text-sm md:text-base">You have already submitted the sign-up form.</p>
+      </div>
+      <div className="bg-white my-4 p-6 md:p-8 rounded-lg">
+        <div className="font-semibold text-neutral-800 text-lg lg:text-xl">Submission recieved for {event.title}!</div>
+        <p>Submitted on: {moment(`${submission.submitted_on}`).format('dddd, DD MMMM YYYY, HH:MM A')}</p>
+        <div className="flex flex-col items-center p-2 md:p-6 lg:p-8">
+          <CheckCircleIcon className="w-28 h-28 text-green-500 mr-2" aria-hidden="true" />
+          <div className="font-bold text-xl lg:text-2xl text-center">Thank you for your response!</div>
+          <div className="font-semibold text-lg text-center">You will be notified if you are selected to volunteer for this event.</div>
+          <Link to="/events" className="mt-4 px-4 py-3 rounded-md bg-primary-600 text-white hover:bg-primary-500">Return to events</Link>
+        </div>
+      </div>
+    </div>
+  )
+}
  
 function EventSignup() { 
   const { id } = useParams();
@@ -25,6 +48,9 @@ function EventSignup() {
   const [response, setResponse] = useState({ "user": user_id, selected_users: [] });
   const [page, setPage] = useState(1);
 
+  const [submitted, setSubmitted] = useState(false);
+  const [submission, setSubmission] = useState({});
+
   useEffect(() => {
     // check if user has submitted a response
     const getResponse = async () => {
@@ -36,9 +62,11 @@ function EventSignup() {
         const userResponse = response.filter(response => response.user === user_id);
         const submittedResponse = userResponse.filter(response => response.event === id);
         if (submittedResponse.length > 0) {
-          console.log(submittedResponse);
-          alert("You have already submitted a response.")
-          navigate('/');
+          // console.log(submittedResponse);
+          setSubmitted(true);
+          setSubmission(submittedResponse[0]);
+          // alert("You have already submitted a response.")
+          // navigate('/');
         }
       } catch (err) {
         console.log({ err });
@@ -143,17 +171,34 @@ function EventSignup() {
       console.log(error);
     })
   }
-
-  return ( 
-    <> 
-      <Navbar />
-      { event?.group[1] === "With friends"
-        ? page === 1
-          ? <SignUpPart1
+  if (submitted) {
+    return (
+      <div className="bg-pink-100 min-h-screen">
+        <Navbar />
+        <FormSubmittedMessage event={event} submission={submission}/>
+      </div>
+    )
+  } else {
+    return ( 
+      <> 
+        <Navbar />
+        { event?.groupSettings[1] === "With friends"
+          ? page === 1
+            ? <SignUpPart1
+                response={ response }
+                setResponse={ setResponse }
+                event={ event }
+                handleSubmit={ handleSubmit }
+                action="Submit"
+                setPage={ setPage }
+              />
+            : <SignUpPart2
+              questions={ questions }
               response={ response }
-              setResponse={ setResponse }
               event={ event }
               handleSubmit={ handleSubmit }
+              handleChange={ handleChange }
+              handleCheck={ handleCheck }
               action="Submit"
               setPage={ setPage }
             />
@@ -167,19 +212,10 @@ function EventSignup() {
             action="Submit"
             setPage={ setPage }
           />
-        : <SignUpPart2
-          questions={ questions }
-          response={ response }
-          event={ event }
-          handleSubmit={ handleSubmit }
-          handleChange={ handleChange }
-          handleCheck={ handleCheck }
-          action="Submit"
-          setPage={ setPage }
-        />
-      } 
-    </> 
-  ) 
+        } 
+      </> 
+    )
+  } 
 } 
  
 export default EventSignup;

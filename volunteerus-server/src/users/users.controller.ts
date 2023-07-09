@@ -5,6 +5,7 @@ import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationResult } from '../types/pagination';
 import { Organization } from '../organizations/schemas/organization.schema';
+import { Event } from '../events/schemas/event.schema';
 import mongoose from 'mongoose';
 import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -76,6 +77,16 @@ export class UsersController {
     @Get(":id/organizations")
     findUserOrganizations(@Param('id') id: string): Promise<Organization[]> {
         return this.userService.findUserOrganizations(id);
+    }
+
+    @Get(":id/recommendedEvents")
+    findUserRecommendedEvents(@Param('id') id: string): Promise<Event[]> {
+        return this.userService.findUserRecommendedEvents(id);
+    }
+
+    @Get(":id/upcomingEvents")
+    findUserUpcomingEvents(@Param('id') id: string) {
+        return this.userService.findUserUpcomingEvents(id);
     }
     
     @Patch(":id")
