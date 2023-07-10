@@ -150,7 +150,7 @@ function Submissions() {
 
   useEffect(() => {
     getResponsesByUser();
-  }, []);
+  }, [paginationState.accepted.currentPage, paginationState.pending.currentPage, paginationState.rejected.currentPage]);
 
   useEffect(() => {
     if (responses.length > 0) {

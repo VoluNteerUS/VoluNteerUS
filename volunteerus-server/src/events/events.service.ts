@@ -208,33 +208,39 @@ export class EventsService {
 
   public async getUpcomingEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const upcomingEvents = await this.eventsModel.find({ 
-      organized_by: id,
-      "date.0": {
-        $gte: moment().format('YYYY-MM-DD')
-      },
-    }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
+    const [data, totalItems] = await Promise.all([
+      this.eventsModel.find(
+        { 
+          organized_by: id,
+          "date.0": {
+            $gte: moment().format('YYYY-MM-DD')
+          }
+        }).populate('organized_by', 'name').skip(skip).limit(limit).exec(),
+      this.eventsModel.countDocuments({ organized_by: id, "date.0": { $gte: moment().format('YYYY-MM-DD') } }).exec()
+    ]);
     // Filter out events that are upcoming
     // const upcomingEvents = data;
     // const upcomingEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isAfter(moment()));
-    const totalItems = upcomingEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(upcomingEvents, page, totalItems, totalPages);
+    return new PaginationResult<Event>(data, page, totalItems, totalPages);
   }
 
   public async getPastEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
-    const pastEvents = await this.eventsModel.find({ 
-      organized_by: id,
-      "date.0": {
-        $lt: moment().format('YYYY-MM-DD')
-      }, 
-    }).populate('organized_by', 'name').skip(skip).limit(limit).exec();
+    const [data, totalItems] = await Promise.all([
+      this.eventsModel.find(
+        { 
+          organized_by: id,
+          "date.0": {
+            $lt: moment().format('YYYY-MM-DD')
+          }
+        }).populate('organized_by', 'name').skip(skip).limit(limit).exec(),
+      this.eventsModel.countDocuments({ organized_by: id, "date.0": { $lt: moment().format('YYYY-MM-DD') } }).exec()
+    ]);
     // Filter out events that are in the past
     // const pastEvents = data.filter(event => moment(`${event.date[0]} ${event.date[2]}`).isBefore(moment()));
-    const totalItems = pastEvents.length;
     const totalPages = Math.ceil(totalItems / limit);
-    return new PaginationResult<Event>(pastEvents, page, totalItems, totalPages);
+    return new PaginationResult<Event>(data, page, totalItems, totalPages);
   }
 
   update(id: mongoose.Types.ObjectId, updateEventDto: UpdateEventDto) {
