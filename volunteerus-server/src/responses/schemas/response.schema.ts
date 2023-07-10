@@ -45,6 +45,9 @@ export class Response {
 
     @Prop({ default: "Not applicable" })
     attendance: string;
+
+    @Prop()
+    hours: number
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(Response);

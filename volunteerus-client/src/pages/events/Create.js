@@ -11,6 +11,7 @@ import CreateEventPart3 from "../../components/form/CreateEventPart3";
 import CreateEventPart4 from "../../components/form/CreateEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import CreateEventPart5 from "../../components/form/CreateEventPart5";
+import moment from "moment";
 
 function CreateEvent() { 
   const navigate = useNavigate()
@@ -34,7 +35,8 @@ function CreateEvent() {
       "signup_by": "",
       "role": user?.role,
       // group[yes/no, group type, group size]
-      "groupSettings": ["No", "-", 1]
+      "groupSettings": ["No", "-", 1],
+      "defaultHours": 0
     }
   )
 
@@ -109,7 +111,7 @@ function CreateEvent() {
             alert('You do not have permission to create an event.');
             navigate('/');
           }
-          
+          const duration = moment(`${details?.date[1]} ${details?.date[3]}`).diff(moment(`${details?.date[0]} ${details?.date[2]}`), 'hours', 'minutes');
           // event details
           const eventData = new FormData();
           eventData.append('title', details.title);
@@ -123,6 +125,7 @@ function CreateEvent() {
           eventData.append('file', details.file);
           eventData.append('questions', response.data._id);
           eventData.append('groupSettings', details.groupSettings);
+          eventData.append('defaultHours', duration);
 
           let eventsURL = new URL(`/events?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
           eventsURL = new URL(`/events?role=${"COMMITTEE MEMBER"}`, process.env.REACT_APP_BACKEND_API);

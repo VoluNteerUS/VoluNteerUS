@@ -57,7 +57,8 @@ describe('EventsService', () => {
             description: eventStub().description,
             image_url: eventStub().image_url,
             questions: eventStub().questions,
-            group: eventStub().group,
+            groupSettings: eventStub().groupSettings,
+            defaultHours: eventStub().defaultHours,
         }
         event = await service.create(newEvent);
       });
@@ -135,7 +136,7 @@ describe('EventsService', () => {
 
       beforeEach(async () => {
         jest.spyOn(service, 'findUpcomingEvents');
-        events = await service.findUpcomingEvents(1, 1);
+        events = await service.findUpcomingEvents('', [''], 1, 1);
       });
 
       test("then it should call eventModel", () => {

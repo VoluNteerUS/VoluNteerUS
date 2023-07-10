@@ -13,6 +13,8 @@ export const ResponsesService = jest.fn().mockReturnValue({
     getAcceptedResponsesByEvent: jest.fn().mockResolvedValue(paginatedResponseStub()),
     getPendingResponsesByEvent: jest.fn().mockResolvedValue(paginatedResponseStub()),
     getRejectedResponsesByEvent: jest.fn().mockResolvedValue(paginatedResponseStub()),
+    getTotalHours: jest.fn().mockResolvedValue(responseStub().hours),
+    getPastAcceptedResponsesByUser: jest.fn().mockResolvedValue(paginatedResponseStub()),
     update: jest.fn().mockResolvedValue({ ...responseStub(), status: "Approved", attendance: "Present" }),
     remove: jest.fn().mockResolvedValue(responseStub()),
 });

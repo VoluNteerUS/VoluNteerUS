@@ -33,6 +33,28 @@ export class ResponsesController {
     }
     return this.responsesService.findAll();
   }
+  
+  @Get('/totalHours')
+  getTotalHours(@Query('user_id') user_id: mongoose.Types.ObjectId): Promise<number> {
+    return this.responsesService.getTotalHours(user_id);
+  }
+
+  @Get('/history')
+  findPastAcceptedResponsesByUser(
+    @Query('user_id') user_id: mongoose.Types.ObjectId,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
+  ): Promise<PaginationResult<Response>> {
+    const parsedPage = parseInt(page.toString(), 10) || 1;
+    const parsedLimit = parseInt(limit.toString(), 10) || 10;
+    // Validate If parsedPage and parsedLimit is negative
+    if (parsedPage < 0 || parsedLimit < 0) {
+      throw new HttpException('Invalid page or limit', HttpStatus.BAD_REQUEST, {
+        cause: new Error('Invalid page or limit'),
+      });
+    }
+    return this.responsesService.getPastAcceptedResponsesByUser(user_id, parsedPage, parsedLimit);
+  }
 
   @Get('/accepted')
   findAcceptedResponses(

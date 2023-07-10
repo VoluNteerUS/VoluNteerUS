@@ -17,7 +17,8 @@ export const eventStub = (): Event => {
         image_url: "Test Image URL",
         questions: questionStub(),
         groupSettings: ["No", "-", "1"],
-        groups: []
+        groups: [],
+        defaultHours: 2
     }
 };
 
