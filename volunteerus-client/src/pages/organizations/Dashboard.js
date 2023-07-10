@@ -123,6 +123,7 @@ function OrganizationDashboard() {
           process.env.REACT_APP_BACKEND_API);
         const res = await axios.get(pastEventsURL);
         const paginatedEvents = { ...res.data };
+
         setPastEvents(paginatedEvents.result);
         setQueryPastEvents(paginatedEvents.result)
         setPastEventsPagination({
@@ -139,7 +140,7 @@ function OrganizationDashboard() {
     getOrganization();
     getUpcomingEvents();
     getPastEvents();
-  }, [id]);
+  }, [id, upcomingEventsPagination.currentPage, pastEventsPagination.currentPage]);
 
   const handleDelete = (e, event) => {
     console.log(event);
@@ -199,13 +200,12 @@ function OrganizationDashboard() {
     // Send GET request to get updated event details, sign up form questions and responses
     const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
     const updatedDetails = axios.get(eventsURL).then((res) => res.data);
-    console.log(updatedDetails)
+
     const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
     const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
-    console.log(updatedQuestions);
+
     const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
     const updatedResponses = axios.get(responsesURL).then((res) => res.data);
-    console.log(updatedResponses);
 
     // Update event details, sign up form questions and responses in redux store
     dispatch(setEvents(updatedDetails));

@@ -11,6 +11,7 @@ import EditEventPart3 from "../../components/form/EditEventPart3";
 import EditEventPart4 from "../../components/form/EditEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import EditEventPart5 from "../../components/form/EditEventPart5";
+import moment from "moment";
 
 function EditEventDetails() {
   const { id, eventId } = useParams();
@@ -37,7 +38,8 @@ function EditEventDetails() {
       "signup_by": "",
       "questions": null,
       "role": user?.role,
-      "groupSettings": ["", "", ""]
+      "groupSettings": ["", "", ""],
+      "defaultHours": 0
     }
   );
 
@@ -67,7 +69,8 @@ function EditEventDetails() {
               "questions": event.questions,
               "file": event.file,
               "role": `${ response.data ? 'COMMITTEE MEMBER' : 'USER' }`,
-              "groupSettings": event.groupSettings
+              "groupSettings": event.groupSettings,
+              "defaultHours": event.defaultHours
             }
           );
         } catch (err) {
@@ -111,6 +114,7 @@ function EditEventDetails() {
     }
           
     // event details
+    const duration = moment(`${details?.date[1]} ${details?.date[3]}`).diff(moment(`${details?.date[0]} ${details?.date[2]}`), 'hours', 'minutes');
     const eventData = new FormData();
     eventData.append('title', details.title);
     eventData.append('date', details.date);
@@ -123,6 +127,7 @@ function EditEventDetails() {
     eventData.append('file', details.file);
     eventData.append('questions', details.questions);
     eventData.append('groupSettings', details.groupSettings);
+    eventData.append('defaultHours', duration);
 
     // event sign up form questions 
     const eventQuestions = Object.values(formQuestions).filter(question => question[1] !== "");

@@ -6,7 +6,7 @@ import { Response } from '../schemas/response.schema';
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory';
 import { CreateResponseDto } from '../dto/create-response.dto';
 import { paginatedResponseStub, responseIdStub, responseStub, updatedResponseStub } from './stubs/response.stub';
-import { userIdStub } from '../../users/test/stubs/user.stub';
+import { userIdStub } from './stubs/response.stub';
 import { eventIdStub } from '../../events/test/stubs/event.stub';
 import { PaginationResult } from 'src/types/pagination';
 import { UpdateResponseDto } from '../dto/update-response.dto';
@@ -56,7 +56,8 @@ describe('ResponsesController', () => {
           status: responseStub().status,
           submitted_on: responseStub().submitted_on,
           selected_users: [],
-          attendance: "Not applicable"
+          attendance: "Not applicable",
+          hours: responseStub().hours
         }
         response = await controller.create("COMMITTEE MEMBER", createResponseDto);
       });
@@ -244,6 +245,43 @@ describe('ResponsesController', () => {
       test("then it should return a response", () => {
         expect(response).toEqual(responseStub());
       });
+    });
+  });
+
+  describe('totalHours', () => {
+    describe('when totalHours is called', () => {
+      let result: number;
+
+      beforeEach(async () => {
+        result = await controller.getTotalHours(userIdStub());
+      });
+
+      it('then it should call service.getTotalHours', () => {
+        expect(service.getTotalHours).toBeCalled();
+      });
+
+      it('then it should return a number', () => {
+        expect(result).toEqual(2);
+      });
+    });
+  });
+
+  describe("findPastAcceptedResponseByUser", () => {
+    describe("when findPastAcceptedResponseByUser is called", () => {
+      let responses: PaginationResult<Response>;
+
+      beforeEach(async () => {
+        responses = await controller.findPastAcceptedResponsesByUser(userIdStub(), 1, 1);
+      });
+
+      test("then it should call service.getPastAcceptedResponsesByUser", () => {
+        expect(service.getPastAcceptedResponsesByUser).toBeCalledWith(userIdStub(), 1, 1);
+      });
+
+      test("then it should return a list of responses", () => {
+        expect(responses).toEqual(paginatedResponseStub());
+      });
+
     });
   });
 

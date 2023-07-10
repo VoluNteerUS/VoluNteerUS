@@ -116,7 +116,8 @@ describe('EventsController', () => {
             description: eventStub().description,
             image_url: eventStub().image_url,
             questions: eventStub().questions,
-            group: ["No", "-", "1"]
+            groupSettings: ["No", "-", "1"],
+            defaultHours: eventStub().defaultHours
         }
         event = await controller.create("COMMITTEE MEMBER", createEventDto, null);
       })

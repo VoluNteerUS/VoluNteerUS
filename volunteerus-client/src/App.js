@@ -10,10 +10,11 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 
 // User Pages
-const Submissions = lazy(() => import('./pages/user/Submissions'))
-const EditResponse = lazy(() => import('./pages/user/EditResponse'))
-const UserDashboard = lazy(() => import('./pages/user/Dashboard'))
-const UserProfile = lazy(() => import('./pages/user/Profile'))
+const Submissions = lazy(() => import('./pages/user/Submissions'));
+const EditResponse = lazy(() => import('./pages/user/EditResponse'));
+const UserDashboard = lazy(() => import('./pages/user/Dashboard'));
+const UserProfile = lazy(() => import('./pages/user/Profile'));
+const Records = lazy(() => import('./pages/user/Records'));
 const PublicUserProfile = lazy(() => import('./pages/user/PublicProfile'))
 const BasicProfileSetUp = lazy(() => import('./pages/user/ProfileSetUp'))
 
@@ -60,6 +61,7 @@ function App() {
           <Route path="register" element={<Register />} />
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="records" element={<Records />} />
           <Route path="setup" element={<BasicProfileSetUp />} />
           <Route path="users">
             <Route path=":userId" element={<PublicUserProfile />} />

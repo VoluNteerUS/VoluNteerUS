@@ -6,6 +6,7 @@ import { Response, ResponseDocument } from './schemas/response.schema';
 import mongoose, { Model } from 'mongoose';
 import { User } from '../users/schemas/user.schema';
 import { PaginationResult } from '../types/pagination';
+import * as moment from 'moment';
 
 @Injectable()
 export class ResponsesService {
@@ -27,6 +28,28 @@ export class ResponsesService {
   public async getResponsesByUser(id: mongoose.Types.ObjectId): Promise<Response[]> {
     const responses = await this.responsesModel.find({ user: id }).exec();
     return responses;
+  }
+
+  public async getPastAcceptedResponsesByUser(id: mongoose.Types.ObjectId, page: number, limit: number): Promise<PaginationResult<Response>> {
+    const skip = (page - 1) * limit;
+    const data = await this.responsesModel.find({ user: id}).populate('event', 'title date defaultHours').skip(skip).limit(limit).exec();
+    // Filter out responses that are accepted and in the past
+    const pastAcceptedResponses = data.filter(response => moment(`${response?.event['date'][1]} ${response?.event['date'][3]}`).isBefore(moment()) && response.status === "Accepted");
+    const items = await this.responsesModel.find({ user: id}).populate('event', 'title date')
+    const totalItems = items.filter(response => moment(`${response?.event['date'][1]} ${response?.event['date'][3]}`).isBefore(moment()) && response.status === "Accepted").length;
+    const totalPages = Math.ceil(totalItems / limit);
+    return new PaginationResult<Response>(pastAcceptedResponses, page, totalItems, totalPages);
+  }
+
+  public async getTotalHours(id: mongoose.Types.ObjectId): Promise<number> {
+    const userResponses = await this.responsesModel.find({ user: id}).populate('event', 'title date defaultHours');
+    const pastAcceptedUserResponses = userResponses.filter(response => moment(`${response?.event['date'][1]} ${response?.event['date'][3]}`).isBefore(moment()) && response.status === "Accepted");
+    const numberOfResponses = pastAcceptedUserResponses.length;
+    let totalHours = 0;
+    for (let i = 0; i < numberOfResponses; i++) {
+      totalHours += pastAcceptedUserResponses[i].hours === -1 ? pastAcceptedUserResponses[i].event['defaultHours'] : pastAcceptedUserResponses[i].hours;
+    }
+    return totalHours;
   }
 
   public async getAcceptedResponsesByUser(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Response>> {

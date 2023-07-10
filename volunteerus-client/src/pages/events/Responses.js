@@ -5,13 +5,14 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
-import { CheckIcon, ChevronDownIcon, ClipboardDocumentCheckIcon, ClipboardDocumentListIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ChevronDownIcon, ClipboardDocumentCheckIcon, ClipboardDocumentListIcon, UserGroupIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import SignUpPart2 from "../../components/form/SignUpPart2";
-import { Listbox, Transition } from "@headlessui/react";
+import { Listbox, Transition, Dialog } from "@headlessui/react";
+import Alert from "../../components/Alert";
 
 const groupingOptions = [
   "Random",
@@ -40,6 +41,16 @@ function Responses() {
   const [role, setRole] = useState(user.role);
   const [responseToUpdate, setResponseToUpdate] = useState({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // dialog for update of default hours
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [alertMessages, setAlertMessages] = useState([]);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [error, setError] = useState('');
+  // dialog for update of custom hours
+  const [customHoursDialogOpen, setCustomHoursDialogOpen] = useState(false);
+  const [customHours, setCustomHours] = useState(0);
+  const [customMinutes, setCustomMinutes] = useState(0);
   const [paginationState, setPaginationState] = useState({
     accepted: {
       currentPage: 1,
@@ -77,20 +88,6 @@ function Responses() {
 
   const getResponseInformation = async () => {
     try {
-      const eventURL = new URL(`/events/${eventId}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
-      const eventRes = await axios.get(eventURL);
-      const event = eventRes.data;
-      setEvent(event);
-      setGroupingEnabled(event?.groupSettings[0] === 'Yes' ? true : false);
-      setGroupingType(event?.groupSettings[1]);
-      setGroupSize(event?.groupSettings[2]);
-      setGroups(event.groups)
-
-      const questionsURL = new URL(`/questions/${event?.questions}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
-      const questionsRes = await axios.get(questionsURL);
-      const questions = questionsRes.data;
-      setQuestions(questions);
-
       const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
       const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
@@ -123,18 +120,6 @@ function Responses() {
           totalPages: paginatedPendingResponses.totalPages,
         }
       })
-
-      // Check if user is a committee member
-      const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
-      const checkCommitteeMemberRequestBody = {
-        userId: user.id,
-        organizationId: id
-      }
-
-      const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
-      if (response.data) {
-        setRole('COMMITTEE MEMBER');
-      }
     } catch (err) {
       console.error({ err });
     }
@@ -162,7 +147,44 @@ function Responses() {
 
   useEffect(() => {
     getAttendanceInformation();
-  }, [attendancePaginationState.currentPage])
+  }, [attendancePaginationState.currentPage, attendancePaginationState.result])
+
+  const getEventDetails = async () => {
+    const eventURL = new URL(`/events/${eventId}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
+    const eventRes = await axios.get(eventURL);
+    const event = eventRes.data;
+    setEvent(event);
+    setGroupingEnabled(event?.groupSettings[0] === 'Yes' ? true : false);
+    setGroupingType(event?.groupSettings[1]);
+    setGroupSize(event?.groupSettings[2]);
+    setGroups(event.groups)
+
+    const questionsURL = new URL(`/questions/${event?.questions}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
+    const questionsRes = await axios.get(questionsURL);
+    const questions = questionsRes.data;
+    setQuestions(questions);
+
+    const h = Math.floor(event?.defaultHours / 1);
+    const m = Math.round(event?.defaultHours % 1 * 60);
+    setHours(h);
+    setMinutes(m);
+
+    // Check if user is a committee member
+    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
+    const checkCommitteeMemberRequestBody = {
+      userId: user.id,
+      organizationId: id
+    }
+
+    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    if (response.data) {
+      setRole('COMMITTEE MEMBER');
+    }
+  }
+
+  useEffect(() => {
+    getEventDetails();
+  }, []);
 
   const handleSubmit = () => {
 
@@ -174,6 +196,14 @@ function Responses() {
 
   const handleCheck = (e, key, question) => {
 
+  }
+
+  const handleDialogOpen = () => {
+      setDialogOpen(true);
+  }
+
+  const handleDialogClose = () => {
+      setDialogOpen(false);
   }
 
   const handleAction = (e, response, action) => {
@@ -193,9 +223,10 @@ function Responses() {
     // Send request to server
     let requestBody;
     if (action === "Accept") {
-      requestBody = { ...responseToUpdate, status: `Accepted`, attendance: "Present" };
+      // use default event hours if hours for response is -1
+      requestBody = { ...responseToUpdate, status: `Accepted`, attendance: "Present", hours: -1 };
     } else {
-      requestBody = { ...responseToUpdate, status: `Rejected`, attendance: "Not applicable" };
+      requestBody = { ...responseToUpdate, status: `Rejected`, attendance: "Not applicable", hours: 0 };
     }
     
     // Endpoint for responses
@@ -379,11 +410,43 @@ function Responses() {
     });
   }
 
+  const handleLate = (e, response) => {
+    e.preventDefault();
+
+    setCustomHoursDialogOpen(true);
+    setResponseToUpdate(response);
+  }
+
+  const handleSaveCustomHours = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (customHours < 0 || customMinutes < 0) {
+      setError("Hours and minutes cannot be negative");
+      return;
+    } else if (customMinutes > 60) {
+      setError("The maximum minutes you can set is 60");
+      return;
+    }
+
+    if (customHours === "") {
+      setCustomHours(0);
+    }
+    if (customMinutes === "") {
+      setCustomMinutes(0);
+    }
+
+    handleAttendance(e, responseToUpdate, "Late");
+    setResponseToUpdate({});
+    setCustomHoursDialogOpen(false);
+  }
+
   const handleAttendance = async (e, response, attendance) => {
     e.preventDefault();
 
     // Send request to server
-    const requestBody = { ...response, attendance: `${attendance}`};
+    const hours = customHours + (customMinutes / 60);
+    const requestBody = { ...response, attendance: `${attendance}`, hours: attendance === "Present" ? -1 : attendance === "Absent" ? 0 : hours };
 
     // Endpoint for responses
     const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
@@ -408,6 +471,90 @@ function Responses() {
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));
+  }
+
+  const handleSaveDefaultHours = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (hours < 0 || minutes < 0) {
+      setError("Hours and minutes cannot be negative");
+      return;
+    } else if (minutes > 60) {
+      setError("The maximum minutes you can set is 60");
+      return;
+    }
+
+    if (hours === "") {
+      setHours(0);
+    }
+    if (minutes === "") {
+      setMinutes(0);
+    }
+
+    const eventURL = new URL(`/events/${ event?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    const newHours = hours + (minutes === 0 ? 0 : minutes / 60);
+    axios.patch(eventURL, { defaultHours: newHours }).then((response) => {
+      setAlertMessages([
+        {
+          type: "success",
+          message: "Event default hours updated successfully!"
+        }
+      ]);
+    }).catch((error) => {
+      console.log(error)
+      setAlertMessages([
+        {
+          type: "error",
+          message: "Event default hours update failed!"
+        }
+      ]);
+    });
+    handleDialogClose();
+  }
+
+  const handleMinutesChange = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (parseInt(e.target.value)) {
+      setMinutes(parseInt(e.target.value));
+    } else {
+      setMinutes("");
+    }
+  }
+
+  const handleHoursChange = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (parseInt(e.target.value)) {
+      setHours(parseInt(e.target.value));
+    } else {
+      setHours("");
+    }
+  }
+
+  const handleCustomeMinutesChange = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (parseInt(e.target.value)) {
+      setCustomMinutes(parseInt(e.target.value));
+    } else {
+      setCustomMinutes("");
+    }
+  }
+
+  const handleCustomHoursChange = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (parseInt(e.target.value)) {
+      setCustomHours(parseInt(e.target.value));
+    } else {
+      setCustomHours("");
+    }
   }
 
   return (
@@ -631,14 +778,30 @@ function Responses() {
           )}
         </div>
         )}
-        <div>
-          <div className="text-2xl mt-10 font-bold flex space-x-3">
+        <div className="flex flex-row justify-between mt-20 mb-5 items-center">
+          <div className="text-2xl font-bold flex space-x-3">
             <h1>Attendance</h1>
             <ClipboardDocumentCheckIcon width={25} height={25} />
           </div>
-          <p className="text-sm font-extralight mb-10">P: Present, A: Absent, L: Late</p>
-          <div className="mb-10 rounded-lg bg-grey-100">
-            <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2">
+          <div className="bg-grey-100 rounded-lg p-2 shadow">
+            <div>
+              <p className="text-xs md:text-sm tracking-wider text-left">Default hours:</p>
+              <div className="flex items-center space-x-2">
+                <p className="text-base md:text-lg font-semibold text-pink-400 tracking-wider">{ hours }h { minutes }m</p>
+                <button type="button" onClick={ handleDialogOpen }>
+                  <PencilSquareIcon width={20} height={20}/>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+          {/* Alert */}
+          {
+            alertMessages.length > 0 && alertMessages.map((alertMessage, index) => (
+              <Alert key={index} type={alertMessage.type} message={alertMessage.message} />
+            ))
+          }
+          <div className="pb-10 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 rounded-lg bg-grey-100">
               {attendancePaginationState.result.map((response) => {
                 return (
                   <div className="max-w-sm flex flex-col border py-5 justify-center text-center m-3 rounded-lg bg-white shadow-md">
@@ -653,27 +816,31 @@ function Responses() {
                         ? 'w-10 h-10 rounded-full p-2 border bg-red-500 border-red-900 text-white'
                         : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
                         }>A</button>
-                      <button onClick={ (e) => handleAttendance(e, response, "Late") } className={ response?.attendance === "Late"
+                      <button onClick={ (e) => handleLate(e, response) } className={ response?.attendance === "Late"
                         ? 'w-10 h-10 rounded-full p-2 border bg-yellow-500 border-yellow-900 text-white'
                         : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
                         }>L</button>
                     </div>
+                    { response?.attendance === "Late" 
+                      ? <p className="text-xs md:text-sm tracking-wider text-grey-800 mt-5">Custom hours: { Math.floor(response?.hours / 1) }h { Math.round(response?.hours % 1 * 60) }m</p>
+                      : <p className="text-xs md:text-sm tracking-wider text-grey-800 mt-5">-</p>
+                    }
                   </div>
                 )
               })}
-            </div>
-            <Pagination
-              currentPage={attendancePaginationState?.currentPage}
-              limit={attendancePaginationState?.limit}
-              totalItems={attendancePaginationState?.totalItems}
-              totalPages={attendancePaginationState?.totalPages}
-              handlePageChange={handleRejectedResponsesPageChange}
-              handleNextPage={handleRejectedResponsesNextPage}
-              handlePrevPage={handleRejectedResponsesPrevPage}
-            />
+              <div className="md:col-span-4 sm:col-span-3 col-span-2">
+                <Pagination
+                  currentPage={attendancePaginationState?.currentPage}
+                  limit={attendancePaginationState?.limit}
+                  totalItems={attendancePaginationState?.totalItems}
+                  totalPages={attendancePaginationState?.totalPages}
+                  handlePageChange={handleRejectedResponsesPageChange}
+                  handleNextPage={handleRejectedResponsesNextPage}
+                  handlePrevPage={handleRejectedResponsesPrevPage}
+                />
+              </div>
           </div>
-        </div>
-      </div>
+        </div>        
       {isDialogOpen && (
         <AppDialog
           isOpen={isDialogOpen}
@@ -685,6 +852,108 @@ function Responses() {
           handleClose={handleCancelUpdate}
         />
       )}
+      {/* Edit event default hours */}
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+          {/* Overlay */}
+          {dialogOpen && (
+              <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+          )}
+          {/* Panel */}
+          <div className="fixed inset-0 flex items-center justify-center">
+              <Dialog.Panel className="bg-white rounded-lg w-full mx-4 md:mx-0 md:w-2/3 lg:w-1/2 p-8 overflow-y-auto">
+                  <Dialog.Title className="text-2xl font-semibold">Edit event default hours</Dialog.Title>
+                  <div className="h-4"></div>
+                  <div className="flex md:flex-row flex-col md:space-x-3 space-x-0">
+                    <div className="flex flex-row space-x-2 items-end">
+                      <input 
+                        required
+                        type="number" 
+                        value={hours} 
+                        onChange={ handleHoursChange } 
+                        className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                      />
+                      <label className="block text-xl font-medium text-neutral-600">h</label>
+                    </div>
+                    <div className="flex flex-row space-x-2 items-end">
+                      <input 
+                        required
+                        type="number" 
+                        value={minutes} 
+                        onChange={ handleMinutesChange } 
+                        className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                      />
+                      <label className="block text-xl font-medium text-neutral-600">m</label>
+                    </div>
+                  </div>
+                  { error === '' ? "" 
+                    : <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded relative mt-5" role="alert">
+                      { error }
+                    </div>
+                  }                       
+                  <div className="h-4"></div>
+                  <div className="flex justify-end">
+                      <button type="submit"
+                          className="bg-primary-600 text-white text-center hover:bg-primary-500 
+                                        px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out"
+                          onClick={handleSaveDefaultHours}
+                      >
+                          Save
+                      </button>
+                  </div>
+              </Dialog.Panel>
+          </div>
+      </Dialog>
+      {/* Customise user hours */}
+      <Dialog open={customHoursDialogOpen} onClose={ () => setCustomHoursDialogOpen(false) }>
+          {/* Overlay */}
+          {dialogOpen && (
+              <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+          )}
+          {/* Panel */}
+          <div className="fixed inset-0 flex items-center justify-center">
+              <Dialog.Panel className="bg-white rounded-lg w-full mx-4 md:mx-0 md:w-2/3 lg:w-1/2 p-8 overflow-y-auto">
+                  <Dialog.Title className="text-2xl font-semibold">Customise user hours</Dialog.Title>
+                  <div className="h-4"></div>
+                  <div className="flex md:flex-row flex-col md:space-x-3 space-x-0">
+                    <div className="flex flex-row space-x-2 items-end">
+                      <input 
+                        required
+                        type="number" 
+                        value={ customHours } 
+                        onChange={ handleCustomHoursChange } 
+                        className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                      />
+                      <label className="block text-xl font-medium text-neutral-600">h</label>
+                    </div>
+                    <div className="flex flex-row space-x-2 items-end">
+                      <input 
+                        required
+                        type="number" 
+                        value={ customMinutes } 
+                        onChange={ handleCustomeMinutesChange } 
+                        className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                      />
+                      <label className="block text-xl font-medium text-neutral-600">m</label>
+                    </div>
+                  </div>
+                  { error === '' ? "" 
+                    : <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded relative mt-5" role="alert">
+                      { error }
+                    </div>
+                  }                       
+                  <div className="h-4"></div>
+                  <div className="flex justify-end">
+                      <button type="submit"
+                          className="bg-primary-600 text-white text-center hover:bg-primary-500 
+                                        px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out"
+                          onClick={handleSaveCustomHours}
+                      >
+                          Save
+                      </button>
+                  </div>
+              </Dialog.Panel>
+          </div>
+      </Dialog>
     </CommitteeMemberProtected>
   )
 }

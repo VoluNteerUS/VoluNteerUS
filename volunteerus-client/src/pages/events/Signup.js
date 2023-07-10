@@ -122,8 +122,8 @@ function EventSignup() {
     setResponse({ ...newResponse });
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     // check that at least one checkbox has been checked for MRQ
     let toAlert = false;
@@ -142,7 +142,8 @@ function EventSignup() {
     }
 
     // Send request to server
-    const requestBody = { ...response, submitted_on: Date.now() };
+    // use default event hours if hours for response is -1
+    const requestBody = { ...response, submitted_on: Date.now(), hours: -1 };
     // set value for mcqs to be first choice if no changed detected
     questions.filter((question) => question[2] === "MCQ").forEach((question) => {
       if (response[`${ question[0] }`] === undefined) {
@@ -171,6 +172,7 @@ function EventSignup() {
       console.log(error);
     })
   }
+  
   if (submitted) {
     return (
       <div className="bg-pink-100 min-h-screen">

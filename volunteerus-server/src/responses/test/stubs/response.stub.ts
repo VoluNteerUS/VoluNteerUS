@@ -17,12 +17,17 @@ export const responseStub = (): Response => {
         selected_users: [],
         status: "Pending",
         submitted_on: new Date("2023-06-24T12:38:00.000+08:00"),
-        attendance: "Not applicable"
+        attendance: "Not applicable",
+        hours: eventStub().defaultHours
     }
 };
 
 export const responseIdStub = (): mongoose.Types.ObjectId => {
     return new mongoose.Types.ObjectId("5f9d88e5d6a3d5fda0f8a5f2");
+};
+
+export const userIdStub = (): mongoose.Types.ObjectId => {
+    return new mongoose.Types.ObjectId("5f9d88e5d6a3d5fda0f8a5f3");
 };
 
 export const paginatedResponseStub = (): PaginationResult<Response> => {
@@ -42,6 +47,7 @@ export const updatedResponseStub = (): Response => {
         selected_users: [],
         status: "Approved",
         submitted_on: new Date("2023-06-24T12:38:00.000+08:00"),
-        attendance: "Present"
+        attendance: "Present",
+        hours: eventStub().defaultHours
     }
 }

@@ -14,4 +14,5 @@ export class CreateResponseDto {
     status: string;
     submitted_on: Date;
     attendance: string;
+    hours: number;
 }

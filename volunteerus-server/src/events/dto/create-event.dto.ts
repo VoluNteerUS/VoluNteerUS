@@ -10,6 +10,7 @@ export class CreateEventDto {
   signup_by: Date
   description: string
   image_url: string
-  questions: Question;
+  questions: Question
   groupSettings: any[]
+  defaultHours: number
 }
