@@ -7,12 +7,17 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { PaginationResult } from '../types/pagination';
 import { Organization, OrganizationDocument } from '../organizations/schemas/organization.schema';
+import { Event, EventDocument } from "../events/schemas/event.schema";
+import { Response, ResponseDocument } from "../responses/schemas/response.schema";
+import * as moment from "moment";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private usersModel: Model<UserDocument>,
-    @InjectModel(Organization.name) private organizationsModel: Model<OrganizationDocument>
+    @InjectModel(Organization.name) private organizationsModel: Model<OrganizationDocument>,
+    @InjectModel(Event.name) private eventsModel: Model<EventDocument>,
+    @InjectModel(Response.name) private responsesModel: Model<ResponseDocument>,
   ) { }
 
   public async create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -156,6 +161,71 @@ export class UsersService {
 
   public async findUserOrganizations(_id: string): Promise<Organization[]> {
     return this.organizationsModel.find({ committee_members: _id }).select('_id name image_url');
+  }
+
+  public async findUserRecommendedEvents(_id: string) {
+    // Get accepted responses
+    let acceptedResponses = await this.responsesModel.find({
+      user: new mongoose.Types.ObjectId(_id),
+      status: "Accepted",
+    });
+
+    // Get accepted event ids
+    let acceptedEvents = acceptedResponses.map(response => response.event);
+
+    // Get past events
+    let pastEvents = await this.eventsModel.find({
+      _id: { $in: acceptedEvents },
+      "date.0": {
+        $lt: moment().format('YYYY-MM-DD')
+      },
+    }).exec();
+
+    // Get past event categories
+    let pastEventCategories = pastEvents.map(event => event.category).flat();
+    // Remove duplicates
+    pastEventCategories = [...new Set(pastEventCategories)];
+
+    if (pastEventCategories.length == 0) {
+      // Get future events with categories that contain past event categories
+      let futureEvents = await this.eventsModel.find({
+        _id: { $nin: acceptedEvents },
+        "date.0": {
+          $gte: moment().format('YYYY-MM-DD')
+        },
+      }).exec();
+      
+      return futureEvents;
+    } else {
+      // Get future events with categories that contain past event categories
+      let futureEvents = await this.eventsModel.find({
+        _id: { $nin: acceptedEvents },
+        "date.0": {
+          $gte: moment().format('YYYY-MM-DD')
+        },
+        category: { $in: pastEventCategories }
+      }).exec();
+
+      return futureEvents;
+    }
+  }
+
+  public async findUserUpcomingEvents(_id: string) {
+    let acceptedResponses = await this.responsesModel.find({
+      user: new mongoose.Types.ObjectId(_id),
+      status: "Accepted",
+    });
+
+    let acceptedEvents = acceptedResponses.map(response => response.event);
+
+    let upcomingEvents = await this.eventsModel.find({ 
+      _id: { $in: acceptedEvents },
+      "date.0": {
+        $gte: moment().format('YYYY-MM-DD')
+      },
+    }).exec();
+
+    return upcomingEvents;
   }
 
   public async getCommitteeMemberCount(): Promise<number> {

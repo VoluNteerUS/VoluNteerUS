@@ -12,7 +12,7 @@ import { Disclosure } from '@headlessui/react';
 import axios from 'axios';
 
 const navigation = [
-  { name: 'Home', href: '/', icon: HomeIcon },
+  { name: 'Home', href: localStorage.getItem("token") ? '/dashboard' : '/', icon: HomeIcon },
   { name: 'Events', href: '/events', icon: CalendarDaysIcon },
   { name: 'Organizations', href: '/organizations', icon: UserGroupIcon },
 

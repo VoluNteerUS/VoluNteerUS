@@ -61,6 +61,8 @@ function Home() {
     // Redirect to admin dashboard if user is admin
     if (user?.role === "ADMIN") {
         return <Navigate to="/admin" replace />;
+    } else if (localStorage.getItem("token")) {
+        return <Navigate to="/dashboard" replace />;
     } else {
         return (
         <>
@@ -79,10 +81,10 @@ function Home() {
                 ))}
             </div>
             <div>
-                <p className="text-xl mx-20 font-bold">Featured Events</p>
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:mx-20 md:mx-10 mx-20 my-5">
+                <p className="text-xl mx-5 md:mx-10 lg:mx-20 font-bold">Featured Events</p>
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-5 md:mx-10 lg:mx-20 my-5">
                     {featuredEvents.map((event, key) => (
-                        <Link to='/events' state={event} className="border border-black" key={key}>
+                        <Link to='/events' state={event} className="border border-black col-span-1" key={key}>
                             <img src={event.image_url} alt="event" className="h-60 md:h-72 xl:h-80 w-full object-cover" />
                             <div className="p-3">
                                 <p className="font-semibold my-2">{event.title}</p>

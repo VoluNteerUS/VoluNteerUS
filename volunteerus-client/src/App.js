@@ -15,6 +15,8 @@ const EditResponse = lazy(() => import('./pages/user/EditResponse'));
 const UserDashboard = lazy(() => import('./pages/user/Dashboard'));
 const UserProfile = lazy(() => import('./pages/user/Profile'));
 const Records = lazy(() => import('./pages/user/Records'));
+const PublicUserProfile = lazy(() => import('./pages/user/PublicProfile'))
+const BasicProfileSetUp = lazy(() => import('./pages/user/ProfileSetUp'))
 
 // Events
 const Events = lazy(() => import('./pages/events'));
@@ -60,6 +62,10 @@ function App() {
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="records" element={<Records />} />
+          <Route path="setup" element={<BasicProfileSetUp />} />
+          <Route path="users">
+            <Route path=":userId" element={<PublicUserProfile />} />
+          </Route>
           {/* id === user_id */}
           <Route path=":id">
             <Route path="submissions" element={<Submissions />} />

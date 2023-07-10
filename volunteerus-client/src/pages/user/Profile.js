@@ -83,7 +83,6 @@ function UserProfile() {
         formData.append("year_of_study", yearOfStudy);
         formData.append("telegram_handle", telegramHandle);
         formData.append("dietary_restrictions", dietaryRestrictions);
-        console.log(phoneNumber);
 
         const userURL = new URL(`/users/${user.id}`, process.env.REACT_APP_BACKEND_API);
         axios.patch(userURL, formData, {
@@ -141,7 +140,7 @@ function UserProfile() {
                 <div className="h-4"></div>
                 {/* Breadcrumbs */}
                 <div className="flex items-center text-base py-2 px-3 md:px-0">
-                    <Link to="/" className="text-sky-600 hover:text-sky-700 transition duration-150 ease-in-out">Home</Link>
+                    <Link to={ localStorage.getItem("token") ? "/dashboard" : "/" } className="text-sky-600 hover:text-sky-700 transition duration-150 ease-in-out">Home</Link>
                     <span className="mx-2">/</span>
                     <Link to="/profile" className="text-neutral-600 transition duration-150 ease-in-out">Profile</Link>
                 </div>
