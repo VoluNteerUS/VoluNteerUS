@@ -71,9 +71,9 @@ function Login() {
                     if (userOrganizationsRes.data) {
                         dispatch(setUserOrganizations(userOrganizationsRes.data));
                     }
-                    console.log(userOrganizationsRes)
-                    // Else, redirect to home page
-                    navigate("/", { replace: true });
+                    // console.log(userOrganizationsRes)
+                    // Else, redirect to for you page
+                    navigate("/dashboard", { replace: true });
                 }
             }).catch((error) => {
                 console.log(error.response.data.message);
