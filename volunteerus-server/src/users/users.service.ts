@@ -151,6 +151,7 @@ export class UsersService {
   }
 
   public async findUsers(query: string): Promise<User[]> {
+    query = query.replace(/[\[\(\)\?\*\\\|]/g, "\\$&");
     return this.usersModel.find({ 
       $or: [
         { email: new RegExp(query, 'i') }, 
