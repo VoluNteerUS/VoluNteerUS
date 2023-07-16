@@ -13,6 +13,4 @@ export class CreateResponseDto {
     selected_users: User[];
     status: string;
     submitted_on: Date;
-    attendance: string;
-    hours: number;
 }

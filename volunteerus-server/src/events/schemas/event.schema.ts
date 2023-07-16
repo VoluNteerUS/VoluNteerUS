@@ -45,7 +45,7 @@ export class Event {
     groups: Group[]
 
     @Prop()
-    defaultHours: number
+    defaultHours: number[];
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

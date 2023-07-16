@@ -47,7 +47,9 @@ export class ResponsesService {
     const numberOfResponses = pastAcceptedUserResponses.length;
     let totalHours = 0;
     for (let i = 0; i < numberOfResponses; i++) {
-      totalHours += pastAcceptedUserResponses[i].hours === -1 ? pastAcceptedUserResponses[i].event['defaultHours'] : pastAcceptedUserResponses[i].hours;
+      const shifts = pastAcceptedUserResponses[i]?.shifts.map((shift, index) => shift ? index : -1).filter(days => days != -1);
+      const eventHours = shifts?.reduce((sum, shift) => sum + (pastAcceptedUserResponses[i]?.hours[shift] === -1 ? pastAcceptedUserResponses[i]?.event['defaultHours'][shift] : pastAcceptedUserResponses[i]?.hours[shift]), 0);
+      totalHours += eventHours;
     }
     return totalHours;
   }
@@ -88,6 +90,22 @@ export class ResponsesService {
   public async getResponsesByEvent(id: mongoose.Types.ObjectId): Promise<Response[]> {
     const responses = await this.responsesModel.find({ event: id }).populate('user', 'full_name').exec();
     return responses;
+  }
+
+  public async getAcceptedResponsesByEventAndDate(id: mongoose.Types.ObjectId, numberOfDays: number, page:number, limit: number): Promise<PaginationResult<Response>> {
+    const skip = (page - 1) * limit;
+    const filterBody = {};
+    filterBody['event'] = id;
+    filterBody['status'] = "Accepted";
+    filterBody[`shifts.${numberOfDays}`] = true
+    const [data, totalItems] = await Promise.all([
+      this.responsesModel.find(filterBody).populate('user', "-password -registered_on -role -__v").skip(skip).limit(limit).exec(),
+      this.responsesModel.countDocuments(filterBody).exec()
+    ]);
+    const totalPages = Math.ceil(totalItems / limit);
+    // const acceptedResponses = data.filter(response => response.status === "Accepted");
+    // return new PaginationResult<Response>(acceptedResponses, page, totalItems, totalPages);
+    return new PaginationResult<Response>(data, page, totalItems, totalPages);
   }
 
   public async getAcceptedResponsesByEvent(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Response>> {
@@ -132,6 +150,10 @@ export class ResponsesService {
 
   update(id: mongoose.Types.ObjectId, updateResponseDto: UpdateResponseDto) {
     return this.responsesModel.findByIdAndUpdate(id, updateResponseDto).exec();
+  }
+
+  updateAll(updateResponseDto: UpdateResponseDto) {
+    return this.responsesModel.updateMany({}, updateResponseDto);
   }
 
   public async remove(id: mongoose.Types.ObjectId): Promise<Response> {

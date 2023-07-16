@@ -12,5 +12,5 @@ export class CreateEventDto {
   image_url: string
   questions: Question
   groupSettings: any[]
-  defaultHours: number
+  defaultHours: number[]
 }

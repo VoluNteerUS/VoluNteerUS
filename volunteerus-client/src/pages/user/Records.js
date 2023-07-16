@@ -86,45 +86,57 @@ function Records() {
                     <h1>Volunteering history</h1>
                 </div>
                 <div className="grid md:grid-cols-4 grid-cols-2">
-                <div className="bg-neutral-100 rounded shadow p-5">
-                    <p className="text-xs md:text-sm font-semibold text-neutral-600 uppercase tracking-wider">Total</p>
-                    <p className="text-xl md:text-2xl font-semibold text-pink-400 tracking-wider">{ totalHours.hours }h { totalHours.minutes }m</p>
+                  <div className="bg-neutral-100 rounded shadow p-5">
+                      <p className="text-xs md:text-sm font-semibold text-neutral-600 uppercase tracking-wider">Total</p>
+                      <p className="text-xl md:text-2xl font-semibold text-pink-400 tracking-wider">{ totalHours.hours }h { totalHours.minutes }m</p>
+                  </div>
                 </div>
-                </div>
                 <div className="bg-neutral-100 rounded shadow p-5">
-                    <div className="text-sm grid grid-cols-4 text-left border-b">
-                        <p className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</p>
-                        <p className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start date & time</p>
-                        <p className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End date & time</p>
-                        <p className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Hours</p>
-                    </div>
-                    {history?.result?.map((response) => {
-                      const hours = response?.hours === -1 ? Math.floor(response.event['defaultHours'] / 1) : Math.floor(response?.hours / 1);
-                      const mins = response?.hours === -1 ? Math.round(response.event['defaultHours'] % 1 * 60) : Math.round(response?.hours % 1 * 60);
-                      return (
-                        <div className="text-sm grid grid-cols-4 border-b items-center">
-                            <p className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{response?.event['title']}</p>
-                            <p className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${response?.event['date'][0]} ${response?.event['date'][2]}`).format('Do MMMM YYYY, h:mm A')}</p>
-                            <p className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${response?.event['date'][1]} ${response?.event['date'][3]}`).format('Do MMMM YYYY, h:mm A')}</p>
-                            { response?.attendance === "Present"
-                              ? <p className="px-6 py-4 text-sm md:text-base text-green-600 font-bold tracking-wider">+ {hours}h {mins}m</p>
-                              : response?.attendance === "Late"
-                                ? <p className="px-6 py-4 text-sm md:text-base text-yellow-600 font-bold tracking-wide">+ {hours}h {mins}m</p>
-                                : <p className="px-6 py-4 text-sm md:text-base text-red-600 font-bold tracking-wide">0</p>
-                            }
-                        </div>
-                      )
-                    }
-                    )}
-                    <Pagination
-                        currentPage={paginationState?.history?.currentPage}
-                        limit={paginationState?.history?.limit}
-                        totalItems={paginationState?.history?.totalItems}
-                        totalPages={paginationState?.history?.totalPages}
-                        handlePageChange={handleHistoryPageChange}
-                        handleNextPage={handleHistoryNextPage}
-                        handlePrevPage={handleHistoryPrevPage}
-                    />  
+                  <div className="overflow-x-auto">
+                    <thead>
+                      <tr>
+                          <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
+                          <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start date & time</th>
+                          <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End date & time</th>
+                          <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Shifts completed</th>
+                          <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Hours earned</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200">
+                      {history?.result?.map((response) => {
+                        const shifts = response?.shifts.map((shift, index) => shift ? index : -1).filter(days => days != -1);
+                        const eventHours = shifts?.reduce((sum, shift) => sum + (response?.hours[shift] === -1 ? response?.event['defaultHours'][shift] : response?.hours[shift]), 0);
+                        const hours = Math.floor(eventHours / 1);
+                        const mins = Math.round(eventHours % 1 * 60);
+                        return (
+                          <tr>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{response?.event['title']}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${response?.event['date'][0]} ${response?.event['date'][2]}`).format('Do MMMM YYYY, h:mm A')}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${response?.event['date'][1]} ${response?.event['date'][3]}`).format('Do MMMM YYYY, h:mm A')}</td>
+                              <td className="px-6 py-4 space-y-1">
+                                { response?.shifts?.map((shift, index) => shift ? index : -1).filter(days => days !== -1).map((days) => ( 
+                                  <p className="whitespace-nowrap bg-primary-600 text-white text-sm px-3 rounded-full text-center">{ moment(`${response?.event['date'][0]}`).add(days, 'days').format('DD MMMM YYYY') }</p>
+                                ))}
+                              </td>
+                              { eventHours !== 0 || response?.attendance?.includes("Present") || response?.attendance?.includes("Late") 
+                                ? <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-green-600 font-bold tracking-wider">+ {hours}h {mins}m</td>
+                                : <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-red-600 font-bold tracking-wide">0</td>
+                              }
+                          </tr>
+                        )
+                      }
+                      )}
+                    </tbody>
+                  </div>
+                  <Pagination
+                      currentPage={paginationState?.history?.currentPage}
+                      limit={paginationState?.history?.limit}
+                      totalItems={paginationState?.history?.totalItems}
+                      totalPages={paginationState?.history?.totalPages}
+                      handlePageChange={handleHistoryPageChange}
+                      handleNextPage={handleHistoryNextPage}
+                      handlePrevPage={handleHistoryPrevPage}
+                  />  
                 </div>
             </div>
         </AuthProtected>

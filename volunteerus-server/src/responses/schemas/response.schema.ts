@@ -43,11 +43,14 @@ export class Response {
     @Prop()
     submitted_on: Date;
 
-    @Prop({ default: "Not applicable" })
-    attendance: string;
+    @Prop()
+    attendance: string[];
 
     @Prop()
-    hours: number
+    hours: number[];
+
+    @Prop()
+    shifts: boolean[];
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(Response);

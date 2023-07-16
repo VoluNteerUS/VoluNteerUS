@@ -17,8 +17,9 @@ export const responseStub = (): Response => {
         selected_users: [],
         status: "Pending",
         submitted_on: new Date("2023-06-24T12:38:00.000+08:00"),
-        attendance: "Not applicable",
-        hours: eventStub().defaultHours
+        attendance: [],
+        hours: [-1],
+        shifts: []
     }
 };
 
@@ -45,9 +46,10 @@ export const updatedResponseStub = (): Response => {
         5: [],
         6: [],
         selected_users: [],
-        status: "Approved",
+        status: "Accepted",
         submitted_on: new Date("2023-06-24T12:38:00.000+08:00"),
-        attendance: "Present",
-        hours: eventStub().defaultHours
+        attendance: [],
+        hours: [-1],
+        shifts: []
     }
 }
