@@ -46,6 +46,9 @@ export class Event {
 
     @Prop()
     defaultHours: number
+
+    @Prop({ default: false })
+    reminderSent: boolean
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);
