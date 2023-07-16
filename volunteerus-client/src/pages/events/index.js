@@ -294,7 +294,7 @@ function Events() {
                       <LockClosedIcon className="w-5 h-5" />
                       <p>{moment(`${event.signup_by}`).format('LL')}</p>
                     </div>
-                    <Link to={`/events/${event._id}`}>
+                    <Link to={`/events/${event._id}/signup`}>
                       <button className="bg-pink-400 text-white rounded-lg py-1 lg:px-20 px-10 shadow-md">
                         Sign up
                       </button>

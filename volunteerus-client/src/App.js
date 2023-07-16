@@ -24,6 +24,7 @@ const CreateEvent = lazy(() => import('./pages/events/Create'));
 const EventSignup = lazy(() => import('./pages/events/Signup'));
 const EditEventDetails = lazy(() => import('./pages/events/Edit'));
 const ViewResponses = lazy(() => import('./pages/events/Responses'));
+const EventDetails = lazy(() => import('./pages/events/Details'));
 
 // Organizations
 const OrganizationsPage = lazy(() => import('./pages/organizations'));
@@ -102,7 +103,10 @@ function App() {
           </Route>
           <Route path="events">
             <Route index element={<Events />} />
-              <Route path=":id" element={<EventSignup />} />
+              <Route path=":id">
+                <Route index element={<EventDetails />} />
+                <Route path="signup" element={<EventSignup />} />
+              </Route>
               <Route path="create" element={<CreateEvent />} />
           </Route>
           <Route path="/unauthorized" element={<Unauthorized />} />

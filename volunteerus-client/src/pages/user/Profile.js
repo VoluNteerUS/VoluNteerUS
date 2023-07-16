@@ -1,16 +1,32 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux"
 import { Link } from "react-router-dom"
 import Navbar from "../../components/navigation/Navbar"
-import { EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, CheckIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import AuthProtected from "../../common/protection/AuthProtected";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../actions/userActions";
 import Alert from "../../components/Alert";
+import { Listbox, Transition } from "@headlessui/react";
 
 const skills = ["Dialects", "Record Keeping", "Planning"]
+
+const facultiesAndSchools = [
+    "Select your faculty or school",
+    "College of Design and Engineering",
+    "College of Humanities and Sciences",
+    "Faculty of Arts and Social Sciences",
+    "Faculty of Dentistry",
+    "Faculty of Law",
+    "Faculty of Science",
+    "School of Business",
+    "School of Computing",
+    "School of Continuing and Lifelong Education",
+    "Yong Siew Toh Conservatory of Music",
+    "Yong Loo Lin School of Medicine",
+]
 
 function UserProfile() {
     const persistedUserState = useSelector((state) => state.user);
@@ -20,13 +36,14 @@ function UserProfile() {
     const [fullName, setFullName] = useState(user?.full_name || '');
     const [email, setEmail] = useState(user?.email || '');
     const [phoneNumber, setPhoneNumber] = useState(user?.phone_number || '');
-    const [faculty, setFaculty] = useState(user?.faculty || '');
+    const [faculty, setFaculty] = useState(user?.faculty || facultiesAndSchools[0]);
     const [major, setMajor] = useState(user?.major || '');
     const [yearOfStudy, setYearOfStudy] = useState(user?.year_of_study || 1);
     const [telegramHandle, setTelegramHandle] = useState(user?.telegram_handle || '');
     const [dietaryRestrictions, setDietaryRestrictions] = useState(user?.dietary_restrictions || '');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [alertMessages, setAlertMessages] = useState([]);
+    const [errorMessages, setErrorMessages] = useState([]);
 
     const dispatch = useDispatch();
 
@@ -72,6 +89,31 @@ function UserProfile() {
 
 
     const handleSaveProfile = (event) => {
+        // Clear alert and error messages
+        setAlertMessages([]);
+        setErrorMessages([]);
+        
+        // Validate form
+        if (fullName === '') {
+            setErrorMessages([{
+                type: "error",
+                message: "Name cannot be empty!."
+            }]);
+            return;
+        } else if (faculty === facultiesAndSchools[0]) {
+            setErrorMessages([{
+                type: "error",
+                message: "Please select your faculty or school!."
+            }]);
+            return;
+        } else if (major === '') {
+            setErrorMessages([{
+                type: "error",
+                message: "Major cannot be empty!."
+            }]);
+            return;
+        }
+
         event.preventDefault();
         const formData = new FormData();
         formData.append("file", file);
@@ -140,7 +182,7 @@ function UserProfile() {
                 <div className="h-4"></div>
                 {/* Breadcrumbs */}
                 <div className="flex items-center text-base py-2 px-3 md:px-0">
-                    <Link to={ localStorage.getItem("token") ? "/dashboard" : "/" } className="text-sky-600 hover:text-sky-700 transition duration-150 ease-in-out">Home</Link>
+                    <Link to={localStorage.getItem("token") ? "/dashboard" : "/"} className="text-sky-600 hover:text-sky-700 transition duration-150 ease-in-out">Home</Link>
                     <span className="mx-2">/</span>
                     <Link to="/profile" className="text-neutral-600 transition duration-150 ease-in-out">Profile</Link>
                 </div>
@@ -233,6 +275,12 @@ function UserProfile() {
                 <div className="fixed inset-0 flex items-center justify-center">
                     <Dialog.Panel className="bg-white rounded-lg w-full mx-4 md:mx-0 md:w-2/3 lg:w-1/2 p-8 h-4/5 md:h-3/4 overflow-y-auto">
                         <Dialog.Title className="text-2xl font-semibold">Edit Profile</Dialog.Title>
+                        {/* Error Messages */}
+                        {
+                            errorMessages.length > 0 && errorMessages.map((errorMessage, index) => (
+                                <Alert key={index} type={errorMessage.type} message={errorMessage.message} />
+                            ))
+                        }
                         {/* Profile Picture */}
                         <div className="flex flex-col py-3">
                             <div className="block mx-auto">
@@ -243,38 +291,38 @@ function UserProfile() {
                                 />
                             </div>
                             <div className="py-4 flex flex-row justify-center gap-4">
-                                    <label 
-                                        htmlFor="profile-picture"
-                                        className="block text-base text-center w-1/6
+                                <label
+                                    htmlFor="profile-picture"
+                                    className="block text-base text-center w-1/6
                                                    font-medium border border-neutral-400 
                                                    rounded py-2 text-secondary-600 cursor-pointer 
                                                    hover:text-white hover:bg-neutral-400
                                                    transition duration-150 ease-in-out">
-                                        Upload
-                                    </label>
-                                    <input type="file" id="profile-picture" accept="image/*" className="hidden" onChange={handleProfilePictureChange} />
-                                    {/* Clear Profile Picture */}
-                                    <button
-                                        type="button"
-                                        className="text-base text-center w-1/6
+                                    Upload
+                                </label>
+                                <input type="file" id="profile-picture" accept="image/*" className="hidden" onChange={handleProfilePictureChange} />
+                                {/* Clear Profile Picture */}
+                                <button
+                                    type="button"
+                                    className="text-base text-center w-1/6
                                                    border border-danger-400 rounded py-2 
                                                     font-medium text-danger-600 cursor-pointer 
                                                     hover:text-white hover:bg-danger-400
                                                     transition duration-150 ease-in-out"
-                                        onClick={handleClearProfilePicture}
-                                    >
-                                        Clear
-                                    </button>
-                                </div>
+                                    onClick={handleClearProfilePicture}
+                                >
+                                    Clear
+                                </button>
+                            </div>
                         </div>
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Full Name</label>
-                            <input 
-                                type="text" 
-                                value={fullName} 
-                                onChange={(event) => setFullName(event.target.value)} 
-                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                            <input
+                                type="text"
+                                value={fullName}
+                                onChange={(event) => setFullName(event.target.value)}
+                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
                             />
                         </div>
                         <div className="h-4"></div>
@@ -285,8 +333,8 @@ function UserProfile() {
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Phone Number</label>
-                            <input 
-                                type="tel" 
+                            <input
+                                type="tel"
                                 value={phoneNumber}
                                 onChange={(event) => setPhoneNumber(event.target.value)}
                                 className="border border-neutral-200 rounded-md px-3 py-2 mt-1" />
@@ -294,57 +342,102 @@ function UserProfile() {
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Faculty</label>
-                            <input 
-                                type="text" 
+                            <Listbox value={faculty} onChange={setFaculty}>
+                                <div className="relative mt-1">
+                                    <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <span className="block truncate">{faculty}</span>
+                                        <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                            <ChevronDownIcon className="w-5 h-5 text-neutral-400" aria-hidden="true" />
+                                        </span>
+                                    </Listbox.Button>
+                                    <Transition
+                                        as={Fragment}
+                                        leave="transition ease-in duration-100"
+                                        leaveFrom="opacity-100"
+                                        leaveTo="opacity-0"
+                                    >
+                                        <Listbox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                                            {facultiesAndSchools.map((faculty, index) => (
+                                                <Listbox.Option
+                                                    key={index}
+                                                    className={({ active }) =>
+                                                        `${active ? 'text-primary-900 bg-primary-100' : 'text-neutral-900'}
+                                                            cursor-default select-none relative py-2 pl-10 pr-4`
+                                                    }
+                                                    value={faculty}
+                                                >
+                                                    {({ selected, active }) => (
+                                                        <>
+                                                            <span className={`${selected ? 'font-medium' : 'font-normal'} block truncate`}>
+                                                                {faculty}
+                                                            </span>
+                                                            {selected ? (
+                                                                <span
+                                                                    className={`${active ? 'text-primary-600' : 'text-primary-600'}
+                                                                        absolute inset-y-0 left-0 flex items-center pl-3`}
+                                                                >
+                                                                    <CheckIcon className="w-5 h-5" aria-hidden="true" />
+                                                                </span>
+                                                            ) : null}
+                                                        </>
+                                                    )}
+                                                </Listbox.Option>
+                                            ))}
+                                        </Listbox.Options>
+                                    </Transition>
+                                </div>
+                            </Listbox>
+                            {/* <input
+                                type="text"
                                 value={faculty}
                                 onChange={(event) => setFaculty(event.target.value)}
-                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
-                            />
+                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
+                            /> */}
                         </div>
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Major</label>
-                            <input 
+                            <input
                                 type="text"
                                 value={major}
                                 onChange={(event) => setMajor(event.target.value)}
-                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
                             />
                         </div>
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Year of Study</label>
-                            <input 
-                                type="number" 
-                                min={1} 
-                                max={5} 
+                            <input
+                                type="number"
+                                min={1}
+                                max={5}
                                 value={yearOfStudy}
-                                onChange={(event) => setYearOfStudy(event.target.value)} 
+                                onChange={(event) => setYearOfStudy(event.target.value)}
                                 className="border border-neutral-200 rounded-md px-3 py-2 mt-1" />
                         </div>
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Telegram Handle</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 value={telegramHandle}
                                 onChange={(event) => setTelegramHandle(event.target.value)}
-                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
                             />
                         </div>
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Dietary Restrictions</label>
-                            <input 
+                            <input
                                 type="text"
                                 value={dietaryRestrictions}
-                                onChange={(event) => setDietaryRestrictions(event.target.value)} 
-                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1" 
+                                onChange={(event) => setDietaryRestrictions(event.target.value)}
+                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
                             />
                         </div>
                         <div className="h-4"></div>
                         <div className="flex justify-end">
-                            <button  
+                            <button
                                 className="bg-primary-600 text-white text-center hover:bg-primary-500 
                                              px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out"
                                 onClick={handleSaveProfile}

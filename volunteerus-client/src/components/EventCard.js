@@ -8,7 +8,7 @@ import { TagIcon } from '@heroicons/react/24/solid';
 function EventCard({event}) {
     return (
         <div className="bg-grey-100 rounded-lg shadow-lg">
-            <Link to={`/events/${event._id}`} key={event._id}>
+            <Link to={`/events/${event._id}/signup`} key={event._id}>
                 <div className="flex flex-col">
                     <img src={event.image_url} className="rounded-t-lg h-64 object-cover" />
                     <div className="mx-3 my-2">

@@ -73,7 +73,7 @@ function UserDashboard() {
                     </div>
                     {/* Maximum of 8 recommended events shown */}
                     <h1 className="font-bold text-xl md:text-2xl lg:text-3xl py-4">Recommended For You</h1>
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {
                             recommendedEvents.length > 8 ? recommendedEvents.slice(0, 8).map((event) => (
                                 <EventCard key={event._id} event={event} />
