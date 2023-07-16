@@ -24,8 +24,6 @@ export default function NotificationsDropdown() {
 
     const handleMarkRead = async (e, notification) => {
         e.preventDefault();
-        socket.emit('notification', user.id);
-
         if (notification.read) {
             return;
         }

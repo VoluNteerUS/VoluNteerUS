@@ -62,7 +62,7 @@ function EventDetails() {
                             </Tab>
                         </Tab.List>
                         <Tab.Panels className="mt-2">
-                            <Tab.Panel className="bg-white rounded-xl p-3">
+                            <Tab.Panel className="bg-grey-100 rounded-lg p-6 mt-3">
                                 <div className="flex flex-col gap-2">
                                     <div className="flex flex-row items-center gap-2">
                                         {
@@ -89,36 +89,34 @@ function EventDetails() {
                                         }
                                         </div>
                                     </div>
-                                    <div className="flex flex-row items-center gap-2">
+                                    <div className="flex flex-row gap-2">
                                         <div className="font-semibold">Description:</div>
                                         <div>{ event?.description }</div>
                                     </div>
                                 </div>
                             </Tab.Panel>
-                            <Tab.Panel className="bg-white rounded-xl">
-                                <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4 bg-grey-100 rounded-lg p-6 mt-3">
-                                    {
-                                        event?.groups?.length > 0 ? event?.groups?.map((group, index) => (
-                                            <div className="bg-white rounded p-3">
-                                                <h3 className="font-bold text-neutral-700 text-lg">Group { group.number }</h3>
-                                                {
-                                                group?.members.map((member) => {
-                                                    if (member !== null) {
-                                                    return (
-                                                        <div className="flex flex-row bg-neutral-100 rounded p-2 my-2">
-                                                        <img 
-                                                            className="h-12 w-12 rounded-full me-4" 
-                                                            src={ member?.profile_picture === "" ? `https://ui-avatars.com/api/?name=${member?.full_name}&background=0D8ABC&color=fff` : member?.profile_picture } alt="Profile Picture" />
-                                                        <p className="flex items-center">{ member?.full_name }</p>
-                                                        </div>
-                                                    )
-                                                    }
-                                                })
+                            <Tab.Panel className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4 bg-grey-100 rounded-lg p-6 mt-3">
+                                {
+                                    event?.groups?.length > 0 ? event?.groups?.map((group, index) => (
+                                        <div className="bg-white rounded p-3">
+                                            <h3 className="font-bold text-neutral-700 text-lg">Group { group.number }</h3>
+                                            {
+                                            group?.members.map((member) => {
+                                                if (member !== null) {
+                                                return (
+                                                    <div className="flex flex-row bg-neutral-100 rounded p-2 my-2">
+                                                    <img 
+                                                        className="h-12 w-12 rounded-full me-4" 
+                                                        src={ member?.profile_picture === "" ? `https://ui-avatars.com/api/?name=${member?.full_name}&background=0D8ABC&color=fff` : member?.profile_picture } alt="Profile Picture" />
+                                                    <p className="flex items-center">{ member?.full_name }</p>
+                                                    </div>
+                                                )
                                                 }
-                                            </div>
-                                        )) : <div className="font-semibold">No grouping yet</div>
-                                    }
-                                </div>
+                                            })
+                                            }
+                                        </div>
+                                    )) : <div className="font-semibold">No grouping yet</div>
+                                }
                             </Tab.Panel>
                         </Tab.Panels>
                     </Tab.Group>
