@@ -5,7 +5,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
-import { CheckIcon, ChevronDownIcon, ClipboardDocumentCheckIcon, ClipboardDocumentListIcon, UserGroupIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ChevronDownIcon, ClipboardDocumentCheckIcon, ClipboardDocumentListIcon, UserGroupIcon, PencilSquareIcon, XMarkIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
@@ -51,6 +51,7 @@ function Responses() {
   const [customHoursDialogOpen, setCustomHoursDialogOpen] = useState(false);
   const [customHours, setCustomHours] = useState(0);
   const [customMinutes, setCustomMinutes] = useState(0);
+
   const [paginationState, setPaginationState] = useState({
     accepted: {
       currentPage: 1,
@@ -77,7 +78,25 @@ function Responses() {
   const [groupSize, setGroupSize] = useState(1);
   const [groups, setGroups] = useState([]);
 
+  // Shifts State
+  const [shiftEnabled, setShiftEnabled] = useState(false);
+  const [shiftDate, setShiftDate] = useState(moment().format('YYYY-MM-DD'));
+  // number of days between shift date and event start date
+  const [shiftNumberOfDays, setShiftNumberOfDays] = useState(-1);
+  const [isValidShiftDate, setIsValidShiftDate] = useState(false);
+  const [shiftPaginationState, setShiftPaginationState] = useState({
+    currentPage: 1,
+    limit: 12,
+    totalItems: 0,
+    totalPages: 0,
+    result: []
+  });
+
   // Attendance State 
+  const [attendanceDate, setAttendanceDate] = useState(moment().format('YYYY-MM-DD'));
+  // number of days between attendance date and event start date
+  const [attendanceNumberOfDays, setAttendanceNumberOfDays] = useState(-1);
+  const [isValidAttendanceDate, setIsValidAttendanceDate] = useState(false);
   const [attendancePaginationState, setAttendancePaginationState] = useState({
     currentPage: 1,
     limit: 12,
@@ -127,11 +146,31 @@ function Responses() {
 
   useEffect(() => {
     getResponseInformation();
-  }, [paginationState.accepted.currentPage, paginationState.rejected.currentPage, paginationState.pending.currentPage])
+  }, [paginationState.accepted.currentPage, paginationState.rejected.currentPage, paginationState.pending.currentPage, shiftPaginationState.result])
+
+  const getShiftInformation = async () => {
+    try {
+      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&page=${shiftPaginationState.currentPage}&limit=${shiftPaginationState.limit}`, process.env.REACT_APP_BACKEND_API);
+      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
+      setShiftPaginationState({
+        ...shiftPaginationState,
+        totalItems: paginatedAcceptedResponses.totalItems,
+        totalPages: paginatedAcceptedResponses.totalPages,
+        result: paginatedAcceptedResponses.result
+      });
+    } catch (err) {
+      console.error({ err });
+    }
+  }
+
+  useEffect(() => {
+    getShiftInformation();
+  }, [shiftPaginationState.currentPage, shiftPaginationState.result, acceptedResponses])
 
   const getAttendanceInformation = async () => {
     try {
-      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&page=${attendancePaginationState.currentPage}&limit=${attendancePaginationState.limit}`, process.env.REACT_APP_BACKEND_API);
+      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&numberOfDays=${attendanceNumberOfDays}&page=${attendancePaginationState.currentPage}&limit=${attendancePaginationState.limit}`, process.env.REACT_APP_BACKEND_API);
       const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
       setAttendancePaginationState({
@@ -147,7 +186,7 @@ function Responses() {
 
   useEffect(() => {
     getAttendanceInformation();
-  }, [attendancePaginationState.currentPage, attendancePaginationState.result])
+  }, [attendancePaginationState.currentPage, attendanceNumberOfDays, acceptedResponses])
 
   const getEventDetails = async () => {
     const eventURL = new URL(`/events/${eventId}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
@@ -157,17 +196,50 @@ function Responses() {
     setGroupingEnabled(event?.groupSettings[0] === 'Yes' ? true : false);
     setGroupingType(event?.groupSettings[1]);
     setGroupSize(event?.groupSettings[2]);
-    setGroups(event.groups)
+    setGroups(event.groups);
+    // Event takes place over multiple days
+    if (event.date[0] !== event.date[1]) {
+      setShiftEnabled(true);
+      const diff = moment(`${ moment().format('YYYY-MM-DD') }`).diff(moment(`${ event.date[0] } `), 'days');
+      setShiftNumberOfDays(diff);
+      setAttendanceNumberOfDays(diff);
+      // Current date is the start or end date of the event
+      if (moment() === moment(`${ event?.date[1] }`) || moment() === moment(`${ event?.date[0] }`)) {
+        setIsValidShiftDate(true);
+        setIsValidAttendanceDate(true);
+        const h = Math.floor(event?.defaultHours[diff] / 1);
+        const m = Math.round(event?.defaultHours[diff] % 1 * 60);
+        setHours(h);
+        setMinutes(m);
+      // Current date is between the start and end date of the event
+      } else if (moment(`${ event?.date[1] }`).isAfter(moment()) && moment(`${ event?.date[0] }`).isBefore(moment())) {
+        setIsValidShiftDate(true);
+        setIsValidAttendanceDate(true);  
+        const h = Math.floor(event?.defaultHours[diff] / 1);
+        const m = Math.round(event?.defaultHours[diff] % 1 * 60);
+        setHours(h);
+        setMinutes(m);
+      // Current date is before or after the event period
+      } else {
+        setIsValidShiftDate(false);
+        setIsValidAttendanceDate(false);
+        setHours(0);
+        setMinutes(0);
+      }
+    // Event takes place on only one day
+    } else {
+      setIsValidAttendanceDate(true);
+      setAttendanceNumberOfDays(0);
+      const h = Math.floor(event?.defaultHours[0] / 1);
+      const m = Math.round(event?.defaultHours[0] % 1 * 60);
+      setHours(h);
+      setMinutes(m);
+    }
 
     const questionsURL = new URL(`/questions/${event?.questions}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
     const questionsRes = await axios.get(questionsURL);
     const questions = questionsRes.data;
     setQuestions(questions);
-
-    const h = Math.floor(event?.defaultHours / 1);
-    const m = Math.round(event?.defaultHours % 1 * 60);
-    setHours(h);
-    setMinutes(m);
 
     // Check if user is a committee member
     const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
@@ -222,11 +294,25 @@ function Responses() {
   const handleConfirmUpdate = async () => {
     // Send request to server
     let requestBody;
+    let newShifts = [];
+    const totalDays = moment(`${ event.date[1] } ${ event.date[3] }`).diff(moment(`${ event.date[0] } ${ event.date[2] }`), 'days') + 1;
+    newShifts.length = totalDays;
+    let newAttendance = [];
+    newAttendance.length = totalDays;
+    if (totalDays === 1) {
+      newShifts.fill(true);
+      newAttendance.fill("Present");
+    } else {
+      newShifts.fill(false);
+      newAttendance.fill("Not applicable");
+    }
+    let newHours = [];
+    newHours.length = totalDays;
     if (action === "Accept") {
       // use default event hours if hours for response is -1
-      requestBody = { ...responseToUpdate, status: `Accepted`, attendance: "Present", hours: -1 };
+      requestBody = { ...responseToUpdate, status: `Accepted`, attendance: newAttendance, hours: newHours.fill(-1), shifts: newShifts };
     } else {
-      requestBody = { ...responseToUpdate, status: `Rejected`, attendance: "Not applicable", hours: 0 };
+      requestBody = { ...responseToUpdate, status: `Rejected`, attendance: newAttendance, hours: newHours.fill(0), shifts: newShifts };
     }
     
     // Endpoint for responses
@@ -252,8 +338,6 @@ function Responses() {
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));
-
-    window.location.reload();
   }
 
   const handleAcceptedResponsesPageChange = (page) => {
@@ -339,10 +423,52 @@ function Responses() {
   const handleRejectedResponsesPrevPage = () => {
     setPaginationState({ 
       ...paginationState, 
-      accepted: {
+      rejected: {
         ...paginationState.rejected,
         currentPage: paginationState.rejected.currentPage - 1
       }
+    });
+  }
+
+  const handleShiftPageChange = (page) => {
+    setShiftPaginationState({ 
+      ...shiftPaginationState, 
+      currentPage: page
+    });
+  }
+
+  const handleShiftPrevPage = () => {
+    setShiftPaginationState({ 
+      ...shiftPaginationState, 
+      currentPage: shiftPaginationState.currentPage - 1
+    });
+  }
+
+  const handleShiftNextPage = () => {
+    setShiftPaginationState({ 
+      ...shiftPaginationState, 
+      currentPage: shiftPaginationState.currentPage + 1
+    });
+  }
+
+  const handleAttendancePageChange = (page) => {
+    setAttendancePaginationState({ 
+      ...attendancePaginationState, 
+      currentPage: page
+    });
+  }
+
+  const handleAttendancePrevPage = () => {
+    setAttendancePaginationState({ 
+      ...attendancePaginationState, 
+      currentPage: attendancePaginationState.currentPage - 1
+    });
+  }
+
+  const handleAttendanceNextPage = () => {
+    setAttendancePaginationState({ 
+      ...attendancePaginationState, 
+      currentPage: attendancePaginationState.currentPage + 1
     });
   }
 
@@ -446,7 +572,11 @@ function Responses() {
 
     // Send request to server
     const hours = customHours + (customMinutes / 60);
-    const requestBody = { ...response, attendance: `${attendance}`, hours: attendance === "Present" ? -1 : attendance === "Absent" ? 0 : hours };
+    const newAttendance = [ ...response?.attendance ];
+    newAttendance[attendanceNumberOfDays] = `${ attendance }`
+    const newHours = [ ...response?.hours ];
+    newHours[attendanceNumberOfDays] = attendance === "Present" ? -1 : attendance === "Absent" ? 0 : hours;
+    const requestBody = { ...response, attendance: newAttendance, hours: newHours };
 
     // Endpoint for responses
     const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
@@ -494,7 +624,9 @@ function Responses() {
 
     const eventURL = new URL(`/events/${ event?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
     const newHours = hours + (minutes === 0 ? 0 : minutes / 60);
-    axios.patch(eventURL, { defaultHours: newHours }).then((response) => {
+    let newDefaultHours = event.defaultHours;
+    newDefaultHours[attendanceNumberOfDays] = newHours
+    axios.patch(eventURL, { defaultHours: newDefaultHours }).then((response) => {
       setAlertMessages([
         {
           type: "success",
@@ -555,6 +687,98 @@ function Responses() {
     } else {
       setCustomHours("");
     }
+  }
+
+  const handleShiftDateChange = (date) => {
+    setShiftDate(date);
+    const diff = moment(`${ date }`).diff(moment(`${ event?.date[0] }`), 'days');
+    setShiftNumberOfDays(diff);
+    if (date === event?.date[1] || date === event?.date[0]) {
+      setIsValidShiftDate(true);
+    } else {
+      setIsValidShiftDate(moment(`${ event?.date[1] }`).isAfter(moment(`${ date }`)) && moment(`${ event?.date[0] }`).isBefore(moment(`${ date }`)));
+    }
+  }
+
+  const handleAttendanceDateChange = (date) => {
+    setAttendanceDate(date);
+    const diff = moment(`${ date }`).diff(moment(`${ event?.date[0] }`), 'days');
+    setAttendanceNumberOfDays(diff);
+    if (date === event?.date[1] || date === event?.date[0] || moment(`${ event?.date[1] }`).isAfter(moment(`${ date }`)) && moment(`${ event?.date[0] }`).isBefore(moment(`${ date }`))) {
+      setIsValidAttendanceDate(true);
+      const h = Math.floor(event?.defaultHours[diff] / 1);
+      const m = Math.round(event?.defaultHours[diff] % 1 * 60);
+      setHours(h);
+      setMinutes(m);
+    } else {
+      setIsValidAttendanceDate(false) ;  
+      setHours(0);
+      setMinutes(0);
+    }
+  }
+
+  const handleSelect = async (e, response) => {
+    e.preventDefault();
+    const newShifts = [ ...response?.shifts ];
+    newShifts[shiftNumberOfDays] = !response?.shifts[shiftNumberOfDays];
+    let newAttendance = [ ...response?.attendance ];
+    if (!response?.shifts[shiftNumberOfDays]) {
+      newAttendance[shiftNumberOfDays] = "Present";
+    } else {
+      newAttendance[shiftNumberOfDays] = "Not applicable";
+    }
+    // Send request to server
+    const requestBody = { ...response, shifts: newShifts, attendance: newAttendance };
+
+    // Endpoint for responses
+    const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
+
+    // Send PATCH request to update response
+    await axios.patch(responsesURL, requestBody).then((res) => {
+      console.log(res);
+      if (!res.data) {
+        alert(`You do not have permission to ${ action }.`);
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
+            
+    // Send GET request to get updated responses
+    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+
+    // Update responses in redux store
+    dispatch(updateResponses(updatedResponses));
+  }
+
+  const handleSelectAll = async (e) => {
+    e.preventDefault();
+
+    const requestBody = {};
+    requestBody[`shifts.${shiftNumberOfDays}`] = true;
+    requestBody[`attendance.${shiftNumberOfDays}`] = "Present";
+
+    // Endpoint for responses
+    const responsesURL = new URL(`/responses?role=${role}`, process.env.REACT_APP_BACKEND_API);
+
+    // Send PATCH request to update response
+    await axios.patch(responsesURL, requestBody).then((res) => {
+      console.log(res);
+      if (!res.data) {
+        alert(`You do not have permission to ${ action }.`);
+        navigate('/');
+      }
+    }).catch((err) => {
+      console.error(err);
+    });
+            
+    // Send GET request to get updated responses
+    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
+    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+
+    // Update responses in redux store
+    dispatch(updateResponses(updatedResponses));
   }
 
   return (
@@ -635,6 +859,7 @@ function Responses() {
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
+        {/* Groupings */}
         { groupingEnabled && (
         <div className="my-10">
           <div className="text-2xl font-bold flex space-x-3">
@@ -778,10 +1003,83 @@ function Responses() {
           )}
         </div>
         )}
-        <div className="flex flex-row justify-between mt-20 mb-5 items-center">
-          <div className="text-2xl font-bold flex space-x-3">
-            <h1>Attendance</h1>
-            <ClipboardDocumentCheckIcon width={25} height={25} />
+        {/* Shifts */}
+        { shiftEnabled && (
+        <div className="my-10">
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-col">
+              <div className="text-2xl font-bold flex space-x-3">
+                <h1>Shifts</h1>
+                <CalendarDaysIcon width={25} height={25} />
+              </div>
+              <div className="flex flex-row">
+                <label className="flex items-center me-2">
+                  Date:
+                </label>
+                <input 
+                  value={ shiftDate }
+                  onChange={ (e) => handleShiftDateChange(e.target.value) }
+                  type= "date"
+                  className="p-1 border border-grey-600 rounded-md mb-2"
+                />
+              </div>
+            </div>
+            <div className="flex">
+              <button className="bg-primary-600 hover:bg-primary-500 text-white font-bold py-2 px-4 rounded-lg" onClick={ handleSelectAll }>Select all</button>
+            </div>
+          </div>
+
+          <div className="pb-3 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 rounded-lg bg-grey-100">
+            { !isValidShiftDate
+              ? <div className="text-center md:col-span-4 sm:col-span-3 col-span-2">
+                  <p className="text-sm font-extralight my-2">No shifts available before or after event period.</p>
+                </div>
+              : shiftPaginationState.result.map((response) => {
+              return (
+                <div className="max-w-sm flex flex-col border py-5 justify-center text-center m-3 rounded-lg bg-white shadow-md">
+                    <img className="h-14 w-14 rounded-full m-auto" src={ response?.user["profile_picture"] === "" ? `https://ui-avatars.com/api/?name=${response?.user["full_name"]}&background=0D8ABC&color=fff` : response?.user["profile_picture"] } alt="Profile Picture" />
+                    <p className="my-3">{ response?.user["full_name"] }</p>
+                    <div className="space-x-3 mt-2">
+                      <button onClick={ (e) => handleSelect(e, response) } className={ response?.shifts[shiftNumberOfDays]
+                        ? 'w-10 h-10 rounded-full p-2 border bg-green-500 border-green-900 text-white'
+                        : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
+                        }><CheckIcon /></button>
+                    </div>
+                </div>
+            )})}
+            { isValidShiftDate && <div className="md:col-span-4 sm:col-span-3 col-span-2">
+              <Pagination
+                currentPage={shiftPaginationState?.currentPage}
+                limit={shiftPaginationState?.limit}
+                totalItems={shiftPaginationState?.totalItems}
+                totalPages={shiftPaginationState?.totalPages}
+                handlePageChange={handleShiftPageChange}
+                handleNextPage={handleShiftNextPage}
+                handlePrevPage={handleShiftPrevPage}
+              />
+            </div>
+            }    
+          </div>
+        </div>
+        )}
+        {/* Attendance */}
+        <div className="flex flex-row justify-between mt-20 mb-3 items-center">
+          <div className="flex flex-col">
+            <div className="text-2xl font-bold flex space-x-3">
+              <h1>Attendance</h1>
+              <ClipboardDocumentCheckIcon width={25} height={25} />
+            </div>
+            { shiftEnabled && <div className="flex flex-row">
+              <label className="flex items-center me-2">
+                Date:
+              </label>
+              <input 
+                value={ attendanceDate }
+                onChange={ (e) => handleAttendanceDateChange(e.target.value) }
+                type= "date"
+                className="p-1 border border-grey-600 rounded-md mb-2"
+              />
+            </div> }
           </div>
           <div className="bg-grey-100 rounded-lg p-2 shadow">
             <div>
@@ -801,44 +1099,49 @@ function Responses() {
               <Alert key={index} type={alertMessage.type} message={alertMessage.message} />
             ))
           }
-          <div className="pb-10 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 rounded-lg bg-grey-100">
-              {attendancePaginationState.result.map((response) => {
+          <div className="pb-3 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 rounded-lg bg-grey-100">
+          { !isValidAttendanceDate
+              ? <div className="text-center md:col-span-4 sm:col-span-3 col-span-2">
+                  <p className="text-sm font-extralight my-2">No attendance available before or after event period.</p>
+                </div>
+              : acceptedResponses.filter((response) => response?.shifts[attendanceNumberOfDays]).map((response) => {
                 return (
                   <div className="max-w-sm flex flex-col border py-5 justify-center text-center m-3 rounded-lg bg-white shadow-md">
                     <img className="h-14 w-14 rounded-full m-auto" src={ response?.user["profile_picture"] === "" ? `https://ui-avatars.com/api/?name=${response?.user["full_name"]}&background=0D8ABC&color=fff` : response?.user["profile_picture"] } alt="Profile Picture" />
                     <p className="my-3">{ response?.user["full_name"] }</p>
                     <div className="space-x-3 mt-2">
-                      <button onClick={ (e) => handleAttendance(e, response, "Present") } className={ response?.attendance === "Present"
+                      <button onClick={ (e) => handleAttendance(e, response, "Present") } className={ response?.attendance[attendanceNumberOfDays] === "Present"
                         ? 'w-10 h-10 rounded-full p-2 border bg-green-500 border-green-900 text-white'
                         : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
                         }>P</button>
-                      <button onClick={ (e) => handleAttendance(e, response, "Absent") } className={ response?.attendance === "Absent"
+                      <button onClick={ (e) => handleAttendance(e, response, "Absent") } className={ response?.attendance[attendanceNumberOfDays] === "Absent"
                         ? 'w-10 h-10 rounded-full p-2 border bg-red-500 border-red-900 text-white'
                         : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
                         }>A</button>
-                      <button onClick={ (e) => handleLate(e, response) } className={ response?.attendance === "Late"
+                      <button onClick={ (e) => handleLate(e, response) } className={ response?.attendance[attendanceNumberOfDays] === "Late"
                         ? 'w-10 h-10 rounded-full p-2 border bg-yellow-500 border-yellow-900 text-white'
                         : 'w-10 h-10 rounded-full p-2 border bg-grey-100' 
                         }>L</button>
                     </div>
-                    { response?.attendance === "Late" 
-                      ? <p className="text-xs md:text-sm tracking-wider text-grey-800 mt-5">Custom hours: { Math.floor(response?.hours / 1) }h { Math.round(response?.hours % 1 * 60) }m</p>
+                    { response?.attendance[attendanceNumberOfDays] === "Late" 
+                      ? <p className="text-xs md:text-sm tracking-wider text-grey-800 mt-5">Custom hours: { Math.floor(response?.hours[attendanceNumberOfDays] / 1) }h { Math.round(response?.hours[attendanceNumberOfDays] % 1 * 60) }m</p>
                       : <p className="text-xs md:text-sm tracking-wider text-grey-800 mt-5">-</p>
                     }
                   </div>
                 )
-              })}
-              <div className="md:col-span-4 sm:col-span-3 col-span-2">
-                <Pagination
-                  currentPage={attendancePaginationState?.currentPage}
-                  limit={attendancePaginationState?.limit}
-                  totalItems={attendancePaginationState?.totalItems}
-                  totalPages={attendancePaginationState?.totalPages}
-                  handlePageChange={handleRejectedResponsesPageChange}
-                  handleNextPage={handleRejectedResponsesNextPage}
-                  handlePrevPage={handleRejectedResponsesPrevPage}
-                />
-              </div>
+              })} 
+              { isValidAttendanceDate && <div className="md:col-span-4 sm:col-span-3 col-span-2">
+              <Pagination
+                currentPage={attendancePaginationState?.currentPage}
+                limit={attendancePaginationState?.limit}
+                totalItems={attendancePaginationState?.totalItems}
+                totalPages={attendancePaginationState?.totalPages}
+                handlePageChange={handleAttendancePageChange}
+                handleNextPage={handleAttendanceNextPage}
+                handlePrevPage={handleAttendancePrevPage}
+              />
+            </div>
+            }    
           </div>
         </div>        
       {isDialogOpen && (
@@ -906,7 +1209,7 @@ function Responses() {
       {/* Customise user hours */}
       <Dialog open={customHoursDialogOpen} onClose={ () => setCustomHoursDialogOpen(false) }>
           {/* Overlay */}
-          {dialogOpen && (
+          {customHoursDialogOpen && (
               <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
           )}
           {/* Panel */}

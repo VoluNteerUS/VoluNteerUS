@@ -45,7 +45,7 @@ export class Event {
     groups: Group[]
 
     @Prop()
-    defaultHours: number
+    defaultHours: number[];
 
     @Prop({ default: false })
     reminderSent: boolean

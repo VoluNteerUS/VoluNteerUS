@@ -112,6 +112,11 @@ function CreateEvent() {
             navigate('/');
           }
           const duration = moment(`${details?.date[1]} ${details?.date[3]}`).diff(moment(`${details?.date[0]} ${details?.date[2]}`), 'hours', 'minutes');
+          const totalDays = moment(`${ details?.date[1] } ${ details?.date[3] }`).diff(moment(`${ details?.date[0] } ${ details?.date[2] }`), 'days') + 1;
+          let newDefaultHours = [];
+          newDefaultHours.length = totalDays;
+          newDefaultHours.fill(duration);
+
           // event details
           const eventData = new FormData();
           eventData.append('title', details.title);
@@ -125,7 +130,7 @@ function CreateEvent() {
           eventData.append('file', details.file);
           eventData.append('questions', response.data._id);
           eventData.append('groupSettings', details.groupSettings);
-          eventData.append('defaultHours', duration);
+          eventData.append('defaultHours', newDefaultHours);
 
           let eventsURL = new URL(`/events?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
           eventsURL = new URL(`/events?role=${"COMMITTEE MEMBER"}`, process.env.REACT_APP_BACKEND_API);

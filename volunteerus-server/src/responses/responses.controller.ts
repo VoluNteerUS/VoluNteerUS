@@ -61,6 +61,7 @@ export class ResponsesController {
   findAcceptedResponses(
     @Query('event_id') event_id: mongoose.Types.ObjectId,
     @Query('user_id') user_id: mongoose.Types.ObjectId,
+    @Query('numberOfDays') numberOfDays: number,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10
   ): Promise<PaginationResult<Response>> {
@@ -72,7 +73,9 @@ export class ResponsesController {
         cause: new Error('Invalid page or limit'),
       });
     }
-    if (event_id) {
+    if (event_id && numberOfDays) {
+      return this.responsesService.getAcceptedResponsesByEventAndDate(event_id, numberOfDays, parsedPage, parsedLimit);
+    } else if (event_id) {
       return this.responsesService.getAcceptedResponsesByEvent(event_id, parsedPage, parsedLimit);
     } else if (user_id) {
       return this.responsesService.getAcceptedResponsesByUser(user_id, parsedPage, parsedLimit);
@@ -135,6 +138,15 @@ export class ResponsesController {
     if (ability.can('create', Response)) {
 
       return this.responsesService.update(id, updateResponseDto);
+    }
+  }
+
+  @Patch()
+  updateAll(@Query('role') role: string, @Body() updateResponseDto: UpdateResponseDto) {
+    // Check if user has permission to update response
+    const ability = this.caslAbilityFactory.createForUser(role);
+    if (ability.can('create', Response)) {
+      return this.responsesService.updateAll(updateResponseDto);
     }
   }
 

@@ -53,6 +53,10 @@ export class EventsController {
         if (typeof event.groupSettings === "string") {
           event.groupSettings = event.groupSettings.split(',');
         }
+        if (typeof event.defaultHours === "string") {
+          event.defaultHours = event.defaultHours.split(',');
+          event.defaultHours = event.defaultHours.map((hours) => parseFloat(hours));
+        }
 
         return this.eventService.create(event);
       } 
@@ -170,6 +174,10 @@ export class EventsController {
         }
         if (typeof event.groupSettings === "string") {
           event.groupSettings = event.groupSettings.split(',');
+        }
+        if (typeof event.defaultHours === "string") {
+          event.defaultHours = event.defaultHours.split(',');
+          event.defaultHours = event.defaultHours.map((hours) => parseFloat(hours));
         }
 
         return this.eventService.update(id, event);

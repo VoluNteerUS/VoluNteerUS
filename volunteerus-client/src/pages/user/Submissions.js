@@ -52,17 +52,53 @@ function Submissions() {
     }
   });
 
-  const heading = () => {
+  const table = (status) => {
     return (
+      <table className="min-w-full divide-y divide-neutral-200">
       <thead>
-        <tr className="text-sm grid grid-cols-5 text-left border-b">
+        <tr>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Event Name</th>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Start date & time</th>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">End date & time</th>
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Submitted on</th>
+          { `${status}` === "Accepted" && <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Shifts</th> }
           <th className="px-6 py-3 text-left text-xs md:text-sm font-semibold text-neutral-800 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
+      <tbody className="divide-y divide-neutral-200">
+        {
+          responseAndEvent?.filter(obj => obj?.response?.status === `${status}`).length === 0 ? (
+            <tr>
+              <td className="px-6 py-4 text-sm md:text-base text-neutral-600 lowercase text-center" colSpan="6">No {status} submissions</td>
+            </tr>
+          ) : (responseAndEvent.filter((obj) => obj?.response?.status === `${status}`).map((obj) => (
+            <tr key={obj?.event?._id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{obj?.event?.title}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[0]} ${obj?.event?.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</td>
+              { `${status}` === "Accepted" && <td className="px-6 py-4 space-y-1">{obj?.response?.shifts?.map((shift, index) => shift ? index : -1).filter(days => days !== -1).map((days) => ( 
+                <p className="whitespace-nowrap bg-primary-600 text-white text-sm px-3 rounded-full text-center">{ moment(`${obj?.event?.date[0]}`).add(days, 'days').format('DD MMMM YYYY') }</p>
+              ))}</td> }
+              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
+                {
+                  (obj?.response?.status === "Pending") ? (
+                    <>
+                      <button onClick={ e => navigate(`/${obj?.response?._id}/edit`)} disabled={ obj?.response?.status !== "Pending" } className="text-primary-600 hover:text-primary-800">
+                        Edit
+                      </button>
+                      <span className="px-2">|</span>
+                    </>
+                  ) : null
+                }
+                <button type="button" onClick={ e => handleDelete(e, obj) } className="text-primary-600 hover:text-primary-800">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          )))
+        }
+=======
     );
   }
 
@@ -90,8 +126,10 @@ function Submissions() {
             </button>
           </td>
         </tr>
+>>>>>>> main
       </tbody>
-    );
+    </table>
+    )
   }
 
   const getEventByResponse = async (responseForEvent) => {
@@ -157,7 +195,6 @@ function Submissions() {
       const responseEvents = Promise.all(responses.map((response) => 
         getEventByResponse(response)
       )).then((eventResults) => {
-        console.log(eventResults);
         setEvents(eventResults);
     })
     }
@@ -168,7 +205,6 @@ function Submissions() {
     for (let i = 0; i < responses.length; i++) {
       currResponseAndEvent = [...currResponseAndEvent, { response: responses[i], event: events[i] }];
     }
-    console.log(currResponseAndEvent);
     setResponseAndEvent(currResponseAndEvent);
   }, [events, responses]);  
 
@@ -330,20 +366,9 @@ function Submissions() {
           <Tab.Panels className="mt-5 bg-grey-100 rounded-lg py-1">
             {/* Tab for accepted events */}
             <Tab.Panel>
-              <table className="flex flex-col space-y-1">
-                { heading() }
-                {responseAndEvent.filter(obj => obj.response.status === "Accepted").length === 0
-                  ? <tbody>
-                    <tr className="text-sm flex justify-evenly font-mono">
-                      <td>No accepted submissions</td>  
-                    </tr>
-                  </tbody>
-                  : responseAndEvent.filter(obj => obj.response.status === "Accepted").map((obj) => {
-                    return (
-                      body(obj)
-                    );
-                })}
-              </table>
+              <div className="overflow-x-auto">
+              {table("Accepted")}
+              </div>
               <Pagination
                 currentPage={paginationState?.accepted?.currentPage}
                 limit={paginationState?.accepted?.limit}
@@ -356,21 +381,9 @@ function Submissions() {
             </Tab.Panel>
             {/* Tab for pending events */}
             <Tab.Panel>
-              <table className="flex flex-col space-y-1">
-                { heading() }
-                {responseAndEvent.filter(obj => obj.response.status === "Pending").length === 0
-                  ? <tbody>
-                    <tr className="text-sm flex justify-evenly font-mono">
-                      <td>No pending submissions</td>  
-                    </tr>
-                  </tbody>
-                  : responseAndEvent.filter(obj => obj.response.status === "Pending").map((obj) => {
-                    return (
-                      body(obj)
-                    );
-                  })
-                }
-              </table>
+              <div className="overflow-x-auto">
+                {table("Pending")}
+              </div>
               <Pagination
                 currentPage={paginationState?.pending?.currentPage}
                 limit={paginationState?.pending?.limit}
@@ -383,20 +396,9 @@ function Submissions() {
             </Tab.Panel>
             {/* Tab for rejected events */}
             <Tab.Panel>
-              <table className="flex flex-col space-y-1">
-                { heading() }
-                {responseAndEvent.filter(obj => obj.response.status === "Rejected").length === 0
-                  ? <tbody>
-                    <tr className="text-sm flex justify-evenly font-mono">
-                      <td>No rejected submissions</td>  
-                    </tr>
-                  </tbody>
-                  : responseAndEvent.filter(obj => obj.response.status === "Rejected").map((obj) => {
-                    return (
-                      body(obj)
-                    );
-                  })}
-              </table>
+              <div className="overflow-x-auto">
+                {table("Rejected")}
+              </div>
               <Pagination
                 currentPage={paginationState?.rejected?.currentPage}
                 limit={paginationState?.rejected?.limit}

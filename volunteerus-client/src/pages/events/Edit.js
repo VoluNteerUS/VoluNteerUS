@@ -115,6 +115,11 @@ function EditEventDetails() {
           
     // event details
     const duration = moment(`${details?.date[1]} ${details?.date[3]}`).diff(moment(`${details?.date[0]} ${details?.date[2]}`), 'hours', 'minutes');
+    const totalDays = moment(`${ details?.date[1] } ${ details?.date[3] }`).diff(moment(`${ details?.date[0] } ${ details?.date[2] }`), 'days') + 1;
+    let newDefaultHours = [];
+    newDefaultHours.length = totalDays;
+    newDefaultHours.fill(duration);
+
     const eventData = new FormData();
     eventData.append('title', details.title);
     eventData.append('date', details.date);
@@ -127,7 +132,7 @@ function EditEventDetails() {
     eventData.append('file', details.file);
     eventData.append('questions', details.questions);
     eventData.append('groupSettings', details.groupSettings);
-    eventData.append('defaultHours', duration);
+    eventData.append('defaultHours', newDefaultHours);
 
     // event sign up form questions 
     const eventQuestions = Object.values(formQuestions).filter(question => question[1] !== "");

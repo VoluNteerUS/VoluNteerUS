@@ -55,9 +55,7 @@ describe('ResponsesController', () => {
           6: [],
           status: responseStub().status,
           submitted_on: responseStub().submitted_on,
-          selected_users: [],
-          attendance: "Not applicable",
-          hours: responseStub().hours
+          selected_users: []
         }
         response = await controller.create("COMMITTEE MEMBER", createResponseDto);
       });
@@ -293,7 +291,6 @@ describe('ResponsesController', () => {
       beforeEach(async () => {
         updateResponseDto = {
           status: "Accepted",
-          attendance: "Present"
         };
         response = await controller.update(responseIdStub(), "COMMITTEE MEMBER", updateResponseDto);
       });
