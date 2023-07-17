@@ -11,6 +11,7 @@ import { ContactsModule } from './contacts/contacts.module';
 import { QuestionsModule } from './questions/questions.module';
 import { ResponsesModule } from './responses/responses.module';
 import { CaslModule } from './casl/casl.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -28,7 +29,8 @@ dotenv.config();
     UsersModule,
     QuestionsModule,
     ResponsesModule,
-    CaslModule
+    CaslModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

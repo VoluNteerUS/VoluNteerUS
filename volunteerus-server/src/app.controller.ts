@@ -6,7 +6,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): Record<string, any> {
-    return JSON.parse(`{"message": "${this.appService.getHello()}"}`);
+  getStatus(): Record<string, any> {
+    return JSON.parse(`{"message": "${this.appService.getStatus()}"}`);
   }
 }

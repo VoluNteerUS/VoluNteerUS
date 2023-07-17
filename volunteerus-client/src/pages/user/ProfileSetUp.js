@@ -13,6 +13,7 @@ const facultiesAndSchools = [
     "College of Humanities and Sciences",
     "Faculty of Arts and Social Sciences",
     "Faculty of Dentistry",
+    "Faculty of Law",
     "Faculty of Science",
     "School of Business",
     "School of Computing",

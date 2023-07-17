@@ -119,7 +119,7 @@ export class EventsService {
   }
 
   public async findOne(id: mongoose.Types.ObjectId): Promise<Event> {
-    const event = await this.eventsModel.findById(id).exec();
+    const event = await this.eventsModel.findById(id).populate('organized_by').exec();
     return event;
   }
 

@@ -7,6 +7,8 @@ import { Organization, OrganizationSchema } from 'src/organizations/schemas/orga
 import { FirebasestorageModule } from 'src/firebasestorage/firebasestorage.module';
 import { Event, EventSchema } from 'src/events/schemas/event.schema';
 import { Response, ResponseSchema } from 'src/responses/schemas/response.schema';
+import { Notification, NotificationSchema } from 'src/notifications/schemas/notification.schema';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Module({
   imports: [
@@ -14,11 +16,12 @@ import { Response, ResponseSchema } from 'src/responses/schemas/response.schema'
       { name: User.name, schema: UserSchema },
       { name: Organization.name, schema: OrganizationSchema},
       { name: Event.name, schema: EventSchema},
-      { name: Response.name, schema: ResponseSchema}
+      { name: Response.name, schema: ResponseSchema},
+      { name: Notification.name, schema: NotificationSchema }
     ]),
     FirebasestorageModule,
   ],
-  providers: [UsersService],
+  providers: [UsersService, NotificationsGateway],
   exports: [UsersService],
   controllers: [UsersController],
 })
