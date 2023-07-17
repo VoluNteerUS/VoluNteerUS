@@ -16,7 +16,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toStrictEqual({ "message" : 'Hello World!'});
+      expect(appController.getStatus()).toStrictEqual({ "message" : 'Hello World!'});
     });
   });
 });

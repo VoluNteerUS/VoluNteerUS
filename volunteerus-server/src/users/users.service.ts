@@ -9,6 +9,9 @@ import { PaginationResult } from '../types/pagination';
 import { Organization, OrganizationDocument } from '../organizations/schemas/organization.schema';
 import { Event, EventDocument } from "../events/schemas/event.schema";
 import { Response, ResponseDocument } from "../responses/schemas/response.schema";
+import { Notification, NotificationDocument } from '../notifications/schemas/notification.schema';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { NotificationDto } from '../notifications/dto/notification.dto';
 import * as moment from "moment";
 
 @Injectable()
@@ -18,6 +21,8 @@ export class UsersService {
     @InjectModel(Organization.name) private organizationsModel: Model<OrganizationDocument>,
     @InjectModel(Event.name) private eventsModel: Model<EventDocument>,
     @InjectModel(Response.name) private responsesModel: Model<ResponseDocument>,
+    @InjectModel(Notification.name) private notificationsModel: Model<NotificationDocument>,
+    private notificationsGateway: NotificationsGateway
   ) { }
 
   public async create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -225,6 +230,19 @@ export class UsersService {
         $gte: moment().format('YYYY-MM-DD')
       },
     }).exec();
+
+    // Remind users of upcoming events 1 day before (ensure it is only sent once)
+    upcomingEvents.forEach(async event => {
+      let eventDate = moment(event.date[0]).subtract(1, 'days').format('YYYY-MM-DD');
+      let today = moment().format('YYYY-MM-DD');
+      if (eventDate == today && !event.reminderSent) {
+        let user = await this.usersModel.findById(_id);
+        const newNotification = new NotificationDto(user, `Reminder: ${event.title} is tommorow!`, new Date(), false);
+        await this.notificationsModel.create(newNotification);
+        this.notificationsGateway.sendNotificationToUser(user._id, newNotification);
+        await this.eventsModel.updateOne({ _id: event._id }, { reminderSent: true }).exec();
+      }
+    });
 
     return upcomingEvents;
   }

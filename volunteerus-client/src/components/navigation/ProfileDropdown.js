@@ -7,6 +7,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { removeUser, removeUserOrganizations } from '../../actions/userActions'
+import NotificationsDropdown from './NotificationsDropdown'
 
 export default function ProfileDropdown({ isAuthenticated }) {
   const persistedUserState = useSelector((state) => state.user);
@@ -39,13 +40,7 @@ export default function ProfileDropdown({ isAuthenticated }) {
     // If user is authenticated, show profile dropdown
     return (
       <>
-        <button
-          type="button"
-          className="rounded-full p-1 text-black hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <span className="sr-only">View notifications</span>
-          <BellIcon className="h-6 w-6" aria-hidden="true" />
-        </button>
+        <NotificationsDropdown />
         <Menu as="div" className="ml-3 relative">
           {({ open }) => (
             <>

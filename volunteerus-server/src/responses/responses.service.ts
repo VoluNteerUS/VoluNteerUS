@@ -4,13 +4,27 @@ import { UpdateResponseDto } from './dto/update-response.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response, ResponseDocument } from './schemas/response.schema';
 import mongoose, { Model } from 'mongoose';
-import { User } from '../users/schemas/user.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { PaginationResult } from '../types/pagination';
 import * as moment from 'moment';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { NotificationDto } from '../notifications/dto/notification.dto';
+import { Notification, NotificationDocument } from '../notifications/schemas/notification.schema';
+import { EventDocument } from '../events/schemas/event.schema';
 
 @Injectable()
 export class ResponsesService {
-    constructor(@InjectModel(Response.name) private responsesModel: Model<ResponseDocument>) { }
+    constructor(
+      @InjectModel(Response.name) 
+      private responsesModel: Model<ResponseDocument>,
+      @InjectModel(Event.name)
+      private eventsModel: Model<EventDocument>,
+      @InjectModel(User.name)
+      private usersModel: Model<UserDocument>,
+      @InjectModel(Notification.name) 
+      private notificationsModel: Model<NotificationDocument>,
+      private notificationsGateway: NotificationsGateway
+    ) { }
 
   create(createResponseDto: CreateResponseDto) {
     return new this.responsesModel(createResponseDto).save();
@@ -148,7 +162,31 @@ export class ResponsesService {
     return this.responsesModel.findOne(user).exec();
   }
 
-  update(id: mongoose.Types.ObjectId, updateResponseDto: UpdateResponseDto) {
+  async update(id: mongoose.Types.ObjectId, updateResponseDto: UpdateResponseDto) {
+    // Send notification to user
+    if (updateResponseDto.status === "Accepted") {
+      const user = await this.usersModel.findOne(updateResponseDto.user);
+      const event = await this.eventsModel.findById(updateResponseDto.event);
+      const newNotification = new NotificationDto(
+        user, 
+        `${event.title}: Response Accepted!`, 
+        new Date(), 
+        false
+      );
+      this.notificationsModel.create(newNotification);
+      this.notificationsGateway.sendNotificationToUser(user.id, newNotification);
+    } else if (updateResponseDto.status === "Rejected") {
+      const user = await this.usersModel.findOne(updateResponseDto.user);
+      const event = await this.eventsModel.findById(updateResponseDto.event);
+      const newNotification = new NotificationDto(
+        user, 
+        `${event.title}: Response Rejected :(`, 
+        new Date(), 
+        false
+      );
+      this.notificationsModel.create(newNotification);
+      this.notificationsGateway.sendNotificationToUser(user.id, newNotification);
+    }
     return this.responsesModel.findByIdAndUpdate(id, updateResponseDto).exec();
   }
 

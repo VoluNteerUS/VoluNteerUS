@@ -18,6 +18,7 @@ export const eventStub = (): Event => {
         groupSettings: ["No", "-", "1"],
         groups: [],
         defaultHours: [2]
+        reminderSent: false
     }
 };
 
