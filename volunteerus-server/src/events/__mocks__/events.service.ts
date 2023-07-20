@@ -6,6 +6,7 @@ export const EventsService = jest.fn().mockReturnValue({
     findLatestEvents: jest.fn().mockResolvedValue([eventStub()]),
     findUpcomingEvents: jest.fn().mockResolvedValue(paginatedEventStub()),
     findPastEvents: jest.fn().mockResolvedValue(paginatedEventStub()),
+    getEventSignUpCount: jest.fn().mockResolvedValue(0),
     create: jest.fn().mockResolvedValue(eventStub()),
     update: jest.fn().mockResolvedValue(updatedEventStub()),
     getCategories: jest.fn().mockResolvedValue(eventStub().category),

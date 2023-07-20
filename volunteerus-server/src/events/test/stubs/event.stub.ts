@@ -17,7 +17,7 @@ export const eventStub = (): Event => {
         questions: questionStub(),
         groupSettings: ["No", "-", "1"],
         groups: [],
-        defaultHours: [2]
+        defaultHours: [2],
         reminderSent: false
     }
 };

@@ -254,6 +254,24 @@ describe('EventsController', () => {
     });
   });
 
+  describe('getSignUpCount', () => {
+    describe('when getSignUpCount is called', () => {
+      let count: number;
+
+      beforeEach(async () => {
+        count = await controller.getSignUpCount(new Date(Date.now()));
+      });
+
+      it('then it should call eventsService', () => {
+        expect(eventsService.getEventSignUpCount).toBeCalledWith(new Date(Date.now()));
+      });
+
+      it('then it should return the number of signups', () => {
+        expect(count).toEqual(0);
+      });
+    });
+  });
+
   describe('remove', () => {
     describe('when remove is called', () => {
       let event: Event;

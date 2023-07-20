@@ -196,6 +196,11 @@ export class EventsService {
     return new PaginationResult<Event>(pastEvents, page, totalItems, totalPages);
   }
 
+  public async getEventSignUpCount(date: Date): Promise<number> {
+    const count = await this.responsesModel.countDocuments({ submitted_on: { $gte: moment(`${date}`).format('YYYY-MM-DD'), $lt: moment(`${date}`).add(1, 'days').format('YYYY-MM-DD') }}).exec();
+    return count;
+  }
+
   public async getEventsByOrganization(id: mongoose.Types.ObjectId, page:number, limit: number): Promise<PaginationResult<Event>> {
     const skip = (page - 1) * limit;
     const [data, totalItems] = await Promise.all([

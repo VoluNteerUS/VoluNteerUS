@@ -147,6 +147,13 @@ export class EventsController {
       return this.eventService.findPastEvents(parsedPage, parsedLimit);
     }
 
+    @Get('/signUpCount')
+    getSignUpCount(
+      @Query('date') date: Date
+    ): Promise<number> {
+      return this.eventService.getEventSignUpCount(date);
+    }
+
     @Get(':id')
     findOne(@Param('id') id: mongoose.Types.ObjectId): Promise<Event> {
       return this.eventService.findOne(id);

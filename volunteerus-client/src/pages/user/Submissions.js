@@ -98,35 +98,6 @@ function Submissions() {
             </tr>
           )))
         }
-=======
-    );
-  }
-
-  const body = (obj) => {
-    return (
-      <tbody key={obj?.response?._id}>
-        <tr className="text-sm grid grid-cols-5 border-b items-center">
-          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 hover:text-neutral-400 font-medium"><Link to={`/events/${obj?.event?._id}`}>{obj?.event?.title}</Link></td>
-          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[0]} ${obj?.event?.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
-          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
-          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</td>
-          <td className="px-6 py-4 text-sm md:text-base text-neutral-600 font-medium">
-            {
-              (obj?.response?.status === "Pending") ? (
-                <>
-                  <button onClick={ e => navigate(`/${obj?.response?._id}/edit`)} disabled={ obj?.response?.status !== "Pending" } className="text-primary-600 hover:text-primary-800">
-                    Edit
-                  </button>
-                  <span className="px-2">|</span>
-                </>
-              ) : null
-            }
-            <button type="button" onClick={ e => handleDelete(e, obj) } className="text-primary-600 hover:text-primary-800">
-              Delete
-            </button>
-          </td>
-        </tr>
->>>>>>> main
       </tbody>
     </table>
     )

@@ -32,3 +32,10 @@ export const setRecentlyCreatedEvents = (recentlyCreatedEvents) => {
         payload: recentlyCreatedEvents
     }
 }
+
+export const setChartData = (chartData) => {
+    return {
+        type: "SET_CHART_DATA",
+        payload: chartData
+    }
+}

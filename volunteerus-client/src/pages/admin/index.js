@@ -8,46 +8,46 @@ import AdminProtected from '../../common/protection/AdminProtected';
 import axios from 'axios';
 import { 
   setEventCount, setOrganizationCount, setCommitteeMemberCount, 
-  setUserCount, setRecentlyCreatedEvents 
+  setUserCount, setRecentlyCreatedEvents, setChartData 
 } from '../../actions/adminDashboardActions';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import moment from 'moment';
 
 function AdminDashboard() {
   const adminDashboardReducer = useSelector((state) => state.adminDashboard);
   const [loaded, setLoaded] = useState(false);
   const dispatch = useDispatch();
 
-  // To be replaced with actual data
   const chartData = [
     {
-      date: '1/1/2023',
-      signups: 10,
-      amt: 10,
+      date: moment().subtract(5, 'days').format('YYYY-MM-DD'),
+      signups: 0,
+      amt: 0,
     },
     {
-      date: '1/2/2023',
-      signups: 20,
-      amt: 20,
+      date: moment().subtract(4, 'days').format('YYYY-MM-DD'),
+      signups: 0,
+      amt: 0,
     },
     {
-      date: '1/3/2023',
-      signups: 30,
-      amt: 30,
+      date: moment().subtract(3, 'days').format('YYYY-MM-DD'),
+      signups: 0,
+      amt: 0,
     },
     {
-      date: '1/4/2023',
-      signups: 50,
-      amt: 50,
+      date: moment().subtract(2, 'days').format('YYYY-MM-DD'),
+      signups: 0,
+      amt: 0,
     },
     {
-      date: '1/5/2023',
-      signups: 80,
-      amt: 80,
+      date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
+      signups: 0,
+      amt: 0,
     },
     {
-      date: '1/6/2023',
-      signups: 100,
-      amt: 100,
+      date: moment().format('YYYY-MM-DD'),
+      signups: 0,
+      amt: 0,
     },
   ];
 
@@ -101,8 +101,22 @@ function AdminDashboard() {
       .catch(err => console.error({ err }));
   }
 
+  const getChartData = async () => {
+    for (let i = 0; i < 6; i++) {
+      const chartDataURL = new URL(`/events/signUpCount?date=${chartData[i]['date']}`, process.env.REACT_APP_BACKEND_API);
+      await axios.get(chartDataURL)
+      .then((res) => {
+        chartData[i]['signups'] = res.data;
+        chartData[i]['amt'] = res.data;
+      })
+      .catch(err => console.error({ err }));
+    }
+
+    dispatch(setChartData(chartData));
+  }
+
   useEffect(() => {
-    Promise.all([getAllEvents(), getAllOrganizations(), getAllUsers(), getCommitteeMembersCount(), getLatestEvents()]).then(() => {
+    Promise.all([getAllEvents(), getAllOrganizations(), getAllUsers(), getCommitteeMembersCount(), getLatestEvents(), getChartData()]).then(() => {
       setLoaded(true);
     });
   }, [])
@@ -121,13 +135,13 @@ function AdminDashboard() {
         </div>
         ) : (<div>Loading...</div>)}
         <div className="grid grid-cols-12 gap-4 py-6">
-          <div className="col-span-12 xl:col-span-7">
+          <div className="col-span-12 xl:col-span-8">
             <ContentCard
               title={"Event Sign Ups"}
               children={
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart 
-                    data={chartData}
+                    data={adminDashboardReducer.chartData}
                     margin={{ top: 20, right: 30, bottom: 20, left: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -149,7 +163,7 @@ function AdminDashboard() {
               }
             />
           </div>
-          <div className="col-span-12 xl:col-span-5">
+          <div className="col-span-12 xl:col-span-4">
             <ContentCard
               title={"Recently Created Events"}
               children={

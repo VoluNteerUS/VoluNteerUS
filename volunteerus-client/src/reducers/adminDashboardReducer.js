@@ -4,6 +4,7 @@ const initialState = {
     userCount: 0,
     committeeMemberCount: 0,
     recentlyCreatedEvents: [],
+    chartData: [],
 }
 
 const adminDashboardReducer = (state = initialState, action) => {
@@ -32,6 +33,11 @@ const adminDashboardReducer = (state = initialState, action) => {
             return {
                 ...state,
                 recentlyCreatedEvents: action.payload
+            };
+        case 'SET_CHART_DATA':
+            return {
+                ...state,
+                chartData: action.payload
             };
         default:
             return state;

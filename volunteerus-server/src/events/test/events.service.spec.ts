@@ -168,6 +168,25 @@ describe('EventsService', () => {
     })
   })
 
+  describe('getEventSignUpCount', () => {
+    describe('when getEventSignUpCount is called', () => {
+      let count: number;
+
+      beforeEach(async () => {
+        jest.spyOn(service, 'getEventSignUpCount');
+        count = await service.getEventSignUpCount(new Date(Date.now()));
+      });
+
+      test("then it should call eventModel", () => {
+        expect(service.getEventSignUpCount).toBeCalledWith(new Date(Date.now()));
+      });
+
+      test("then it should return the number of signups", () => {
+        expect(count).toEqual(0);
+      });
+    })
+  })
+
   describe('update', () => {
     describe('when update is called', () => {
       let event: Event;
