@@ -84,7 +84,7 @@ function CreateEventPart5({ details, setDetails, error, setError, setPage, handl
             <p className="mt-10 border-l-4 px-2 border-pink-100 text-grey-800 text-justify sm:text-base text-sm">
               Note that this grouping feature is for us to help you group volunteers into your desired group size.
               If the chosen grouping type is "With friends", we will add an additional question that allows volunteers to select
-              who they want to be grouped with into the sign up form. If you have included such questions in part 2, kindly
+              who they want to be grouped with into the sign up form. If you have included such questions in part 4 of the form, kindly
               remove it to avoid having repetitive questions. Thank you. 
             </p>
             <form onSubmit={ handleSubmit } className="mt-16 space-y-5">

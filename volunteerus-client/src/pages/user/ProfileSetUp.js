@@ -129,6 +129,7 @@ function BasicProfileSetUp() {
                             <p>Add basic information about yourself. This helps organizations to know you better!</p>
                         </div>
                         {/* Form */}
+                        <form onSubmit={handleSaveProfile}>
                         <div className="grid grid-cols-12 mt-6 gap-3">
                             {/* Profile Picture */}
                             <div className="flex flex-col col-span-12">
@@ -140,7 +141,7 @@ function BasicProfileSetUp() {
                                 </div>
                             </div>
                             <div className="flex flex-col col-span-4">
-                                <label className="block text-base font-medium text-neutral-600">Faculty</label>
+                                <label className="block text-base font-medium text-neutral-600">Faculty*</label>
                                 <Listbox value={selectedFaculty} onChange={setSelectedFaculty}>
                                     <div className="relative mt-1">
                                         <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
@@ -188,16 +189,19 @@ function BasicProfileSetUp() {
                                 </Listbox>
                             </div>
                             <div className="flex flex-col col-span-6">
-                                <label className="block text-base font-medium text-neutral-600">Major</label>
+                                <label className="block text-base font-medium text-neutral-600">Major*</label>
                                 <input type="text" className="px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm sm:text-sm" value={major} onChange={e => setMajor(e.target.value)} />
                             </div>
                             <div className="flex flex-col col-span-2">
                                 <label className="block text-base font-medium text-neutral-600">Year of Study</label>
-                                <input type="number" min={1} max={5} className="px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm sm:text-sm" value={yearOfStudy} onChange={e => setYearOfStudy(e.target.value)}/>
+                                <input type="number" min={1} max={4} className="px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm sm:text-sm" value={yearOfStudy} onChange={e => setYearOfStudy(e.target.value)}/>
                             </div>
                             <div className="flex flex-col col-span-6">
-                                <label className="block text-base font-medium text-neutral-600">Phone Number</label>
-                                <input type="text" className="px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm sm:text-sm" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
+                                <div className="flex flex-row space-x-2">
+                                    <label className="block text-base font-medium text-neutral-600">Phone Number</label>
+                                    <p className="text-sm text-neutral-400 self-center">Example: 91234567</p>
+                                </div>
+                                <input type="tel" pattern="[0-9]{8}" className="px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm sm:text-sm" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
                             </div>
                             <div className="flex flex-col col-span-6">
                                 <label className="block text-base font-medium text-neutral-600">Telegram Handle</label>
@@ -222,11 +226,11 @@ function BasicProfileSetUp() {
                         <div className="flex justify-end mt-6">
                             <button 
                                 className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                                onClick={handleSaveProfile}
                             >
                                 Save Profile
                             </button>
-                        </div>                                           
+                        </div>    
+                        </form>                                       
                     </div>
                 </div>
             </div>

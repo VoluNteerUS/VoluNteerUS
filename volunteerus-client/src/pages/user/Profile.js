@@ -99,19 +99,19 @@ function UserProfile() {
         if (fullName === '') {
             setErrorMessages([{
                 type: "error",
-                message: "Name cannot be empty!."
+                message: "Name cannot be empty."
             }]);
             return;
         } else if (faculty === facultiesAndSchools[0]) {
             setErrorMessages([{
                 type: "error",
-                message: "Please select your faculty or school!."
+                message: "Please select your faculty or school."
             }]);
             return;
         } else if (major === '') {
             setErrorMessages([{
                 type: "error",
-                message: "Major cannot be empty!."
+                message: "Major cannot be empty."
             }]);
             return;
         }
@@ -285,6 +285,7 @@ function UserProfile() {
                             ))
                         }
                         {/* Profile Picture */}
+                        <form onSubmit={handleSaveProfile}>
                         <div className="flex flex-col py-3">
                             <div className="block mx-auto">
                                 <img
@@ -336,9 +337,11 @@ function UserProfile() {
                         <div className="h-4"></div>
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Phone Number</label>
+                            <p className="text-sm text-neutral-400">Example: 91234567</p>
                             <input
                                 type="tel"
                                 value={phoneNumber}
+                                pattern="[0-9]{8}"
                                 onChange={(event) => setPhoneNumber(event.target.value)}
                                 className="border border-neutral-200 rounded-md px-3 py-2 mt-1" />
                         </div>
@@ -407,7 +410,7 @@ function UserProfile() {
                             <input
                                 type="number"
                                 min={1}
-                                max={5}
+                                max={4}
                                 value={yearOfStudy}
                                 onChange={(event) => setYearOfStudy(event.target.value)}
                                 className="border border-neutral-200 rounded-md px-3 py-2 mt-1" />
@@ -484,11 +487,11 @@ function UserProfile() {
                             <button
                                 className="bg-primary-600 text-white text-center hover:bg-primary-500 
                                              px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out"
-                                onClick={handleSaveProfile}
                             >
                                 Save
                             </button>
                         </div>
+                        </form>
                     </Dialog.Panel>
                 </div>
             </Dialog>
