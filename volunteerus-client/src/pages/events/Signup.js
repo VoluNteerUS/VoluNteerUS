@@ -37,7 +37,7 @@ function EventSignup() {
   const dispatch = useDispatch();
 
   const eventReducer = useSelector((state) => state.events);
-  const event = eventReducer?.event; 
+  const [event, setCurrentEvent] = useState(eventReducer?.event); 
 
   const [questions, setQuestions] = useState([]);
   
@@ -78,6 +78,7 @@ function EventSignup() {
           const res = await axios.get(eventURL);
           const event = res.data;
           dispatch(setEvent(event));
+          setCurrentEvent(event);
           setResponse({ ...response, event: event._id })
       } catch (err) {
           console.error({ err });
@@ -184,7 +185,7 @@ function EventSignup() {
     return ( 
       <> 
         <Navbar />
-        { event?.groupSettings[1] === "With friends"
+        { event?.groupSettings && event?.groupSettings[1] === "With friends"
           ? page === 1
             ? <SignUpPart1
                 response={ response }
