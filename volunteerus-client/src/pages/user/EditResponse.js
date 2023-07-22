@@ -116,7 +116,7 @@ function EditResponse() {
   return (
     <>
       <Navbar />
-      { !event?.group ? "" : event?.group[1] === "With friends"
+      { !event?.groupSettings ? "" : event?.groupSettings[1] === "With friends"
         ? page === 1
           ? <SignUpPart1
               response={ response }
