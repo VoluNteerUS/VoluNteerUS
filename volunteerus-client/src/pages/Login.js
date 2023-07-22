@@ -62,11 +62,12 @@ function Login() {
                     navigate("/admin", { replace: true });
                 } else {
                     // Get user's organizations
-                    const getUserOrganizationsURL = new URL(`/organizations/getUserOrganizations`, process.env.REACT_APP_BACKEND_API);
+                    const getUserOrganizationsURL = new URL("/organizations/getUserOrganizations", process.env.REACT_APP_BACKEND_API);
                     const getUserOrganizationRequestBody = {
                         userId: user._id
                     };
                     const userOrganizationsRes = await axios.post(getUserOrganizationsURL, getUserOrganizationRequestBody);
+
                     // Save user's organizations to redux store
                     if (userOrganizationsRes.data) {
                         dispatch(setUserOrganizations(userOrganizationsRes.data));
@@ -116,7 +117,7 @@ function Login() {
                                     </div>
                                     {errorMessage}
                                     <div className="flex items-center justify-between mt-4">
-                                        <Link to="#" className="text-marine-500 hover:underline">Forgot Password?</Link>
+                                        <Link to="/forgotPassword" className="text-marine-500 hover:underline">Forgot Password?</Link>
                                         <button className="block w-1/4 px-4 py-2 mt-4 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500">Log in</button>
                                     </div>
                                     <div className="flex items-center justify-center mt-8 p-8">

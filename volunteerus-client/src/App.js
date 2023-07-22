@@ -8,6 +8,8 @@ import { useSelector } from 'react-redux';
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const PasswordReset = lazy(() => import('./pages/PasswordReset'));
 
 // User Pages
 const Submissions = lazy(() => import('./pages/user/Submissions'));
@@ -17,6 +19,7 @@ const UserProfile = lazy(() => import('./pages/user/Profile'));
 const Records = lazy(() => import('./pages/user/Records'));
 const PublicUserProfile = lazy(() => import('./pages/user/PublicProfile'))
 const BasicProfileSetUp = lazy(() => import('./pages/user/ProfileSetUp'))
+const Settings = lazy(() => import('./pages/user/Settings'))
 
 // Events
 const Events = lazy(() => import('./pages/events'));
@@ -60,9 +63,12 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="forgotPassword" element={<ForgotPassword />} />
+          <Route path="passwordReset" element={<PasswordReset />} />
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="records" element={<Records />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="setup" element={<BasicProfileSetUp />} />
           <Route path="users">
             <Route path=":userId" element={<PublicUserProfile />} />

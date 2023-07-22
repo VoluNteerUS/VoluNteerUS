@@ -4,6 +4,7 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { Notification } from './schemas/notification.schema';
 import { UsersService } from '../users/users.service';
 import { NotificationDto } from './dto/notification.dto';
+import mongoose from 'mongoose';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -30,7 +31,7 @@ export class NotificationsController {
   }
 
   @Get(':userId')
-  async getNotifications(@Param('userId') userId: string): Promise<Notification[]> {
+  async getNotifications(@Param('userId') userId: mongoose.Types.ObjectId): Promise<Notification[]> {
     return await this.notificationsService.getNotifications(userId);
   }
 

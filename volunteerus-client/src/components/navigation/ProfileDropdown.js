@@ -16,7 +16,7 @@ export default function ProfileDropdown({ isAuthenticated }) {
 
   const userNavigation = [
     { name: 'Profile', href: '/profile', icon: UserIcon },
-    { name: 'Settings', href: '#', icon: Cog6ToothIcon },
+    { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
     { name: 'Volunteering Records', href: `/records`, icon: ClipboardIcon },
     { name: 'My Submissions', href: `/${ persistedUserState?.user?.id }/submissions`, icon: FolderIcon },
   ]

@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import Pagination from "../../components/navigation/Pagination";
 import axios from "axios";
 import moment from "moment";
+import { Link } from "react-router-dom";
 
 function Records() {
     const persistedUserState = useSelector((state) => state.user);
@@ -110,7 +111,7 @@ function Records() {
                         const mins = Math.round(eventHours % 1 * 60);
                         return (
                           <tr>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{response?.event['title']}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium hover:text-neutral-400"><Link to={`/events/${response?.event?._id}`}>{response?.event['title']}</Link></td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${response?.event['date'][0]} ${response?.event['date'][2]}`).format('Do MMMM YYYY, h:mm A')}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${response?.event['date'][1]} ${response?.event['date'][3]}`).format('Do MMMM YYYY, h:mm A')}</td>
                               <td className="px-6 py-4 space-y-1">

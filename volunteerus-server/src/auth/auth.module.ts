@@ -7,6 +7,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Token, TokenSchema } from './schemas/token.schema';
+import { MailerService } from '../mailer/mailer.service';
 
 @Module({
   imports: [
@@ -17,8 +20,11 @@ import { JwtStrategy } from './jwt.strategy';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1800s' },
     }),
+    MongooseModule.forFeature([
+      { name: Token.name, schema: TokenSchema },
+    ]),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, MailerService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })

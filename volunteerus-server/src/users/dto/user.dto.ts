@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UserDto extends PartialType(CreateUserDto) {
     profile_picture: string;
     phone_number: string;
     telegram_handle: string;

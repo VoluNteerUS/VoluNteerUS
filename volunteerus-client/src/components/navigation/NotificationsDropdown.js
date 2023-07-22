@@ -18,7 +18,7 @@ export default function NotificationsDropdown() {
             console.log("called getUserNotifications()");
             setNotifications(res.data);
         } catch (err) {
-            console.log(err);
+            console.log(err.response.data.message);
         }
     }
 

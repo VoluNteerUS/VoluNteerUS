@@ -152,7 +152,7 @@ export class UsersService {
   }
 
   public async findOneByEmail(email: string): Promise<User> {
-    return this.usersModel.findOne({ email: email });
+    return await this.usersModel.findOne({ email: email });
   }
 
   public async findUsers(query: string): Promise<User[]> {
@@ -259,8 +259,44 @@ export class UsersService {
     return this.usersModel.findByIdAndUpdate(_id, updateUserDto);
   }
 
+  public async updatePassword(email: string, password: string): Promise<User> {
+    // Generate salt to hash password
+    const salt = await bcrypt.genSalt(10);
+    // Check password length
+    if (password.length < 10) {
+      throw new HttpException('Password must be at least 10 characters long.', 403, {
+        cause: new Error('Password must be at least 10 characters long.')
+      });
+    }
+    // Check if password contains uppercase letter, lowercase letter, and number
+    if (!password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{10,}$/)) {
+      throw new HttpException('Password must contain at least one uppercase letter, one lowercase letter, and one number.', 403, {
+        cause: new Error('Password must contain at least one uppercase letter, one lowercase letter, and one number.')
+      });
+    }
+    // Check if new password is the same as the previous one
+    const user = await this.usersModel.findOne({ email: email });
+    if (!user) {
+      throw new HttpException('No user found', 401, {
+        cause: new Error('No user found')
+      });
+    }
+    console.log(user);
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (validPassword) {
+      throw new HttpException('Password cannot be the same as the previous one', 401, {
+        cause: new Error('Password cannot be the same as the previous one')
+      });
+    }
+    // Hash password
+    const new_password_hash = await bcrypt.hash(password, salt);
+    // Set user password as hashed password
+    await this.usersModel.updateOne({ email: email }, { password: new_password_hash });
+    // Return updated user
+    return await this.usersModel.findOne({ email: email }).select('-password');
+  }
+
   public async delete(_id: mongoose.Types.ObjectId): Promise<User> {
     return this.usersModel.findByIdAndDelete(_id);
   }
-  
 }

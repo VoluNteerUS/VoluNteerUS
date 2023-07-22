@@ -56,7 +56,7 @@ export class OrganizationsService {
         cause: new Error('Organization not found'),
       });
     }
-    const user = await this.usersModel.findById(data.userId).exec();
+    const user = await this.usersModel.findById(new mongoose.Types.ObjectId(data.userId)).exec();
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND, {
         cause: new Error('User not found'),

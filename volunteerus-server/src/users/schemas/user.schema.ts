@@ -37,11 +37,14 @@ export class User {
     @Prop({ default: '' })
     dietary_restrictions: string;
 
+    @Prop({ type: [String], default: [] })
+    skills: string[];
+
     @Prop({ default: Date.now() })
     registered_on: Date;
 
     @Prop({ default: 'USER' })
-    role: string
+    role: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

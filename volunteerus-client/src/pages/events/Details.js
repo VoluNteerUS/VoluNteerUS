@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import axios from "axios";
 import moment from "moment";
 import { Tab } from "@headlessui/react";
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, TagIcon } from "@heroicons/react/24/solid";
 
 function EventDetails() {
     const { id } = useParams();
@@ -63,36 +64,60 @@ function EventDetails() {
                         </Tab.List>
                         <Tab.Panels className="mt-2">
                             <Tab.Panel className="bg-grey-100 rounded-lg p-6 mt-3">
-                                <div className="flex flex-col gap-2">
-                                    <div className="flex flex-row items-center gap-2">
+                                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="col-span-1 bg-white rounded-lg">
+                                        <div class="bg-primary-600 rounded-t-lg px-3 py-1 flex justify-between">
+                                            <div class="font-bold text-white uppercase">Date & Time</div>
+                                        </div>
+                                        <div className="p-2">
+                                        <CalendarDaysIcon className="h-10 w-10 rounded-full mx-auto my-2" />
                                         {
                                             event?.date ? (
-                                                <>
-                                                    <div className="font-semibold">Date:</div>
+                                                <div className="text-center font-bold text-lg">
                                                     <div>{ moment(`${event?.date[0]} ${event?.date[2]}`).format('Do MMM YYYY h:mm A') }</div> to <div>{ moment(`${event?.date[1]} ${event?.date[3]}`).format('Do MMM YYYY h:mm A') }</div>
-                                                </>
+                                                </div>
                                             ) : null
 
                                         }
-                                    </div>
-                                    <div className="flex flex-row items-center gap-2">
-                                        <div className="font-semibold">Location:</div>
-                                        <div>{ event?.location }</div>
-                                    </div>
-                                    <div className="flex flex-row items-center gap-2">
-                                        <div className="font-semibold">Category:</div>
-                                        <div className="flex flex-row flex-wrap gap-2">
-                                        {
-                                            event?.category?.map((tag, key) => (
-                                                <span className="bg-primary-600 text-white text-sm px-3 rounded-full" key={key}>{tag}</span>
-                                            ))
-                                        }
                                         </div>
                                     </div>
-                                    <div className="flex flex-row gap-2">
-                                        <div className="font-semibold">Description:</div>
-                                        <div>{ event?.description }</div>
+                                    <div className="col-span-1 bg-white rounded-lg">
+                                        <div class="bg-primary-600 rounded-t-lg px-3 py-1 flex justify-between">
+                                            <div class="font-bold text-white uppercase">Location</div>
+                                        </div>
+                                        <div className="p-2">
+                                            <MapPinIcon className="h-10 w-10 rounded-full mx-auto my-2" />
+                                            <div className="text-center font-bold text-lg">{ event?.location }</div>
+                                        </div>
                                     </div>
+                                    <div className="col-span-1 bg-white rounded-lg">
+                                        <div class="bg-primary-600 rounded-t-lg px-3 py-1 flex justify-between">
+                                            <div class="font-bold text-white uppercase">Categories</div>
+                                        </div>
+                                        <div className="p-2">
+                                            <TagIcon className="h-10 w-10 rounded-full mx-auto my-2" />
+                                            <div className="flex flex-row flex-wrap gap-2">
+                                            {
+                                                event?.category?.map((tag, key) => (
+                                                    <span className="bg-primary-600 text-white text-sm px-3 rounded-full" key={key}>{tag}</span>
+                                                ))
+                                            }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-1 bg-white rounded-lg">
+                                        <div class="bg-primary-600 rounded-t-lg px-3 py-1 flex justify-between">
+                                            <div class="font-bold text-white uppercase">Sign Up By</div>
+                                        </div>
+                                        <div className="p-2">
+                                            <ClockIcon className="h-10 w-10 rounded-full mx-auto my-2" />
+                                            <div className="text-center font-bold text-lg">{ moment(`${event?.signup_by}`).format('Do MMM YYYY h:mm A') }</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col py-3">
+                                    <div className="font-semibold">Description:</div>
+                                    <div>{ event?.description }</div>
                                 </div>
                             </Tab.Panel>
                             <Tab.Panel className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4 bg-grey-100 rounded-lg p-6 mt-3">

@@ -10,8 +10,7 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../../actions/userActions";
 import Alert from "../../components/Alert";
 import { Listbox, Transition } from "@headlessui/react";
-
-const skills = ["Dialects", "Record Keeping", "Planning"]
+import { XCircleIcon } from "@heroicons/react/24/outline";
 
 const facultiesAndSchools = [
     "Select your faculty or school",
@@ -41,6 +40,9 @@ function UserProfile() {
     const [yearOfStudy, setYearOfStudy] = useState(user?.year_of_study || 1);
     const [telegramHandle, setTelegramHandle] = useState(user?.telegram_handle || '');
     const [dietaryRestrictions, setDietaryRestrictions] = useState(user?.dietary_restrictions || '');
+    const [skills, setSkills] = useState(user?.skills || []);
+    const [formSkills, setFormSkills] = useState(user?.skills || []);
+    const [skillsInput, setSkillsInput] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [alertMessages, setAlertMessages] = useState([]);
     const [errorMessages, setErrorMessages] = useState([]);
@@ -92,7 +94,7 @@ function UserProfile() {
         // Clear alert and error messages
         setAlertMessages([]);
         setErrorMessages([]);
-        
+
         // Validate form
         if (fullName === '') {
             setErrorMessages([{
@@ -125,6 +127,7 @@ function UserProfile() {
         formData.append("year_of_study", yearOfStudy);
         formData.append("telegram_handle", telegramHandle);
         formData.append("dietary_restrictions", dietaryRestrictions);
+        formData.append("skills", JSON.stringify(formSkills));
 
         const userURL = new URL(`/users/${user.id}`, process.env.REACT_APP_BACKEND_API);
         axios.patch(userURL, formData, {
@@ -148,6 +151,7 @@ function UserProfile() {
                     major: user.major,
                     year_of_study: user.year_of_study,
                     dietary_restrictions: user.dietary_restrictions,
+                    skills: user.skills,
                 }));
                 setAlertMessages([
                     {
@@ -219,16 +223,15 @@ function UserProfile() {
                             {/* Skills */}
                             <div className="py-3">
                                 <label className="block text-base font-medium text-neutral-600">Skills</label>
-                                {/* <div className="flex">
+                                <div className="flex flex-wrap gap-2">
                                     {
-                                        skills.map((skill, index) => (
-                                            <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mr-2">
+                                        skills.length > 0 ? skills.map((skill, index) => (
+                                            <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                                                 {skill}
                                             </span>
-                                        ))
+                                        )) : <span className="text-neutral-600">Not Specified</span>
                                     }
-                                </div> */}
-                                <span className="text-neutral-600">{user.skills ?? 'Not Specified'}</span>
+                                </div>
                             </div>
                             <Link onClick={handleDialogOpen} className="block mx-auto bg-primary-600 text-white text-center hover:bg-primary-500 px-8 py-2 font-medium rounded-md transition duration-150 ease-in-out">Edit Profile</Link>
                         </div>
@@ -387,12 +390,6 @@ function UserProfile() {
                                     </Transition>
                                 </div>
                             </Listbox>
-                            {/* <input
-                                type="text"
-                                value={faculty}
-                                onChange={(event) => setFaculty(event.target.value)}
-                                className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
-                            /> */}
                         </div>
                         <div className="h-4"></div>
                         <div className="flex flex-col">
@@ -434,6 +431,53 @@ function UserProfile() {
                                 onChange={(event) => setDietaryRestrictions(event.target.value)}
                                 className="border border-neutral-200 rounded-md px-3 py-2 mt-1"
                             />
+                        </div>
+                        <div className="h-4"></div>
+                        {/* Skills Tag Input */}
+                        <div className="flex flex-col">
+                            <label className="block text-base font-medium text-neutral-600">Skills</label>
+                            <div className="bg-white border border-gray-300 rounded-lg h-28 overflow-y-scroll">
+                                <div className="flex flex-row gap-2 p-2">
+                                    <div className="flex flex-wrap">
+                                        {
+                                            formSkills.length > 0 ? formSkills.map((skill, index) => (
+                                                <div key={index} className="bg-gray-200 text-gray-700 text-sm font-semibold px-2 py-1 mr-1 my-1 rounded-full">
+                                                    {skill}
+                                                    {/* Button to delete */}
+                                                    <XCircleIcon
+                                                        className="w-4 h-4 inline-block ml-1 cursor-pointer"
+                                                        onClick={() => {
+                                                            let newSkills = formSkills.filter((s) => s !== skill);
+                                                            setFormSkills(newSkills);
+                                                        }}
+                                                    />
+                                                </div>
+                                            )) : null
+                                        }
+                                        <input
+                                            className={formSkills.length == 0 ? "w-screen text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none" : "text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none"}
+                                            value={skillsInput}
+                                            onChange={(event) => {
+                                                setSkillsInput(event.target.value);
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Backspace' && !skillsInput) {
+                                                    setFormSkills(formSkills.slice(0, -1));
+                                                } else if (event.key === 'Enter') {
+                                                    if (skillsInput.trim() === "") {
+                                                        return;
+                                                    }
+                                                    if (formSkills.includes(event.target.value.trim())) {
+                                                        return;
+                                                    }
+                                                    setFormSkills([...formSkills, skillsInput.trim()]);
+                                                    setSkillsInput("");
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div className="h-4"></div>
                         <div className="flex justify-end">

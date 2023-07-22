@@ -73,7 +73,7 @@ function Submissions() {
             </tr>
           ) : (responseAndEvent.filter((obj) => obj?.response?.status === `${status}`).map((obj) => (
             <tr key={obj?.event?._id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{obj?.event?.title}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium hover:text-neutral-400"><Link to={`/events/${obj?.event?._id}`}>{obj?.event?.title}</Link></td>
               <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[0]} ${obj?.event?.date[2]}`).format('Do MMMM YYYY, h:mm A')}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.event?.date[1]} ${obj?.event?.date[3]}`).format('Do MMMM YYYY, h:mm A')}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">{moment(`${obj?.response?.submitted_on}`).format('Do MMMM YYYY, h:mm A')}</td>

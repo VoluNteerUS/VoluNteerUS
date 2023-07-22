@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User } from "../../schemas/user.schema";
 
 export const userStub = (): User => {
@@ -15,9 +15,10 @@ export const userStub = (): User => {
     major: '',
     year_of_study: 1,
     dietary_restrictions: '',
+    skills: [],
   }      
 };
 
-export const userIdStub = (): mongoose.Types.ObjectId => {
-  return new mongoose.Types.ObjectId("645fac0625f4bbf51f8f42e1");
+export const userIdStub = (): Types.ObjectId => {
+  return new Types.ObjectId("645fac0625f4bbf51f8f42e1");
 };

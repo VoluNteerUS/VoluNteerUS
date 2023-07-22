@@ -9,6 +9,7 @@ import { Event } from '../events/schemas/event.schema';
 import mongoose from 'mongoose';
 import { FirebasestorageService } from '../firebasestorage/firebasestorage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -116,6 +117,8 @@ export class UsersController {
             //     await this.uploadService.deleteFile(oldFile, destination);
             // }
         }
+        // "["Sign Language", "Singing"]" -> ["Sign Language", "Singing"]
+        updateUserDto.skills = updateUserDto.skills.toString().replace(/"/g, '').replace('[', '').replace(']', '').split(',');
 
         return this.userService.update(id, updateUserDto);
     }
