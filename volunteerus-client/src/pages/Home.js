@@ -30,7 +30,7 @@ function Home() {
         },
         {
             img: imageTrackInvolvement,
-            link: "#",
+            link: "/login",
             title: "Track Involvement",
             description: "Record your activities to showcase your involvment"
         }

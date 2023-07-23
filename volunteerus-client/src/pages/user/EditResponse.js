@@ -10,7 +10,7 @@ import SignUpPart1 from "../../components/form/SignUpPart1";
 function EditResponse() {
   const { id } = useParams();
   const [response, setResponse] = useState({});
-  const [questions, setQuestions] = useState({});
+  const [questions, setQuestions] = useState([]);
   const [event, setEvent] = useState({});
   const [page, setPage] = useState(1);
   const navigate = useNavigate();

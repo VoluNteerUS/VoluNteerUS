@@ -56,6 +56,13 @@ PROJECT_ID=
 PRIVATE_KEY=
 CLIENT_EMAIL=
 BUCKET_URL=
+
+# SendGrid Config
+SENDGRID_API_KEY=
+SENDGRID_EMAIL=
+
+# Client URL
+CLIENT_URL=
 ```
 
 6. Open a second terminal window and type the following commands:
