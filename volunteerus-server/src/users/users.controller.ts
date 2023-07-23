@@ -118,8 +118,15 @@ export class UsersController {
             // }
         }
         // "["Sign Language", "Singing"]" -> ["Sign Language", "Singing"]
-        updateUserDto.skills = updateUserDto.skills.toString().replace(/"/g, '').replace('[', '').replace(']', '').split(',');
-
+        if (updateUserDto.skills) {
+            let skills = updateUserDto.skills.toString().replace(/"/g, '').replace('[', '').replace(']', '').split(',');
+            if (skills.length > 0) {
+                if (skills[0] == '') {
+                    skills = [];
+                }
+            }
+            updateUserDto.skills = skills;
+        }
         return this.userService.update(id, updateUserDto);
     }
     
