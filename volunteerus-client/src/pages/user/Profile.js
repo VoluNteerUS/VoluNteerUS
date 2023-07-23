@@ -146,6 +146,7 @@ function UserProfile() {
         formData.append("file", file);
         formData.append("full_name", fullName);
         formData.append("email", email);
+        formData.append("profile_picture", profilePicture);
         formData.append("phone_number", phoneNumber);
         formData.append("faculty", faculty);
         formData.append("major", major);
@@ -496,7 +497,7 @@ function UserProfile() {
                                             )) : null
                                         }
                                         <input
-                                            className={formSkills.length == 0 ? "w-screen text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none" : "text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none"}
+                                            className={formSkills.length === 0 ? "w-screen text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none" : "text-gray-700 text-sm font-semibold px-2 mr-1 border-none outline-none"}
                                             value={skillsInput}
                                             onChange={(event) => {
                                                 setSkillsInput(event.target.value);

@@ -98,7 +98,7 @@ function EditEventDetails() {
       }
       getEvent();
       getQuestions();
-  }, [eventId]);
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -124,7 +124,6 @@ function EditEventDetails() {
     eventData.append('title', details.title);
     eventData.append('date', details.date);
     eventData.append('location', details.location);
-    eventData.append('organized_by', details.organized_by);
     eventData.append('category', details.category);
     eventData.append('signup_by', details.signup_by);
     eventData.append('description', details.description);
