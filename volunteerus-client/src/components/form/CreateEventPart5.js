@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 function CreateEventPart5({ details, setDetails, error, setError, setPage, handleSubmit }) {
   const handleBack = () => {
     setError("");
-    setPage(2);
+    setPage(4);
   }
 
   const groupingQuestions = [

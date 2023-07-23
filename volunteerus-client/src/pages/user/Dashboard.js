@@ -52,7 +52,7 @@ function UserDashboard() {
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="font-serif font-bold md:text-3xl pb-2">{ event.title }</div>
-                                        <div>{ event.description }</div>
+                                        <div>{ event.description.length > 200 ? event.description.substring(0, 500) + "..." : event.description }</div>
                                     </div>
                                     <div className="flex flex-col basis-1/4">
                                         <div className="flex flex-row font-semibold">

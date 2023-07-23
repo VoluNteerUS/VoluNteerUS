@@ -157,11 +157,11 @@ function Events() {
       <section className="bg-pink-100 pt-10 pb-5 space-y-10">
         <div className="flex flex-row justify-center space-x-5">
           <h1 className="md:text-5xl text-2xl font-bold flex items-center">Upcoming Events</h1>
-          <img src={imageHandHoldingHeart} alt="asthetic" className="w-20 h-20" />
+          <img src={imageHandHoldingHeart} alt="asthetic" className="w-16 h-16 md:w-20 md:h-20" />
         </div>
         {/* Search bar, filter button, sort button */}
-        <div className="flex sm:flex-row flex-col md:basis-1/2 lg:basis-1/3 xl:basis-1/4 items-center justify-center space-x-5">
-          <form method="GET" className="w-1/3">
+        <div className="flex sm:flex-row flex-col md:basis-1/2 lg:basis-1/3 xl:basis-1/4 sm:items-center justify-center space-x-5 gap-3">
+          <form method="GET" className="w-full px-3 md:px-0 sm:w-3/4 md:w-1/2 lg:w-1/3">
             <div className="relative text-gray-600 focus-within:text-gray-400">
               <span className="absolute inset-y-0 left-0 flex items-center pl-2">
                 <button type="submit" className="p-1 focus:outline-none focus:shadow-outline">
@@ -259,17 +259,17 @@ function Events() {
           </div>
         </div>
       </section>
-      <div className="flex flex-row">
-        <img src={imagePerson} alt="asthetics" className="w-15 h-40 -translate-y-20 -m-2" />
+      <div className="flex flex-row flex-wrap">
+        <img src={imagePerson} alt="asthetics" className="w-15 h-40 md:-translate-y-20 -m-2" />
         {/* List of all events */}
         <div>
           {filteredEvents.map((event, key) => (
             <div key={key} className="flex md:flex-row flex-col ml-5 my-5 lg:mr-20 mr-5 border border-black">
               <img src={event.image_url} alt="event" className="lg:w-1/5 md:w-1/3 object-fill" />
               <div className="m-5 space-y-5">
-                <h1 className="text-2xl font-bold text-center">{event.title}</h1>
-                <div className="flex md:flex-row flex-col space-x-8">
-                  <p className="md:w-1/2 mx-5">{event.description}</p>
+                <h1 className="text-xl md:text-2xl font-bold text-center hover:text-neutral-600"><Link to={`/events/${event._id}`}>{event.title}</Link></h1>
+                <div className="flex md:flex-row flex-col md:space-x-8">
+                  <p className="hidden md:block md:w-1/2 md:text-base md:mx-5">{event.description}</p>
                   <div className="md:w-1/2 space-y-2">
                     <div className="flex flex-row space-x-3">
                       <img src={imageCalender} alt="calender icon" className="w-5 h-5" />
@@ -294,11 +294,13 @@ function Events() {
                       <LockClosedIcon className="w-5 h-5" />
                       <p>{moment(`${event.signup_by}`).format('LL')}</p>
                     </div>
-                    <Link to={`/events/${event._id}/signup`}>
-                      <button className="bg-pink-400 text-white rounded-lg py-1 lg:px-20 px-10 shadow-md">
-                        Sign up
-                      </button>
-                    </Link>
+                    <div className="flex flex-row space-x-3">
+                      <Link to={`/events/${event._id}/signup`}>
+                        <button className="bg-pink-400 text-white rounded-lg py-1 lg:px-20 px-10 shadow-md">
+                          Sign up
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>

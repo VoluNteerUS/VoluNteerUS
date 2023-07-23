@@ -101,28 +101,30 @@ function Login() {
         return (
             <div className="bg-pink-100">
                 <div className="flex items-center h-screen justify-center">
-                    <div className="bg-white rounded-lg sm:w-4/5 md:w-3/4 lg:w-3/5 2xl:w-1/2">
+                    <div className="bg-white rounded-lg mx-3 sm:mx-0 sm:w-4/5 md:w-3/4 lg:w-3/5 2xl:w-1/2">
                         <div className="grid grid-cols-12 gap-4">
-                            <div className="col-span-12 md:col-span-8 p-12 mx-4 mt-4 mb-12">
+                            <div className="col-span-12 md:col-span-8 py-6 px-3 sm:p-8 md:p-12 mx-4 mt-4 mb-12">
                                 <h1 className="max-w-2xl mb-4 text-3xl font-serif font-bold tracking-tight leading-none text-darkblue-900 md:text-3xl xl:text-4xl">Log In</h1>
                                 <p className="text-sm">Log in to your account to start exploring volunteering opportunities!</p>
                                 <form onSubmit={handleLogin}>
                                     <div className="flex flex-col mt-4">
-                                        <label className="mb-2 font-medium text-lg text-gray-900">Email</label>
+                                        <label className="mb-2 font-medium md:text-lg text-gray-900">Email</label>
                                         <input className="px-4 py-2 border border-gray-300 rounded-md" type="text" placeholder="Enter your NUS email address" onChange={e => { setState({ ...state, email: e.target.value }); }} />
                                     </div>
                                     <div className="flex flex-col mt-4">
-                                        <label className="mb-2 font-medium text-lg text-gray-900">Password</label>
+                                        <label className="mb-2 font-medium md:text-lg text-gray-900">Password</label>
                                         <input className="px-4 py-2 border border-gray-300 rounded-md" type="password" placeholder="Enter your password" onChange={e => { setState({ ...state, password: e.target.value }); }} />
                                     </div>
                                     {errorMessage}
                                     <div className="flex items-center justify-between mt-4">
-                                        <Link to="/forgotPassword" className="text-marine-500 hover:underline">Forgot Password?</Link>
-                                        <button className="block w-1/4 px-4 py-2 mt-4 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500">Log in</button>
+                                        <Link to="/forgotPassword" className="text-marine-500 hover:underline text-sm md:text-base">Forgot Password?</Link>
+                                        <button className="block sm:w-1/4 px-4 py-2 mt-4 md:text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500">Log in</button>
                                     </div>
-                                    <div className="flex items-center justify-center mt-8 p-8">
-                                        <span>Don’t have an account yet?&nbsp;</span>
-                                        <Link to="/register" className="text-marine-500 hover:underline">Sign up!</Link>
+                                    <div className="flex items-center justify-center mt-8 md:p-6 lg:p-8 text-sm md:text-base">
+                                        <p>
+                                            <span>Don’t have an account yet?&nbsp;</span>
+                                            <Link to="/register" className="text-marine-500 hover:underline">Sign up!</Link>          
+                                        </p>
                                     </div>
                                 </form>
                             </div>

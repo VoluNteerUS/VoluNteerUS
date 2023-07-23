@@ -63,8 +63,8 @@ export class AuthService {
   async passwordResetRequest(email: string) {
     const user = await this.usersService.findOneByEmail(email);
     if (!user) {
-      throw new HttpException('No user found', 401, {
-        cause: new Error('No user found')
+      throw new HttpException('Invalid email address!', 401, {
+        cause: new Error('Invalid email address!')
       });
     }
     // Find if a token already exists for this user and delete it

@@ -11,6 +11,7 @@ import { setUser } from "../../actions/userActions";
 import Alert from "../../components/Alert";
 import { Listbox, Transition } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
 
 const facultiesAndSchools = [
     "Select your faculty or school",
@@ -29,7 +30,7 @@ const facultiesAndSchools = [
 
 function UserProfile() {
     const persistedUserState = useSelector((state) => state.user);
-    const user = persistedUserState?.user || 'Unknown';
+    const [user, setCurrentUser] = useState(persistedUserState?.user || {});
     const [profilePicture, setProfilePicture] = useState(user?.profile_picture || `https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`);
     const [file, setFile] = useState(null);
     const [fullName, setFullName] = useState(user?.full_name || '');
@@ -48,6 +49,7 @@ function UserProfile() {
     const [errorMessages, setErrorMessages] = useState([]);
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleDialogOpen = () => {
         setDialogOpen(true);
@@ -57,6 +59,29 @@ function UserProfile() {
         setDialogOpen(false);
         setFile(null);
     }
+
+    useEffect(() => {
+
+        const getUserProfile = async () => {
+            const userURL = new URL(`/users/${persistedUserState?.user?.id}`, process.env.REACT_APP_BACKEND_API);
+            const res = await axios.get(userURL);
+            const user = res.data;
+            setCurrentUser(user);
+            setProfilePicture(user.profile_picture || `https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`);
+            setFullName(user.full_name || '');
+            setEmail(user.email || '');
+            setPhoneNumber(user.phone_number || '');
+            setFaculty(user.faculty || facultiesAndSchools[0]);
+            setMajor(user.major || '');
+            setYearOfStudy(user.year_of_study || 1);
+            setTelegramHandle(user.telegram_handle || '');
+            setDietaryRestrictions(user.dietary_restrictions || '');
+            setSkills(user.skills || []);
+            setFormSkills(user.skills || []);
+        }
+
+        getUserProfile();
+    }, []);
 
     const handleProfilePictureChange = (event) => {
         event.preventDefault();
@@ -129,7 +154,7 @@ function UserProfile() {
         formData.append("dietary_restrictions", dietaryRestrictions);
         formData.append("skills", JSON.stringify(formSkills));
 
-        const userURL = new URL(`/users/${user.id}`, process.env.REACT_APP_BACKEND_API);
+        const userURL = new URL(`/users/${persistedUserState?.user?.id}`, process.env.REACT_APP_BACKEND_API);
         axios.patch(userURL, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
@@ -138,6 +163,19 @@ function UserProfile() {
             //  Get the updated user object from the response
             axios.get(userURL).then((res) => {
                 let user = res.data;
+                console.log(user);
+                setCurrentUser(user);
+                setProfilePicture(user.profile_picture || `https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`);
+                setFullName(user.full_name || '');
+                setEmail(user.email || '');
+                setPhoneNumber(user.phone_number || '');
+                setFaculty(user.faculty || facultiesAndSchools[0]);
+                setMajor(user.major || '');
+                setYearOfStudy(user.year_of_study || 1);
+                setTelegramHandle(user.telegram_handle || '');
+                setDietaryRestrictions(user.dietary_restrictions || '');
+                setSkills(user.skills || []);
+                setFormSkills(user.skills || []);
                 dispatch(setUser({
                     email: user.email,
                     full_name: user.full_name,
@@ -262,7 +300,7 @@ function UserProfile() {
                             {/* Dietary Preferences */}
                             <div className="py-2">
                                 <label className="block text-base font-medium text-neutral-600">Dietary Restrictions</label>
-                                <span className="text-neutral-600">{user.diet ?? 'Not Applicable'}</span>
+                                <span className="text-neutral-600">{user.dietary_restrictions ?? 'Not Applicable'}</span>
                             </div>
                         </div>
                     </div>
@@ -462,6 +500,14 @@ function UserProfile() {
                                             value={skillsInput}
                                             onChange={(event) => {
                                                 setSkillsInput(event.target.value);
+                                                // When user presses comma, add the skill to the list
+                                                if (event.target.value.trim().endsWith(",")) {
+                                                    if (formSkills.includes(event.target.value.trim().slice(0, -1))) {
+                                                        return;
+                                                    }
+                                                    setFormSkills([...formSkills, event.target.value.trim().slice(0, -1)]);
+                                                    setSkillsInput("");
+                                                }
                                             }}
                                             onKeyDown={(event) => {
                                                 if (event.key === 'Backspace' && !skillsInput) {

@@ -129,7 +129,7 @@ function Register() {
         return (
             <div className="bg-pink-100">
                 <div className="flex items-center h-screen justify-center">
-                    <div className="bg-white rounded-lg md:w-3/4 lg:w-3/5 2xl:w-1/2">
+                    <div className="bg-white rounded-lg mx-3 md:mx-0 md:w-3/4 lg:w-3/5 2xl:w-1/2">
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-12 xl:col-span-8 px-8 sm:px-12 xl:py-2 mx-0 sm:mx-4 mt-8">
                                 <h1 className="max-w-2xl mb-4 text-3xl font-serif font-bold tracking-tight leading-none text-darkblue-900 sm:text-2xl md:text-3xl xl:text-4xl">Create your account</h1>
