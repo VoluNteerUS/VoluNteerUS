@@ -17,6 +17,8 @@ function CreateEventPart2({ details, setDetails, error, setError, setPage }) {
       setError("Please enter a closing date for the sign up.");
     } else if (new Date(details.date[0]).getTime() > new Date(details.date[1]).getTime()) {
       setError("Start date cannot be later than End date.");
+    } else if (moment(`${ details.signup_by }`).isAfter(moment(`${ details.date[1] }`))) {
+      setError("Form closing date cannot be later than event end date.");
     } else {
       setPage(3);
     }
