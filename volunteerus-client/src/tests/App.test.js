@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import App from '../App';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react'
-import { store, persistor } from './store';
+import { store, persistor } from '../store';
 
 describe('App', () => {
   test('renders app', () => {
@@ -16,10 +16,7 @@ describe('App', () => {
         </PersistGate>
       </Provider>
     );
-    // screen.getAllByDisplayValue("Join Us!");
 
-    // expect(screen.getByText(/Join Us!/i)).toBeInTheDocument();
-    // const linkElement = screen.getByText(/Featured Events/i);
-    // expect(linkElement).toBeInTheDocument();
+    // App is empty because it is a wrapper for the routes
   });
 });
