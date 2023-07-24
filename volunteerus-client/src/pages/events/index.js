@@ -265,7 +265,7 @@ function Events() {
         <div>
           {filteredEvents.map((event, key) => (
             <div key={key} className="flex md:flex-row flex-col ml-5 my-5 lg:mr-20 mr-5 border border-black">
-              <img src={event.image_url} alt="event" className="lg:w-1/5 md:w-1/3 object-fill" />
+              <img src={event.image_url} alt="event" className="xl:w-1/5 lg:w-1/4 md:w-1/3 object-fill" />
               <div className="m-5 space-y-5">
                 <h1 className="text-xl md:text-2xl font-bold text-center hover:text-neutral-600"><Link to={`/events/${event._id}`}>{event.title}</Link></h1>
                 <div className="flex md:flex-row flex-col md:space-x-8">

@@ -50,11 +50,11 @@ function UserDashboard() {
                                         <div className="font-semibold">{ moment(`${event.date[0]} ${event.date[2]}`).format("Do MMMM YYYY") }</div>
                                         <div className="font-bold font-serif text-3xl">{ moment(`${event.date[0]} ${event.date[2]}`).format("hh:mm A") }</div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <div className="font-serif font-bold md:text-3xl pb-2">{ event.title }</div>
-                                        <div>{ event.description.length > 200 ? event.description.substring(0, 500) + "..." : event.description }</div>
+                                    <div className="flex flex-col lg:basis-2/3">
+                                        <div className="font-serif font-bold hover:text-neutral-600 text-2xl md:text-3xl pb-2"><Link to={`/events/${event._id}`}>{ event.title }</Link></div>
+                                        <div>{ event.description.length > 400 ? event.description.substring(0, 400) + "..." : event.description }</div>
                                     </div>
-                                    <div className="flex flex-col basis-1/4">
+                                    <div className="flex flex-col lg:basis-1/4">
                                         <div className="flex flex-row font-semibold">
                                             <MapPinIcon className="w-6 h-6 me-2 text-grey-800"/>
                                             <span>{ event.location }</span>

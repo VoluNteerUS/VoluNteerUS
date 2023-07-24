@@ -70,14 +70,14 @@ const Details = ({ event }) => {
                         <Tab.List className="flex p-1 space-x-1 bg-neutral-500/20 rounded-xl">
                             <Tab as={Fragment}>
                                 {({ selected }) => (
-                                    <button className={`w-full py-2.5 text-sm leading-5 font-medium text-white rounded-lg ${selected ? "bg-primary-600" : "bg-transparent"}`}>
+                                    <button className={`w-full py-2.5 text-sm leading-5 font-medium rounded-lg ${selected ? "bg-primary-600 text-white" : "bg-transparent"}`}>
                                         Event Information
                                     </button>
                                 )}
                             </Tab>
                             <Tab as={Fragment}>
                                 {({ selected }) => (
-                                    <button className={`w-full py-2.5 text-sm leading-5 font-medium text-white rounded-lg ${selected ? "bg-primary-600" : "bg-transparent"}`}>
+                                    <button className={`w-full py-2.5 text-sm leading-5 font-medium rounded-lg ${selected ? "bg-primary-600 text-white" : "bg-transparent"}`}>
                                         Grouping
                                     </button>
                                 )}
