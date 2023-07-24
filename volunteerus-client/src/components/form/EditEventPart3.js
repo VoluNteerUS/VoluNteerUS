@@ -10,7 +10,7 @@ function EditEventPart3({ details, setDetails, error, setError, setPage }) {
         setError("")
         // validate form
         // Check file type
-        if (details.image_url != thumbnailImage && !details.file?.type.startsWith("image/")) {
+        if (details.image_url !== thumbnailImage && !details.file?.type.startsWith("image/")) {
             setError("Please select an image file.");
         } else if (details.file?.size > 5 * 1024 * 1024) {
             setError("Please select an image file smaller than 5MB.");

@@ -478,6 +478,7 @@ function UserProfile() {
                         {/* Skills Tag Input */}
                         <div className="flex flex-col">
                             <label className="block text-base font-medium text-neutral-600">Skills</label>
+                            <p className="block text-xs font-medium text-neutral-500">Note: input a comma after the skill to successfully add the skill</p>
                             <div className="bg-white border border-gray-300 rounded-lg h-28 overflow-y-scroll">
                                 <div className="flex flex-row gap-2 p-2">
                                     <div className="flex flex-wrap">

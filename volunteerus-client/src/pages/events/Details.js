@@ -4,7 +4,6 @@ import { Fragment, useEffect, useState } from "react";
 import axios from "axios";
 import moment from "moment";
 import { Tab } from "@headlessui/react";
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, TagIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
 
 const Details = ({ event }) => {
