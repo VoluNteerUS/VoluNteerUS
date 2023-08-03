@@ -160,24 +160,24 @@ export default function Navbar() {
             </div>
 
             {/* Desktop logo */}
-            <div className="flex items-center ps-3">
+            <Link to="/" className="flex items-center ps-3">
               <img
                 className="hidden h-10 w-auto md:block"
                 src={logo}
                 alt="VoluNteerUS Logo"
               />
-            </div>
+            </Link>
           </div>
           {/* Logo */}
           <div className="flex flex-1 items-center justify-center md:hidden md:items-stretch md:justify-start">
-            <div className="flex flex-shrink-0 items-center">
+            <Link to="/" className="flex flex-shrink-0 items-center">
               {/* Mobile logo */}
               <img
                 className="block h-10 w-auto lg:hidden"
                 src={logo}
                 alt="VoluNteerUS Logo"
               />
-            </div>
+            </Link>
           </div>
           {/* Profile dropdown */}
           <div className="flex items-center space-x-4 me-4">

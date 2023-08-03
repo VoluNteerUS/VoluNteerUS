@@ -76,7 +76,7 @@ function SignUpPart2({ questions, response, event, handleSubmit, handleChange, h
                   required  
                   type="checkbox"              
                 /> 
-                <label className="font-semibold">Confirm attendance</label> 
+                <label className="font-semibold">Confirm submission</label> 
               </div> 
               <div className="flex justify-end"> 
                   <button type="submit" className="bg-pink-500 hover:bg-pink-700 text-white text-center font-semibold py-2 px-6 rounded-lg block ml-auto my-10">{ action }</button> 

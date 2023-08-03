@@ -45,7 +45,7 @@ const Details = ({ event }) => {
                             <div className="flex flex-row flex-wrap gap-2 mt-2">
                                 {
                                     event?.category?.map((tag, key) => (
-                                        <span className="bg-primary-600 text-white px-3 rounded-full" key={key}>{tag}</span>
+                                        <Link to="/events" state={{ category:tag }} className="bg-primary-600 text-white px-3 rounded-full" key={key}>{tag}</Link>
                                     ))
                                 }
                             </div>

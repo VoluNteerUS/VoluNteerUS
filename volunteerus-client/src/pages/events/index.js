@@ -34,7 +34,7 @@ function Events() {
 
   const [allEvents, setAllEvents] = useState([]);
   const location = useLocation();
-  const [filteredCategory, setFilteredCategory] = useState(filters);
+  const [filteredCategory, setFilteredCategory] = useState(location?.state?.category ? [location?.state?.category] : filters);
   const [filteredEvents, setFilteredEvents] = useState(allEvents);
   const [sort, setSort] = useState([...sorts.slice(0, 1)]);
   const [queryEvents, setQueryEvents] = useState("");
