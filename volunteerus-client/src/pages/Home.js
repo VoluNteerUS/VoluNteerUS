@@ -35,24 +35,36 @@ function Home() {
             description: "Record your activities to showcase your involvment"
         }
     ];
+    
+    const search = "";
+    const filters = [
+        'Elderly',
+        'Migrant Workers',
+        'Patients',
+        'PWID',
+        'Youth',
+        'Local',
+        'Overseas',
+        'Special project',
+        'Regular project'
+      ]
 
-    const [allEvents, setAllEvents] = useState([]);
+    const [featuredEvents, setFeaturedEvents] = useState([]);
 
     useEffect(() => {
         const getAllEvents = () => {
-            const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
+            const eventsURL = new URL(`/events/upcoming?page=1&limit=4&search=${search}&categories=${filters}`, process.env.REACT_APP_BACKEND_API);
             axios.get(eventsURL)
                 .then((res) => {
                     const events = res.data.result;
-                    setAllEvents(events);
+                    console.log(res.data);
+                    setFeaturedEvents(events);
                 })
                 .catch(err => console.error({ err }));
         }
 
         getAllEvents();
     }, []);
-
-    const featuredEvents = allEvents.length > 4 ? allEvents.slice(0, 4) : allEvents;
 
     const { user } = useSelector((state) => state.user);
 
