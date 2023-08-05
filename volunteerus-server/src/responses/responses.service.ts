@@ -26,7 +26,17 @@ export class ResponsesService {
       private notificationsGateway: NotificationsGateway
     ) { }
 
-  create(createResponseDto: CreateResponseDto) {
+  public async create(createResponseDto: CreateResponseDto) {
+    const user = await this.usersModel.findById(createResponseDto.user);
+    const event = await this.eventsModel.findById(createResponseDto.event);
+    const newNotification = new NotificationDto(
+      user, 
+      `${event.title}: Response Sent!`, 
+      new Date(), 
+      false
+    );
+    this.notificationsModel.create(newNotification);
+    this.notificationsGateway.sendNotificationToUser(user._id, newNotification);
     return new this.responsesModel(createResponseDto).save();
   }
 
