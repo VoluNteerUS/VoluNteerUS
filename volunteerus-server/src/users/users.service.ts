@@ -297,6 +297,11 @@ export class UsersService {
   }
 
   public async delete(_id: mongoose.Types.ObjectId): Promise<User> {
+    const responses = await this.responsesModel.find({ user: _id }).exec();
+    const numberOfResponses = responses.length;
+    for (let i = 0; i < numberOfResponses; i++) {
+      await this.responsesModel.findByIdAndDelete(responses[i]._id);
+    }
     return this.usersModel.findByIdAndDelete(_id);
   }
 }

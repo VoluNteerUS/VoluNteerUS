@@ -16,7 +16,7 @@ export default function NotificationsDropdown() {
             const userNotificationsURL = new URL(`/notifications/${user.id}`, process.env.REACT_APP_BACKEND_API);
             const res = await axios.get(userNotificationsURL);
             console.log("called getUserNotifications()");
-            setNotifications(res.data);
+            setNotifications(res.data.reverse());
         } catch (err) {
             console.log(err.response.data.message);
         }

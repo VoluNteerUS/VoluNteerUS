@@ -146,7 +146,7 @@ function Responses() {
 
   useEffect(() => {
     getResponseInformation();
-  }, [paginationState.accepted.currentPage, paginationState.rejected.currentPage, paginationState.pending.currentPage, shiftPaginationState.result])
+  }, [paginationState.accepted.currentPage, paginationState.rejected.currentPage, paginationState.pending.currentPage])
 
   const getShiftInformation = async () => {
     try {
@@ -338,6 +338,7 @@ function Responses() {
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));
+    window.location.reload();
   }
 
   const handleAcceptedResponsesPageChange = (page) => {
@@ -1103,7 +1104,7 @@ function Responses() {
               ? <div className="text-center md:col-span-4 sm:col-span-3 col-span-2">
                   <p className="text-sm font-extralight my-2">No attendance available before or after event period.</p>
                 </div>
-              : acceptedResponses.filter((response) => response?.shifts[attendanceNumberOfDays]).map((response) => {
+              : attendancePaginationState?.result.filter((response) => response?.shifts[attendanceNumberOfDays]).map((response) => {
                 return (
                   <div className="max-w-sm flex flex-col border py-5 justify-center text-center m-3 rounded-lg bg-white shadow-md">
                     <img className="h-14 w-14 rounded-full m-auto" src={ response?.user["profile_picture"] === "" ? `https://ui-avatars.com/api/?name=${response?.user["full_name"]}&background=0D8ABC&color=fff` : response?.user["profile_picture"] } alt="Profile Picture" />
