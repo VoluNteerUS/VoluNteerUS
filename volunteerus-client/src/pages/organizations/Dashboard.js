@@ -259,7 +259,6 @@ function OrganizationDashboard() {
 
   return (
     <CommitteeMemberProtected user={user} organization_id={id}>
-      <Navbar />
       <div className="bg-pink-300 py-2 min-h-screen h-full">
         {/* Organizational Profile */}
         <div className="bg-neutral-100 rounded-lg shadow-lg px-10 py-6 m-10 w-screen lg:w-3/4 block mx-auto">

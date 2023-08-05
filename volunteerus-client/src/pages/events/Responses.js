@@ -783,7 +783,6 @@ function Responses() {
 
   return (
     <CommitteeMemberProtected user={user} organization_id={id}>
-      <Navbar />
       <div className="w-screen lg:w-5/6 p-3 block mx-auto">
         <div>
           <h1 className="font-bold text-3xl mt-6">{ event?.title } </h1>

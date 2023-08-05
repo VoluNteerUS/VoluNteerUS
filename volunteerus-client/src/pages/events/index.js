@@ -153,7 +153,6 @@ function Events() {
 
   return (
     <>
-      <Navbar />
       <section className="bg-pink-100 pt-10 pb-5 space-y-10">
         <div className="flex flex-row justify-center space-x-5">
           <h1 className="md:text-5xl text-2xl font-bold flex items-center">Upcoming Events</h1>

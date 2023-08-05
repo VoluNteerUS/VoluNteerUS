@@ -107,7 +107,6 @@ function AdminUserDashboard() {
 
   return (
     <AdminProtected>
-      <Navbar />
       <div className="py-8">
         <div className="block mx-auto lg:w-3/4 bg-neutral-100 rounded-lg p-8">
           <div className="flex flex-row flex-wrap justify-between items-center">

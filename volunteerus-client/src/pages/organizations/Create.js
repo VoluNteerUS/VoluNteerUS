@@ -84,7 +84,6 @@ function CreateOrganizationPage() {
 
     return (
         <>
-            <Navbar />
             <div className="bg-pink-300 py-4 min-h-screen h-full">
                 <div className="block mx-auto md:w-3/4 lg:w-2/3 xl:w-1/2 bg-neutral-100 rounded-lg">
                     {/* Form to create organization name and description */}

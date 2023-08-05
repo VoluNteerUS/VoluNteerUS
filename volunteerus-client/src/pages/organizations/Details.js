@@ -69,7 +69,6 @@ function OrganizationDetailsPage(){
 
     return(
         <>
-            <Navbar />
             {/* Organization Details */}
             <div className="block mx-auto w-screen pt-4 lg:w-3/4 lg:pt-8">
                 <div className="flex items-center">

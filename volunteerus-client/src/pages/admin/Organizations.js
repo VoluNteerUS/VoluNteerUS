@@ -110,7 +110,6 @@ function AdminOrganizationDashboard() {
 
   return (
     <AdminProtected>
-      <Navbar />
       <div className="py-8">
         <div className="block mx-auto lg:w-3/4 bg-neutral-100 rounded-lg p-8">
           <div className="pb-4 flex justify-between items-center flex-wrap">

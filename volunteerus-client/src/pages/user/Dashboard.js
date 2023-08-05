@@ -38,7 +38,6 @@ function UserDashboard() {
     if (token) {
         return (
             <>
-                <Navbar />
                 <div className="block mx-auto lg:w-3/4 p-4 md:p-8">
                     <h1 className="font-bold text-xl md:text-2xl lg:text-3xl py-4">Your Upcoming Events</h1>
                     <div className="flex flex-col">

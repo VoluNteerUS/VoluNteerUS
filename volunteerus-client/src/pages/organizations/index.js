@@ -70,7 +70,6 @@ function OrganizationsPage() {
 
     return (
         <>
-            <Navbar />
             <div className="block mx-auto w-screen pt-4 px-3 lg:px-0 lg:w-3/4 lg:pt-8">
                 <h1 className="text-3xl font-bold">Organizations</h1>
                 {/* Search Bar */}

@@ -161,7 +161,6 @@ function CreateEvent() {
   return ( 
     <CommitteeMemberProtected user={user} organization_id={id}>
       <div className="bg-pink-100 min-h-screen"> 
-        <Navbar /> 
         { page === 1 
           ? <CreateEventPart1
           details={ details }

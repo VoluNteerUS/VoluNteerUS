@@ -68,8 +68,6 @@ function Home() {
 
     const { user } = useSelector((state) => state.user);
 
-    // Redirect to user dashboard if user is logged in (Incomplete)
-
     // Redirect to admin dashboard if user is admin
     if (user?.role === "ADMIN") {
         return <Navigate to="/admin" replace />;
@@ -78,7 +76,6 @@ function Home() {
     } else {
         return (
         <>
-            <Navbar />
             <section className="bg-pink-100">
                 <img src={imagePeople} alt="asthetic" className="mx-auto max-w-xs py-10" />
             </section>

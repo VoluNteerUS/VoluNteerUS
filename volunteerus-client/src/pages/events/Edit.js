@@ -182,7 +182,6 @@ function EditEventDetails() {
   return ( 
     <CommitteeMemberProtected user={user} organization_id={id}>
       <div className="bg-pink-100 min-h-screen">
-        <Navbar /> 
         { page === 1 
             ? <EditEventPart1
             details={ details }

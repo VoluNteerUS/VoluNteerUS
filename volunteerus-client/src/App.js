@@ -2,6 +2,8 @@ import './App.css';
 import React, { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import useNavbarVisibility from './helpers/useNavbarVisibility';
+import Navbar from './components/navigation/Navbar';
 
 // Code splitting of routes
 // Pages
@@ -41,7 +43,6 @@ const AdminDashboard = lazy(() => import('./pages/admin'));
 const AdminEventDashboard = lazy(() => import('./pages/admin/Events'));
 const AdminOrganizationDashboard = lazy(() => import('./pages/admin/Organizations'));
 const AdminUserDashboard = lazy(() => import('./pages/admin/Users'));
-const Users = lazy(() => import('./pages/archived/Users'));
 
 // Auth Pages
 const PageNotFound = lazy(() => import('./pages/PageNotFound'));
@@ -53,11 +54,13 @@ const AdminProtected = lazy(() => import('./common/protection/AdminProtected'));
 const CommitteeMemberProtected = lazy(() => import('./common/protection/CommitteeMemberProtected'));
 
 function App() {
+  const shouldShowNavbar = useNavbarVisibility();
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user || 'Unknown';
 
   return (
     <div className="App">
+      {shouldShowNavbar && <Navbar />}
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<Home />} />

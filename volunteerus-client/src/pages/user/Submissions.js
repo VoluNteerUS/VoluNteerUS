@@ -310,7 +310,6 @@ function Submissions() {
 
   return (
     <>
-      <Navbar />
       <div className="w-screen lg:w-5/6 block mx-auto">
         <div className="text-2xl my-10 font-bold flex space-x-3">
           <h1>My Submissions</h1>

@@ -123,7 +123,6 @@ function AdminDashboard() {
 
   return (
     <AdminProtected>
-      <Navbar />
       <div className="block mx-auto px-6 sm:w-4/5 sm:px-0 lg:w-3/4">
         <h1 className="font-bold text-3xl py-6">Admin Dashboard</h1>
         { loaded ? (

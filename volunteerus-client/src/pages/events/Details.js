@@ -167,7 +167,6 @@ function EventDetails() {
 
     return (
         <div className="h-screen">
-            <Navbar />
             <Details event={event} />
         </div>
     )

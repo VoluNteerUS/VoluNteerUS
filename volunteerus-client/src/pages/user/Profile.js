@@ -220,7 +220,6 @@ function UserProfile() {
 
     return (
         <AuthProtected>
-            <Navbar />
             <div className="block mx-auto px-4 lg:w-3/4 lg:px-0">
                 <div className="h-4"></div>
                 {/* Breadcrumbs */}

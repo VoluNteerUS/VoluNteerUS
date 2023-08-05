@@ -435,7 +435,6 @@ function EditOrganizationPage() {
 
   return (
     <CommitteeMemberProtected user={user} organization_id={id}>
-      <Navbar />
       <div className="bg-pink-300 py-4 px-4 md:px-0">
         {/*  Organizational Profile */}
         <div className="bg-neutral-100 rounded-lg shadow-lg md:w-3/4 lg:w-2/3 xl:w-1/2 block mx-auto">
