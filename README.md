@@ -61,7 +61,7 @@ BUCKET_URL=
 SENDGRID_API_KEY=
 SENDGRID_EMAIL=
 
-# Client URL
+# Client URL (For generating reset password link)
 CLIENT_URL=
 ```
 

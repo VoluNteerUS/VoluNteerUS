@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from "react-router-dom";
-import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";

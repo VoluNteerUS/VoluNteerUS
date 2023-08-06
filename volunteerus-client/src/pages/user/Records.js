@@ -1,4 +1,3 @@
-import Navbar from "../../components/navigation/Navbar";
 import AuthProtected from "../../common/protection/AuthProtected";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -104,7 +103,7 @@ function Records() {
             </thead>
             <tbody className="divide-y divide-neutral-200">
               {history?.result?.map((response) => {
-                const shifts = response?.shifts.map((shift, index) => shift ? index : -1).filter(days => days != -1);
+                const shifts = response?.shifts.map((shift, index) => shift ? index : -1).filter(days => days !== -1);
                 const eventHours = shifts?.reduce((sum, shift) => sum + (response?.hours[shift] === -1 ? response?.event['defaultHours'][shift] : response?.hours[shift]), 0);
                 const hours = Math.floor(eventHours / 1);
                 const mins = Math.round(eventHours % 1 * 60);

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
-import image from '../assets/images/helping-hand.jpg';
+import { api } from '../services/api-service';
 
 function PasswordReset() {
     const navigate = useNavigate();
@@ -18,12 +17,11 @@ function PasswordReset() {
 
     const handlePasswordReset = async (event) => {
         event.preventDefault();
-        console.log(state);
 
-        // TODO: Clear error
+        // Clear error
         setErrorMessage(null);
 
-        // TODO: Validate new password if it meets requirements
+        // Validate new password if it meets requirements
         if (state.newPassword === "") {
             setErrorMessage("Please enter your new password.");
             return;
@@ -45,19 +43,16 @@ function PasswordReset() {
             return;
         }
 
-        // TODO: Check if the new password is the same as the old password through backend
-        const passwordResetURL = new URL("/auth/passwordReset", process.env.REACT_APP_BACKEND_API);
-        await axios.post(passwordResetURL, {
+        // Send request to reset password
+        await api.resetPassword({  
             token: state.token,
             email: state.email,
             new_password: state.newPassword,
             confirm_new_password: state.confirmNewPassword
         }).then((response) => {
-            console.log(response);
             navigate("/login");
         }).catch((error) => {
             setErrorMessage(error.response.data.message);
-            console.log(error);
         });
     }
 

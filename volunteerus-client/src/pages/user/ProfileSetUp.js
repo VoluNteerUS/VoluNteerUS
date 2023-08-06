@@ -5,7 +5,7 @@ import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import imageUploadPlaceholder from "../../assets/images/image-upload-placeholder.png";
 import { setUser } from "../../actions/userActions";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import { api } from "../../services/api-service";
 
 const facultiesAndSchools = [
     "Select your faculty or school",
@@ -35,7 +35,6 @@ function BasicProfileSetUp() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [profilePicture, setProfilePicture] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
-    // const [skills, setSkills] = useState([]);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -87,14 +86,9 @@ function BasicProfileSetUp() {
         formData.append("telegram_handle", telegramHandle);
         formData.append("dietary_restrictions", dietaryRestrictions);
 
-        const userURL = new URL(`/users/${user.id}`, process.env.REACT_APP_BACKEND_API);
-        axios.patch(userURL, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            }
-        }).then((response) => {
+        api.updateUser(localStorage.getItem("token"), user.id, formData).then((response) => {
             //  Get the updated user object from the response
-            axios.get(userURL).then((res) => {
+            api.getUser(localStorage.getItem("token"), user.id).then((res) => {
                 let user = res.data;
                 dispatch(setUser({
                     email: user.email,
@@ -116,7 +110,7 @@ function BasicProfileSetUp() {
             });
         }).catch((error) => {
             setErrorMessage("Profile update failed!");
-        });        
+        });      
     }
 
     if (localStorage.getItem("token")) {

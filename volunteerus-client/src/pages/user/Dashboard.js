@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import Navbar from "../../components/navigation/Navbar"
 import { Link, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";

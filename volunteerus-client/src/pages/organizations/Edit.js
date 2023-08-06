@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Navbar from "../../components/navigation/Navbar";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import { MinusIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
@@ -374,10 +373,13 @@ function EditOrganizationPage() {
     
     const committeeMembersURL = new URL(`/organizations/${id}/committeeMembers?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     const committeeMembers = getCommitteeMembers();
-    const body = [...data]
+    console.log(data)
+    const body = {
+      committee_members: data
+    }
 
     // Check if no changes were made
-    if (JSON.stringify(committeeMembers) === JSON.stringify(body)) {
+    if (JSON.stringify(committeeMembers.map((member) => member._id)) === JSON.stringify(data)) {
       return;
     } else if (committeeMembers.length === 0) {
       // Send POST request to create committee members
@@ -388,6 +390,7 @@ function EditOrganizationPage() {
         console.log(err);
       });
     } else {
+      console.log(body)
       // Send PATCH request to update committee members
       axios.patch(committeeMembersURL, body).then((res) => {
         console.log(res);

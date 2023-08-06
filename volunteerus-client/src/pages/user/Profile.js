@@ -1,17 +1,16 @@
 import { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux"
 import { Link } from "react-router-dom"
-import Navbar from "../../components/navigation/Navbar"
 import { ChevronDownIcon, CheckIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import AuthProtected from "../../common/protection/AuthProtected";
 import { Dialog } from "@headlessui/react";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../actions/userActions";
 import Alert from "../../components/Alert";
 import { Listbox, Transition } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../services/api-service";
 
 const facultiesAndSchools = [
     "Select your faculty or school",
@@ -60,26 +59,24 @@ function UserProfile() {
         setFile(null);
     }
 
+    const getUserProfile = async () => {
+        const res = await api.getUser(localStorage.getItem('token'), persistedUserState?.user?.id);
+        const user = res.data;
+        setCurrentUser(user);
+        setProfilePicture(user.profile_picture || `https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`);
+        setFullName(user.full_name || '');
+        setEmail(user.email || '');
+        setPhoneNumber(user.phone_number || '');
+        setFaculty(user.faculty || facultiesAndSchools[0]);
+        setMajor(user.major || '');
+        setYearOfStudy(user.year_of_study || 1);
+        setTelegramHandle(user.telegram_handle || '');
+        setDietaryRestrictions(user.dietary_restrictions || '');
+        setSkills(user.skills || []);
+        setFormSkills(user.skills || []);
+    }
+
     useEffect(() => {
-
-        const getUserProfile = async () => {
-            const userURL = new URL(`/users/${persistedUserState?.user?.id}`, process.env.REACT_APP_BACKEND_API);
-            const res = await axios.get(userURL);
-            const user = res.data;
-            setCurrentUser(user);
-            setProfilePicture(user.profile_picture || `https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`);
-            setFullName(user.full_name || '');
-            setEmail(user.email || '');
-            setPhoneNumber(user.phone_number || '');
-            setFaculty(user.faculty || facultiesAndSchools[0]);
-            setMajor(user.major || '');
-            setYearOfStudy(user.year_of_study || 1);
-            setTelegramHandle(user.telegram_handle || '');
-            setDietaryRestrictions(user.dietary_restrictions || '');
-            setSkills(user.skills || []);
-            setFormSkills(user.skills || []);
-        }
-
         getUserProfile();
     }, []);
 
@@ -156,27 +153,13 @@ function UserProfile() {
         formData.append("skills", JSON.stringify(formSkills));
 
         const userURL = new URL(`/users/${persistedUserState?.user?.id}`, process.env.REACT_APP_BACKEND_API);
-        axios.patch(userURL, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            }
-        }).then((response) => {
+        api.updateUser(localStorage.getItem('token'), persistedUserState?.user?.id, formData).then((response) => {
             //  Get the updated user object from the response
-            axios.get(userURL).then((res) => {
+            getUserProfile();
+
+            // Update the user object in the redux store
+            api.getUser(localStorage.getItem('token'), persistedUserState?.user?.id).then((res) => {
                 let user = res.data;
-                console.log(user);
-                setCurrentUser(user);
-                setProfilePicture(user.profile_picture || `https://ui-avatars.com/api/?name=${user.full_name ?? ''}&background=FF71A3&color=fff`);
-                setFullName(user.full_name || '');
-                setEmail(user.email || '');
-                setPhoneNumber(user.phone_number || '');
-                setFaculty(user.faculty || facultiesAndSchools[0]);
-                setMajor(user.major || '');
-                setYearOfStudy(user.year_of_study || 1);
-                setTelegramHandle(user.telegram_handle || '');
-                setDietaryRestrictions(user.dietary_restrictions || '');
-                setSkills(user.skills || []);
-                setFormSkills(user.skills || []);
                 dispatch(setUser({
                     email: user.email,
                     full_name: user.full_name,
@@ -192,20 +175,16 @@ function UserProfile() {
                     dietary_restrictions: user.dietary_restrictions,
                     skills: user.skills,
                 }));
-                setAlertMessages([
-                    {
-                        type: "success",
-                        message: "Profile updated successfully!"
-                    }
-                ]);
-            }).catch((error) => {
-                setAlertMessages([
-                    {
-                        type: "error",
-                        message: "Profile update failed!"
-                    }
-                ]);
             });
+
+            // Display success message
+            setAlertMessages([
+                {
+                    type: "success",
+                    message: "Profile updated successfully!"
+                }
+            ]);
+    
         }).catch((error) => {
             setAlertMessages([
                 {

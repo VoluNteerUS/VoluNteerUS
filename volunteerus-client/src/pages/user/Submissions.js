@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Navbar from "../../components/navigation/Navbar";
 import { Tab } from "@headlessui/react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";

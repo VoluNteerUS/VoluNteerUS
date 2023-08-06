@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import image from "../assets/images/helping-hand.jpg";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser, setUserOrganizations } from "../actions/userActions";
+import { api } from "../services/api-service";
 
 function Login() {
     const [state, setState] = useState(
@@ -24,24 +24,13 @@ function Login() {
         event.preventDefault();
         // Clear error
         setState({ ...state, error: "" });
-        const requestBody = {
-            email: state.email,
-            password: state.password
-        };
-
-        // Endpoint for logging in a user
-        const loginURL = new URL("/auth/login", process.env.REACT_APP_BACKEND_API);
-        // Endpoint for getting user profile
-        const profileURL = new URL("/auth/profile", process.env.REACT_APP_BACKEND_API);
-
-        await axios.post(loginURL, requestBody).then((response) => {
+        // Login
+        api.login(state.email, state.password).then((response) => {
             // Save token to local storage
             localStorage.setItem("token", response.data["access_token"]);
             // Get user from token
-            axios.get(profileURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then(async (response) => {
+            api.profile(localStorage.getItem("token")).then(async (response) => {
                 // Save user to redux store
-                console.log(response.data);
-                localStorage.setItem("full_name", response.data["full_name"]);
                 let user = response.data;
                 dispatch(setUser({
                     email: user.email,
@@ -62,21 +51,18 @@ function Login() {
                     navigate("/admin", { replace: true });
                 } else {
                     // Get user's organizations
-                    const getUserOrganizationsURL = new URL("/organizations/getUserOrganizations", process.env.REACT_APP_BACKEND_API);
-                    const getUserOrganizationRequestBody = {
-                        userId: user._id
-                    };
-                    const userOrganizationsRes = await axios.post(getUserOrganizationsURL, getUserOrganizationRequestBody);
+                    const userOrganizationsRes = await api.getUserOrganizations(localStorage.getItem("token"), user._id);
 
                     // Save user's organizations to redux store
                     if (userOrganizationsRes.data) {
                         dispatch(setUserOrganizations(userOrganizationsRes.data));
                     }
-                    // console.log(userOrganizationsRes)
+
                     // Else, redirect to for you page
                     navigate("/dashboard", { replace: true });
                 }
-            }).catch((error) => {
+            }
+            ).catch((error) => {
                 console.log(error.response.data.message);
                 setState({ ...state, error: error.response.data.message });
             });

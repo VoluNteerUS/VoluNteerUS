@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navbar from "../../components/navigation/Navbar";
 import imageUpload from "../../assets/images/image-upload.png";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";

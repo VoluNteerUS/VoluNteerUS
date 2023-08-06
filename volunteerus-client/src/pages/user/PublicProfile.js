@@ -1,10 +1,9 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import Navbar from "../../components/navigation/Navbar";
 import { EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
 import Pagination from "../../components/navigation/Pagination";
+import { api } from "../../services/api-service";
 
 function PublicUserProfile() {
     const { userId } = useParams();
@@ -20,15 +19,16 @@ function PublicUserProfile() {
     });
 
     const getUserProfile = async () => {
-        console.log(userId);
-        const userURL = new URL(`/users/${userId}`, process.env.REACT_APP_BACKEND_API);
-        await axios.get(userURL).then(res => setUser(res.data));
+        await api.getUser(localStorage.getItem("token"), userId).then(res => setUser(res.data));
     }
 
     const getVolunteeringHistory = async () => {
-        const historyURL = new URL(`/responses/history?user_id=${userId}&page=${paginationState.history.currentPage}&limit=${paginationState.history.limit}`, process.env.REACT_APP_BACKEND_API);
-        await axios.get(historyURL).then(res => {
-            console.log(res.data);
+        await api.getVolunteeringHistory(
+            localStorage.getItem("token"), 
+            userId, 
+            paginationState.history.currentPage, 
+            paginationState.history.limit
+        ).then(res => {
             setVolunteeringHistory(res.data.result);
             setPaginationState({
                 history: {

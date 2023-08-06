@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import Navbar from "../../components/navigation/Navbar"
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import AppDialog from '../../components/AppDialog';
 import Alert from '../../components/Alert';
+import { api } from '../../services/api-service';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -56,7 +55,6 @@ const AccountSecurity = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    console.log("called handlePasswordReset()");
     // Reset errors and alerts
     setState({ ...state, error: null });
     setAlertMessage(null);
@@ -91,17 +89,17 @@ const AccountSecurity = () => {
       return;
     }
     // Send request to server
-    const passwordChangeURL = new URL("/auth/changePassword", process.env.REACT_APP_BACKEND_API);
-    await axios.post(passwordChangeURL, {
-      current_password: state.currentPassword,
-      new_password: state.newPassword,
-      confirm_new_password: state.confirmNewPassword
-    }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((response) => {
-      console.log(response);
+    await api.changePassword(
+      localStorage.getItem("token"),
+      {
+        current_password: state.currentPassword,
+        new_password: state.newPassword,
+        confirm_new_password: state.confirmNewPassword
+      }
+    ).then((response) => {
       setAlertMessage({ type: "success", message: "Password changed successfully!"});
     }).catch((error) => {
       setState({ ...state, error: error.response.data.message });
-      console.log(error);
     });
   }
 
@@ -185,10 +183,7 @@ const AccountSecurity = () => {
 const DeleteAccount = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const handleDeleteAccount = async () => {
-    const deleteAccountURL = new URL("/auth/deleteAccount", process.env.REACT_APP_BACKEND_API);
-    await axios.delete(deleteAccountURL, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((response) => {
-      console.log(response);
-      // Clear token (log the user out) and redirect to home page
+    await api.deleteUser(localStorage.getItem("token")).then((response) => {
       localStorage.removeItem("token");
       window.location.href = "/";
     }).catch((error) => {

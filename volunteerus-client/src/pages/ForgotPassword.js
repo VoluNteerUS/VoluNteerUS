@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Alert from "../components/Alert";
+import { api } from "../services/api-service";
 
 const ResetPasswordLink = () => {
     const navigate = useNavigate();
@@ -43,8 +43,7 @@ function ForgotPassword() {
         }
 
         // Check if email is valid
-        const passwordRequestURL = new URL("/auth/passwordResetRequest", process.env.REACT_APP_BACKEND_API);
-        await axios.post(passwordRequestURL, {
+        await api.passwordResetRequest({
             email: email
         }).then((response) => {
             console.log(response);

@@ -169,9 +169,14 @@ export class OrganizationsService {
       });
     }
     // Compare the current committee members with the new ones and remove the ones that are not in the new list
+    console.log("Organization: ", organization.name);
     const currentCommitteeMembers = organization.committee_members.map(member => member.toString());
     const newCommitteeMembers = users.length > 0 ? users.map(member => member.toString()) : [];
     const membersToRemove = currentCommitteeMembers.filter(member => !newCommitteeMembers.includes(member));
+    console.log("Users: ", users);
+    console.log("Current Comm: ", currentCommitteeMembers);
+    console.log("New Comm: ", newCommitteeMembers);
+    console.log("To Remove: ", membersToRemove);
     for (const member of membersToRemove) {
       const user = await this.usersModel.findById(member).exec();
       if (!user) {

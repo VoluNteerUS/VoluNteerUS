@@ -9,6 +9,7 @@ import { CaslAbilityFactory } from '../casl/casl-ability.factory/casl-ability.fa
 import { Organization } from './schemas/organization.schema';
 import { CheckCommitteeMemberDto } from './dto/check-committee-member.dto';
 import { GetUserOrganizationsDto } from './dto/get-user-organizations';
+import { CommitteeMemberDataDto } from './dto/committee-member-data.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -72,13 +73,13 @@ export class OrganizationsController {
   @Post(':id/committeeMembers')
   async addCommitteeMembersToOrganization(
     @Param('id') organizationId: mongoose.Types.ObjectId, 
-    @Body() committeeMemberData: string[], 
+    @Body() committeeMemberData: CommitteeMemberDataDto, 
     @Query('role') role: string
   ) {
     // Check if user has permission to create committee member for an organization
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('create', Organization)) {
-      return this.organizationsService.addCommitteeMembersToOrganization(organizationId, committeeMemberData);
+      return this.organizationsService.addCommitteeMembersToOrganization(organizationId, committeeMemberData.committee_members);
     } else {
       throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }
@@ -149,11 +150,11 @@ export class OrganizationsController {
   }
 
   @Patch(':id/committeeMembers')
-  async updateCommitteeMembers(@Param('id') organizationId: mongoose.Types.ObjectId, @Query('role') role: string, @Body() committeeMemberData: any) {
+  async updateCommitteeMembers(@Param('id') organizationId: mongoose.Types.ObjectId, @Query('role') role: string, @Body() committeeMemberData: CommitteeMemberDataDto) {
     // Check if user has permission to update committee member for an Organization
     const ability = this.caslAbilityFactory.createForUser(role);
     if (ability.can('update', Organization)) {
-      return this.organizationsService.updateCommitteeMembers(organizationId, committeeMemberData);
+      return this.organizationsService.updateCommitteeMembers(organizationId, committeeMemberData.committee_members);
     } else {
       throw new HttpException('Unauthorized Action', HttpStatus.FORBIDDEN);
     }

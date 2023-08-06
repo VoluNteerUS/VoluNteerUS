@@ -1,7 +1,6 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Navbar from "../../components/navigation/Navbar"
 import axios from "axios";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";

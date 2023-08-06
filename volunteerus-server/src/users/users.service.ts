@@ -296,12 +296,27 @@ export class UsersService {
     return await this.usersModel.findOne({ email: email }).select('-password');
   }
 
+  /**
+   * Deletes a user and all their committee memberships and responses
+   * @param _id 
+   * @returns 
+   */
   public async delete(_id: mongoose.Types.ObjectId): Promise<User> {
+    // Delete user from their committee member roles from all organizations
+    const organizations = await this.organizationsModel.find({ committee_members: _id }).exec();
+    const numberOfOrganizations = organizations.length;
+    for (let i = 0; i < numberOfOrganizations; i++) {
+      await this.organizationsModel.updateOne({ _id: organizations[i]._id }, { $pull: { committee_members: _id } });
+    }
+
+    // Delete user's responses
     const responses = await this.responsesModel.find({ user: _id }).exec();
     const numberOfResponses = responses.length;
     for (let i = 0; i < numberOfResponses; i++) {
       await this.responsesModel.findByIdAndDelete(responses[i]._id);
     }
+
+    // Delete user
     return this.usersModel.findByIdAndDelete(_id);
   }
 }

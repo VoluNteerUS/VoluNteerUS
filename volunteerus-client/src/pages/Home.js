@@ -1,4 +1,3 @@
-import Navbar from "../components/navigation/Navbar";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
