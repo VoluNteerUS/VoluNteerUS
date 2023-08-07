@@ -92,6 +92,11 @@ export class EventsController {
       return this.eventService.findAll(search, category, parsedPage, parsedLimit);
     }
 
+    @Get('count')
+    count() {
+      return this.eventService.count();
+    }
+
     @Get('/categories')
     getCategories() {
       return this.eventService.getCategories();

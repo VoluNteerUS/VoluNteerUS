@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
-import Navbar from "../../components/navigation/Navbar";
 import Pagination from "../../components/navigation/Pagination";
 import AppDialog from "../../components/AppDialog";
 import AdminProtected from "../../common/protection/AdminProtected"
 import { ArrowsUpDownIcon, CheckIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Listbox } from "@headlessui/react";
+import { api } from "../../services/api-service";
 
 function AdminOrganizationDashboard() {
   const persistedUserState = useSelector((state) => state.user);
@@ -52,8 +51,7 @@ function AdminOrganizationDashboard() {
 
   const handleConfirmDelete = async () => {
     try {
-      const organizationURL = new URL(`/organizations/${organizationToDelete._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
-      await axios.delete(organizationURL);
+      await api.deleteOrganization(localStorage.getItem("token"), organizationToDelete._id, user.role);
       setIsDialogOpen(false);
       setOrganizationToDelete({});
     } catch (err) {
@@ -80,8 +78,7 @@ function AdminOrganizationDashboard() {
             break;
         }
 
-        const organizationsURL = new URL(`/organizations?search=${state.searchQuery}&page=${state.currentPage}&limit=${state.limit}&sort=${sortBy}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationsURL);
+        const res = await api.getAllOrganizations(state.searchQuery, state.currentPage, state.limit, sortBy);
         const paginatedOrganizations = { ...res.data };
         setState({
           ...state,
@@ -96,8 +93,7 @@ function AdminOrganizationDashboard() {
 
     const getTotalCount = async () => {
       try {
-        const organizationCountURL = new URL(`/organizations/count`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationCountURL);
+        const res = await api.getOrganizationCount();
         setTotalCount(res.data);
       } catch (err) {
         console.error({ err });

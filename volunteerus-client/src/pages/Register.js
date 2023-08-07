@@ -1,10 +1,9 @@
 import React, { useState }  from "react";
 import image from "../assets/illustrations/standing_human.svg";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import axios from "axios";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setUser, setUserOrganizations } from "../actions/userActions";
+import { setUser } from "../actions/userActions";
 import { api } from "../services/api-service";
 
 function Register() {
@@ -65,10 +64,7 @@ function Register() {
             password : state.password
         };
 
-        // Endpoint for registering a user
-        // const registerURL = new URL("/users", process.env.REACT_APP_BACKEND_API);
-        // const loginURL = new URL("/auth/login", process.env.REACT_APP_BACKEND_API);
-
+        // Use api service to register user
         await api.register(requestBody).then(async (response) => {
             // Save user data to redux store
             let user = response.data;
@@ -94,51 +90,6 @@ function Register() {
                 navigate("/setup");
             });
         });
-
-        // await axios.post(registerURL, requestBody).then(async (response) => {
-        //     // Save user data to redux store
-        //     let user = response.data;
-        //     dispatch(setUser({
-        //         email: user.email,
-        //         full_name: user.full_name,
-        //         id: user._id,
-        //         role: user.role,
-        //         registered_on: user.registered_on,
-        //         profile_picture: user.profile_picture,
-        //         phone_number: user.phone_number,
-        //         telegram_handle: user.telegram_handle,
-        //         faculty: user.faculty,
-        //         major: user.major,
-        //         year_of_study: user.year_of_study,
-        //         dietary_restrictions: user.dietary_restrictions,
-        //     }))
-
-        //     // Get user's organizations
-        //     const getUserOrganizationsURL = new URL(`/organizations/getUserOrganizations`, process.env.REACT_APP_BACKEND_API);
-        //     const getUserOrganizationRequestBody = {
-        //         userId: user._id
-        //     };
-        //     const userOrganizationsRes = await axios.post(getUserOrganizationsURL, getUserOrganizationRequestBody);
-        //     // Save user's organizations to redux store
-        //     if (userOrganizationsRes.data) {
-        //         dispatch(setUserOrganizations(userOrganizationsRes.data));
-        //     }
-
-        //     // Log in user and store token in local storage
-        //     const loginRequestBody = {
-        //         email : state.email,
-        //         password : state.password
-        //     };
-
-        //     await axios.post(loginURL, loginRequestBody).then((response) => {
-        //         localStorage.setItem("token", response.data["access_token"]);
-        //         // Redirect to set up profile page
-        //         navigate("/setup");
-        //     });
-        // }).catch((error) => {
-        //     console.log(error);
-        //     setState({ ...state, error: error.response.data.message });
-        // });
     }
 
     let errorMessage = null;

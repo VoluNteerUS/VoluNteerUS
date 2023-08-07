@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Navbar from '../../components/navigation/Navbar';
 import StatCard from '../../components/dashboard/StatCard';
 import ContentCard from '../../components/dashboard/ContentCard';
 import EventRow from '../../components/dashboard/EventRow';
 import AdminProtected from '../../common/protection/AdminProtected';
-import axios from 'axios';
 import { 
   setEventCount, setOrganizationCount, setCommitteeMemberCount, 
   setUserCount, setRecentlyCreatedEvents, setChartData 
 } from '../../actions/adminDashboardActions';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import moment from 'moment';
+import { api } from '../../services/api-service';
 
 function AdminDashboard() {
   const adminDashboardReducer = useSelector((state) => state.adminDashboard);
@@ -52,8 +51,7 @@ function AdminDashboard() {
   ];
 
   const getAllEvents = async () => {
-    const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-    await axios.get(eventsURL)
+    await api.getAllEvents('', 1, 10, [])
       .then((res) => {
         const paginatedEvents = { ...res.data };
         dispatch(setEventCount(paginatedEvents.totalItems));
@@ -62,8 +60,7 @@ function AdminDashboard() {
   }
 
   const getAllOrganizations = async () => {
-    const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
-    await axios.get(organizationsURL)
+    await api.getAllOrganizations('', 1, 10, 'ASC')
       .then((res) => {
         const paginatedOrganizations = { ...res.data };
         dispatch(setOrganizationCount(paginatedOrganizations.totalItems));
@@ -72,8 +69,7 @@ function AdminDashboard() {
   }
 
   const getAllUsers = async () => {
-    const usersURL = new URL("/users", process.env.REACT_APP_BACKEND_API);
-    await axios.get(usersURL)
+    await api.getAllUsers(localStorage.getItem("token"), '', "USER", 'Name', 1, 10)
       .then((res) => {
         const paginatedUsers = { ...res.data };
         dispatch(setUserCount(paginatedUsers.totalItems));
@@ -82,8 +78,7 @@ function AdminDashboard() {
   }
 
   const getCommitteeMembersCount = async () => {
-    const committeeMembersURL = new URL("/users/committeeMemberCount", process.env.REACT_APP_BACKEND_API);
-    await axios.get(committeeMembersURL)
+    await api.getCommitteeMembersCount()
       .then((res) => {
         const count = res.data;
         dispatch(setCommitteeMemberCount(count));
@@ -92,8 +87,7 @@ function AdminDashboard() {
   }
 
   const getLatestEvents = async () => {
-    const latestEventsURL = new URL("/events/latest", process.env.REACT_APP_BACKEND_API);
-    await axios.get(latestEventsURL)
+    await api.getLatestEvents()
       .then((res) => {
         const latestEvents = res.data;
         dispatch(setRecentlyCreatedEvents(latestEvents));
@@ -103,13 +97,12 @@ function AdminDashboard() {
 
   const getChartData = async () => {
     for (let i = 0; i < 6; i++) {
-      const chartDataURL = new URL(`/events/signUpCount?date=${chartData[i]['date']}`, process.env.REACT_APP_BACKEND_API);
-      await axios.get(chartDataURL)
-      .then((res) => {
-        chartData[i]['signups'] = res.data;
-        chartData[i]['amt'] = res.data;
-      })
-      .catch(err => console.error({ err }));
+      await api.getSignUpCountByDate(chartData[i]['date'])
+        .then((res) => {
+          chartData[i]['signups'] = res.data;
+          chartData[i]['amt'] = res.data;
+        })
+        .catch(err => console.error({ err }));
     }
 
     dispatch(setChartData(chartData));

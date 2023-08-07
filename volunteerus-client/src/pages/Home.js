@@ -9,9 +9,9 @@ import imageCalender from "../assets/images/calender-icon.png";
 import imageLocation from "../assets/images/location-icon.png";
 // temporary image for organizations
 import imageOrganization from "../assets/images/organization-icon.png";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { TagIcon } from "@heroicons/react/24/solid";
+import { api } from "../services/api-service";
 
 function Home() {
     const navigations = [
@@ -46,20 +46,16 @@ function Home() {
         'Overseas',
         'Special project',
         'Regular project'
-      ]
+    ]
 
     const [featuredEvents, setFeaturedEvents] = useState([]);
 
     useEffect(() => {
         const getAllEvents = () => {
-            const eventsURL = new URL(`/events/upcoming?page=1&limit=4&search=${search}&categories=${filters}`, process.env.REACT_APP_BACKEND_API);
-            axios.get(eventsURL)
-                .then((res) => {
-                    const events = res.data.result;
-                    console.log(res.data);
-                    setFeaturedEvents(events);
-                })
-                .catch(err => console.error({ err }));
+            api.getUpcomingEvents(1, 4, search, filters).then((res) => {
+                const events = res.data.result;
+                setFeaturedEvents(events);
+            }).catch(err => console.error({ err }));
         }
 
         getAllEvents();

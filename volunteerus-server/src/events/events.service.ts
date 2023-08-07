@@ -114,6 +114,10 @@ export class EventsService {
     }
   } 
 
+  public async count() {
+    return this.eventsModel.countDocuments().exec();
+  }
+
   public async getCategories(): Promise<String[]> {
     return this.eventsModel.find().distinct('category').exec();
   }

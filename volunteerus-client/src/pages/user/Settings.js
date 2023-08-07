@@ -183,7 +183,7 @@ const AccountSecurity = () => {
 const DeleteAccount = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const handleDeleteAccount = async () => {
-    await api.deleteUser(localStorage.getItem("token")).then((response) => {
+    await api.deleteAccount(localStorage.getItem("token")).then((response) => {
       localStorage.removeItem("token");
       window.location.href = "/";
     }).catch((error) => {

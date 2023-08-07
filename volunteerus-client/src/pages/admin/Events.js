@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import Navbar from "../../components/navigation/Navbar";
-import axios from "axios";
 import moment from "moment";
 import Pagination from "../../components/navigation/Pagination";
 import AppDialog from "../../components/AppDialog";
 import { CheckIcon, FunnelIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline"
 import { Listbox } from "@headlessui/react";
 import AdminProtected from "../../common/protection/AdminProtected";
+import { api } from "../../services/api-service";
 
 
 function AdminEventDashboard() {
@@ -33,15 +33,17 @@ function AdminEventDashboard() {
     searchQuery: "",
   });
 
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState.user;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState({});
   const [selectedFilter, setSelectedFilter] = useState(filters[0]);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const eventsURL = new URL(`/events?search=${state.searchQuery}&page=${state.currentPage}&limit=${state.limit}&category=${selectedFilter}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(eventsURL);
+        const res = await api.getAllEvents(state.searchQuery, state.currentPage, state.limit, selectedFilter);
         const paginatedEvents = { ...res.data };
         setState({
           ...state,
@@ -54,7 +56,17 @@ function AdminEventDashboard() {
       }
     }
 
+    const getTotalCount = async () => {
+      try {
+        const res = await api.getEventCount();
+        setTotalCount(res.data);
+      } catch (err) {
+        console.error({ err });
+      }
+    }
+
     fetchEvents();
+    getTotalCount();
   }, [state.currentPage, state.searchQuery, eventToDelete, selectedFilter]);
 
   const handlePageChange = (page) => {
@@ -75,8 +87,7 @@ function AdminEventDashboard() {
   }
 
   const handleConfirmDelete = async () => {
-    const eventURL = new URL(`/events/${eventToDelete._id}`, process.env.REACT_APP_BACKEND_API);
-    await axios.delete(eventURL)
+    await api.deleteEvent(localStorage.getItem("token"), eventToDelete._id, user.role)
       .then((res) => {
         const response = { ...res.data };
         setIsDialogOpen(false);
@@ -97,7 +108,7 @@ function AdminEventDashboard() {
           <div className="pb-4 flex flex-row flex-wrap justify-between items-center">
             <div className="flex flex-col">
               <h1 className="font-bold text-3xl">Events</h1>
-              <p className="text-gray-600">{state.totalItems} events created</p>
+              <p className="text-gray-600">{totalCount} events created</p>
             </div>
             <div className="flex flex-row flex-wrap gap-4 mb-4 lg:mb-0">
               <div className="flex">

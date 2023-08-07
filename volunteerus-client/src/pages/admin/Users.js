@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import Navbar from "../../components/navigation/Navbar";
 import Pagination from "../../components/navigation/Pagination";
 import AppDialog from "../../components/AppDialog";
-import axios from "axios";
-import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, PencilIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, CheckIcon, FunnelIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Listbox } from '@headlessui/react'
 import AdminProtected from "../../common/protection/AdminProtected";
+import { api } from "../../services/api-service";
 
 function AdminUserDashboard() {
   const filters = [
@@ -29,6 +29,8 @@ function AdminUserDashboard() {
     searchQuery: "",
   })
 
+  const persistedUserState = useSelector((state) => state.user);
+  const user = persistedUserState.user;
   const [users, setUsers] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState(filters[0]);
   const [selectedSort, setSelectedSort] = useState(sorts[0]);
@@ -56,8 +58,7 @@ function AdminUserDashboard() {
 
   const handleConfirmDelete = async () => {
     try {
-      const userURL = new URL(`/users/${userToDelete._id}`, process.env.REACT_APP_BACKEND_API);
-      await axios.delete(userURL);
+      await api.deleteUser(localStorage.getItem("token"), userToDelete._id, user.role);
       setIsDialogOpen(false);
       setUserToDelete({});
     } catch (err) {
@@ -73,11 +74,7 @@ function AdminUserDashboard() {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const usersURL = new URL(
-          `/users?search=${state.searchQuery}&role=${selectedFilter}&sortBy=${selectedSort}&page=${state.currentPage}&limit=${state.limit}`, 
-          process.env.REACT_APP_BACKEND_API
-        );
-        const res = await axios.get(usersURL);
+        const res = await api.getAllUsers(localStorage.getItem("token"), state.searchQuery, selectedFilter, selectedSort, state.currentPage, state.limit);
         const paginatedUsers = { ...res.data };
         setUsers(paginatedUsers.result);
         setState({
@@ -93,8 +90,7 @@ function AdminUserDashboard() {
 
     const getTotalCount = async () => {
       try {
-        const userCountURL = new URL(`/users/count`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(userCountURL);
+        const res = await api.getUserCount(localStorage.getItem("token"));
         setTotalCount(res.data);
       } catch (err) {
         console.error({ err });
@@ -246,8 +242,8 @@ function AdminUserDashboard() {
                             alt="Profile Picture"
                           />
                         </td>
-                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
-                          {user.full_name}
+                        <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium hover:text-neutral-500">
+                          <Link to={`/users/${user._id}`}>{user.full_name}</Link>
                         </td>
                         <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
                           {user.email}
@@ -257,11 +253,6 @@ function AdminUserDashboard() {
                         </td>
                         <td className="pe-6 py-4 whitespace-nowrap text-sm md:text-base text-neutral-600 font-medium">
                           <div className="flex items-center">
-                            {/* <Link to={`/users/${user._id}/edit`} className="flex items-center space-x-2 text-secondary-600 hover:text-secondary-700 ">
-                              <span>Edit</span>
-                              <PencilIcon className="w-5 h-5" aria-hidden="true" />
-                            </Link>
-                            <span className="px-2">|</span> */}
                             <button 
                               type="button" 
                               className="flex items-center space-x-2 text-danger-600 hover:text-danger-400"

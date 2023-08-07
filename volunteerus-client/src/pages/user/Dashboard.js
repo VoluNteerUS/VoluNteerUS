@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { Link, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import moment from "moment";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import EventCard from "../../components/EventCard";
+import { api } from "../../services/api-service";
 
 
 function UserDashboard() {
@@ -14,19 +14,16 @@ function UserDashboard() {
     const [recommendedEvents, setRecommendedEvents] = useState([])
 
     const getUserUpcomingEvents = async () => {
-        const upcomingUserEventsURL = new URL(`/users/${user.id}/upcomingEvents`, process.env.REACT_APP_BACKEND_API);
-        await axios.get(upcomingUserEventsURL).then(res => {
-            console.log(res.data)
+        await api.getUserUpcomingEvents(localStorage.getItem("token"), user.id).then(res => {
             setUserUpcomingEvents(res.data)
-        })
+        });
     }
     
     const getRecommendedEvents = async () => {
-        const recommendedEventsURL = new URL(`/users/${user.id}/recommendedEvents`, process.env.REACT_APP_BACKEND_API);
-        await axios.get(recommendedEventsURL).then(res => {
+        await api.getUserRecommendedEvents(localStorage.getItem("token"), user.id).then(res => {
             console.log(res.data)
             setRecommendedEvents(res.data)
-        })
+        });
     }
 
     useEffect(() => {

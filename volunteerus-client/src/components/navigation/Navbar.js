@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import {
   AdjustmentsHorizontalIcon, Bars3Icon, CalendarDaysIcon, 
+  CalendarIcon, 
   ChevronDownIcon, ChevronUpIcon, HomeIcon, UserGroupIcon, 
   UserIcon, XMarkIcon
 } from '@heroicons/react/24/outline';
@@ -15,7 +16,6 @@ const navigation = [
   { name: 'Home', href: localStorage.getItem("token") ? '/dashboard' : '/', icon: HomeIcon },
   { name: 'Events', href: '/events', icon: CalendarDaysIcon },
   { name: 'Organizations', href: '/organizations', icon: UserGroupIcon },
-
   // { name: 'Calendar', href: '#', icon: CalendarIcon },
 ];
 

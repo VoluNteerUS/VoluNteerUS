@@ -48,11 +48,6 @@ const AdminUserDashboard = lazy(() => import('./pages/admin/Users'));
 const PageNotFound = lazy(() => import('./pages/PageNotFound'));
 const Unauthorized = lazy(() => import('./pages/Unauthorized'));
 
-// Auth protected routes
-const AuthProtected = lazy(() => import('./common/protection/AuthProtected'));
-const AdminProtected = lazy(() => import('./common/protection/AdminProtected'));
-const CommitteeMemberProtected = lazy(() => import('./common/protection/CommitteeMemberProtected'));
-
 function App() {
   const shouldShowNavbar = useNavbarVisibility();
   const persistedUserState = useSelector((state) => state.user);
