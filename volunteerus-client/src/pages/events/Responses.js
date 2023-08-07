@@ -13,6 +13,8 @@ import CommitteeMemberProtected from "../../common/protection/CommitteeMemberPro
 import SignUpPart2 from "../../components/form/SignUpPart2";
 import { Listbox, Transition, Dialog } from "@headlessui/react";
 import Alert from "../../components/Alert";
+import SelectInput from "../../components/SelectInput";
+import { exportExcel } from "../../helpers/excelExport";
 
 const groupingOptions = [
   "Random",
@@ -782,6 +784,12 @@ function Responses() {
     dispatch(updateResponses(updatedResponses));
   }
 
+  const handleExportToExcel = (e) => {
+    e.preventDefault();
+    console.log(groups)
+    exportExcel(groups, event?.title);
+  }
+
   return (
     <CommitteeMemberProtected user={user} organization_id={id}>
       <div className="w-screen lg:w-5/6 p-3 block mx-auto">
@@ -872,99 +880,13 @@ function Responses() {
                 <label className="flex items-center me-2">
                   Grouping Type:
                 </label>
-                <Listbox value={groupingType} onChange={setGroupingType} className="w-40">
-                  <div className="relative mt-1">
-                    <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus:ring-1 focus:ring-pink-400 focus:border-pink-400 sm:text-sm">
-                      <span className="block truncate">{groupingType}</span>
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <ChevronDownIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                      </span>
-                    </Listbox.Button>
-                    <Transition
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                    >
-                      <Listbox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                        {groupingOptions.map((option) => (
-                          <Listbox.Option
-                            key={option}
-                            className={({ active }) =>
-                              classNames(
-                                active ? 'text-white bg-pink-400' : 'text-gray-900',
-                                'cursor-default select-none relative py-2 pl-10 pr-4'
-                              )
-                            }
-                            value={option}
-                          >
-                            {({ selected, active }) => (
-                              <>
-                                <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate')}>
-                                  {option}
-                                </span>
-                                {selected ? (
-                                  <span className={classNames(active ? 'text-white' : 'text-pink-400', 'absolute inset-y-0 left-0 flex items-center pl-3')}>
-                                    <CheckIcon className="w-5 h-5" aria-hidden="true" />
-                                  </span>
-                                ) : null}
-                              </>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </Listbox>
+                <SelectInput selectedValue={groupingType} setSelectedValue={setGroupingType} options={groupingOptions} width={"w-40"} />
               </div>
               <div className="flex flex-row">
                 <label className="flex items-center me-2">
                   Grouping Size:
                 </label>
-                <Listbox value={groupSize} onChange={setGroupSize} className="w-24">
-                  <div className="relative mt-1">
-                    <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus:ring-1 focus:ring-pink-400 focus:border-pink-400 sm:text-sm">
-                      <span className="block truncate">{groupSize}</span>
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <ChevronDownIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                      </span>
-                    </Listbox.Button>
-                    <Transition
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                    >
-                      <Listbox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                        {groupSizeOptions.map((option) => (
-                          <Listbox.Option
-                            key={option.toString()}
-                            className={({ active }) =>
-                              classNames(
-                                active ? 'text-white bg-pink-400' : 'text-gray-900',
-                                'cursor-default select-none relative py-2 pl-10 pr-4'
-                              )
-                            }
-                            value={option.toString()}
-                          >
-                            {({ selected, active }) => (
-                              <>
-                                <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate')}>
-                                  {option.toString()}
-                                </span>
-                                {selected ? (
-                                  <span className={classNames(active ? 'text-white' : 'text-pink-400', 'absolute inset-y-0 left-0 flex items-center pl-3')}>
-                                    <CheckIcon className="w-5 h-5" aria-hidden="true" />
-                                  </span>
-                                ) : null}
-                              </>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </Listbox>
+                <SelectInput selectedValue={groupSize} setSelectedValue={setGroupSize} options={groupSizeOptions} width={"w-24"} />
               </div>
             </div>
             <div className="flex">
@@ -973,29 +895,35 @@ function Responses() {
           </div>
           {/* Need to check if group has been made */}
           { groups.length > 0 ? (
-            <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4 bg-grey-100 rounded-lg p-6 mt-3">
-              {groups.map((group) => {
-                return (
-                  <div className="bg-white rounded p-3">
-                    <h3 className="font-bold text-neutral-700 text-lg">Group { group.number }</h3>
-                    {
-                      group.members.map((member) => {
-                        if (member !== null) {
-                          return (
-                            <div className="flex flex-row bg-neutral-100 rounded p-2 my-2">
-                              <img 
-                                className="h-12 w-12 rounded-full me-4" 
-                                src={ member?.profile_picture === "" ? `https://ui-avatars.com/api/?name=${member?.full_name}&background=0D8ABC&color=fff` : member?.profile_picture } alt="Profile Picture" />
-                              <p className="flex items-center">{ member?.full_name }</p>
-                            </div>
-                          )
-                        }
-                      })
-                    }
-                  </div>
-                )
-              })}
-            </div>
+            <>
+              <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4 bg-grey-100 rounded-lg p-6 mt-3">
+                {groups.map((group) => {
+                  return (
+                    <div className="bg-white rounded p-3">
+                      <h3 className="font-bold text-neutral-700 text-lg">Group { group.number }</h3>
+                      {
+                        group.members.map((member) => {
+                          if (member !== null) {
+                            return (
+                              <div className="flex flex-row bg-neutral-100 rounded p-2 my-2">
+                                <img 
+                                  className="h-12 w-12 rounded-full me-4" 
+                                  src={ member?.profile_picture === "" ? `https://ui-avatars.com/api/?name=${member?.full_name}&background=0D8ABC&color=fff` : member?.profile_picture } alt="Profile Picture" />
+                                <p className="flex items-center">{ member?.full_name }</p>
+                              </div>
+                            )
+                          }
+                        })
+                      }
+                    </div>
+                  )
+                })}
+              </div>
+              {/* Export to Excel */}
+              <div className="flex justify-end mt-3">
+                <button className="bg-secondary-600 hover:bg-secondary-500 text-white font-bold py-2 px-4 rounded-lg" onClick={handleExportToExcel}>Export to Excel</button>
+              </div>
+            </>
           ) : (
             <div className="text-center">
               <p className="text-sm font-extralight mb-10">No groupings have been made yet.</p>
