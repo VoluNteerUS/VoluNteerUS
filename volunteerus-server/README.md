@@ -39,6 +39,13 @@ PROJECT_ID=
 PRIVATE_KEY=
 CLIENT_EMAIL=
 BUCKET_URL=
+
+# SendGrid Config
+SENDGRID_API_KEY=
+SENDGRID_EMAIL=
+
+# Client URL (For generating reset password link)
+CLIENT_URL=
 ```
 
 4. Start the server:
