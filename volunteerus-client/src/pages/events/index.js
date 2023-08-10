@@ -1,4 +1,3 @@
-import Navbar from "../../components/navigation/Navbar";
 import React, { useEffect, useState } from "react";
 import imageHandHoldingHeart from "../../assets/images/hand-holding-heart.png"
 import imagePerson from "../../assets/images/person.png"
@@ -6,12 +5,12 @@ import imageCalender from "../../assets/images/calender-icon.png";
 import imageLocation from "../../assets/images/location-icon.png";
 // temporary image for organizations
 import imageOrganization from "../../assets/images/organization-icon.png";
-import axios from "axios";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowsUpDownIcon, TagIcon, LockClosedIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Link, useLocation } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import moment from "moment";
 import Pagination from "../../components/navigation/Pagination";
+import { api } from "../../services/api-service";
 
 function Events() {
   const filters = [
@@ -52,9 +51,8 @@ function Events() {
     getAllEvents();
   }, [state.currentPage, queryEvents, filteredCategory]);
 
-  const getAllEvents = () => {
-    const upcomingEventsURL = new URL(`/events/upcoming?page=${state.currentPage}&limit=${state.limit}&search=${queryEvents}&categories=${filteredCategory}`, process.env.REACT_APP_BACKEND_API);
-    axios.get(upcomingEventsURL)
+  const getAllEvents = () => {    
+    api.getUpcomingEvents(state.currentPage, state.limit, queryEvents, filteredCategory)
       .then((res) => {
         const paginatedEvents = { ...res.data };
         console.log(paginatedEvents);
@@ -86,8 +84,7 @@ function Events() {
   }
 
   const getEvent = (title) => {
-    const upcomingEventsURL = new URL(`/events/upcoming?page=${state.currentPage}&limit=${state.limit}&search=${title}&categories=${filteredCategory}`, process.env.REACT_APP_BACKEND_API);
-    axios.get(upcomingEventsURL)
+    api.getUpcomingEvents(state.currentPage, state.limit, title, filteredCategory)
       .then((res) => {
         const paginatedEvents = { ...res.data };
         console.log(paginatedEvents);

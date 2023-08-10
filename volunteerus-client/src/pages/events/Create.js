@@ -1,7 +1,5 @@
-import Navbar from "../../components/navigation/Navbar"; 
 import { useLocation, useNavigate } from "react-router-dom"; 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvents } from "../../actions/eventActions";
 import { setQuestions } from "../../actions/questionsActions";
@@ -12,6 +10,7 @@ import CreateEventPart4 from "../../components/form/CreateEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import CreateEventPart5 from "../../components/form/CreateEventPart5";
 import moment from "moment";
+import { api } from "../../services/api-service";
 
 function CreateEvent() { 
   const navigate = useNavigate()
@@ -48,13 +47,15 @@ function CreateEvent() {
   }
 
   const checkUser = async () => {
-    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
     const checkCommitteeMemberRequestBody = {
       userId: user.id,
       organizationId: id
     }
 
-    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    const response = await api.checkCommitteeMember(
+      localStorage.getItem("token"),
+      checkCommitteeMemberRequestBody
+    );
     
     if (response.data) {
       setDetails({ ...details, role: "COMMITTEE MEMBER" });
@@ -101,10 +102,7 @@ function CreateEvent() {
       // Send request to server
       const requestBody = questionObject;
 
-      // Endpoint for event questions
-      let questionsURL = new URL(`/questions?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
-
-      await axios.post(questionsURL, requestBody).then((response) => {
+      await api.createQuestions(localStorage.getItem("token"), requestBody, details.role).then(async (response) => {;
           console.log(response.data);
 
           if (!response.data) {
@@ -131,19 +129,11 @@ function CreateEvent() {
           eventData.append('questions', response.data._id);
           eventData.append('groupSettings', details.groupSettings);
           eventData.append('defaultHours', newDefaultHours);
-
-          let eventsURL = new URL(`/events?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
-          eventsURL = new URL(`/events?role=${"COMMITTEE MEMBER"}`, process.env.REACT_APP_BACKEND_API);
           
-          axios.post(eventsURL, eventData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
+          await api.createEvent(localStorage.getItem("token"), eventData, details.role);
 
-          // Send GET request to get updated event details and sign up form questions
-          const updatedDetails = axios.get(eventsURL).then((res) => res.data);
-          const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
+          const updatedDetails = await api.getAllEvents().then((res) => res.data);
+          const updatedQuestions = await api.getAllQuestions(localStorage.getItem("token")).then((res) => res.data);
 
           // Update event details and sign up form questions in redux store
           dispatch(setEvents(updatedDetails));

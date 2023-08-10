@@ -1,10 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setResponses } from "../../actions/responsesActions";
 import SignUpPart2 from "../../components/form/SignUpPart2";
 import SignUpPart1 from "../../components/form/SignUpPart1";
+import { api } from "../../services/api-service";
 
 function EditResponse() {
   const { id } = useParams();
@@ -20,20 +20,17 @@ function EditResponse() {
 
   const getResponseAndQuestionAndEvent = async () => {
     try {
-      const responseURL = new URL(`/responses/${ id }`, process.env.REACT_APP_BACKEND_API);
-      const responseRes = await axios.get(responseURL);
+      const responseRes = await api.getResponse(localStorage.getItem("token"), id);
       const responses = responseRes.data;
       setResponse(responses);
 
       const event_id = responses.event;
-      const eventURL = new URL(`/events/${ event_id }`, process.env.REACT_APP_BACKEND_API);
-      const eventRes = await axios.get(eventURL);
+      const eventRes = await api.getEvent(event_id);
       const event = eventRes.data;
       setEvent(event);
 
       const question_id = event.questions;
-      const questionsURL = new URL(`/questions/${ question_id }`, process.env.REACT_APP_BACKEND_API);
-      const questionsRes = await axios.get(questionsURL);
+      const questionsRes = await api.getQuestions(localStorage.getItem("token"), question_id);
       const question = questionsRes.data;
       const finalQuestions = Object.values(question).filter(q => q.length > 2 && q[1] !== "" && q !== question_id);
       setQuestions(finalQuestions);
@@ -87,11 +84,8 @@ function EditResponse() {
     // Send request to server
     const requestBody = { ...response, submitted_on: Date.now() };
 
-    // Endpoint for responses
-    const responsesURL = new URL(`/responses/${ id }?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
-
     // Send PATCH request to update response
-    await axios.patch(responsesURL, requestBody).then((res) => {
+    await api.updateResponse(localStorage.getItem("token"), id, requestBody, user.role).then((res) => {
       console.log(res);
       if (!res.data) {
         alert('You do not have permission to edit.');
@@ -102,8 +96,7 @@ function EditResponse() {
     });
             
     // Send GET request to get updated responses
-    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+    const updatedResponses = await api.getResponses(localStorage.getItem("token"));
 
     // Update responses in redux store
     dispatch(setResponses(updatedResponses));

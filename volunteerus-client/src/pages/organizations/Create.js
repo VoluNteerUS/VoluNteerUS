@@ -1,8 +1,8 @@
 import { useState } from "react";
 import imageUpload from "../../assets/images/image-upload.png";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { api } from "../../services/api-service";
 
 function CreateOrganizationPage() {
     const persistedUserState = useSelector((state) => state.user);
@@ -23,8 +23,6 @@ function CreateOrganizationPage() {
 
     const handleCreateOrganization = (event) => {
         event.preventDefault();
-        const organizationsURL = new URL(`/organizations?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
-        console.log(organizationsURL);
         const token = localStorage.getItem("token");
 
         // Reset errors
@@ -46,7 +44,9 @@ function CreateOrganizationPage() {
         formData.append("name", state.profile.name);
         formData.append("description", state.profile.description);
         formData.append("file", state.profile.file);
-        axios.post(organizationsURL, formData, { headers: { Authorization: `Bearer ${token}` } })
+
+        api.createOrganization(token, formData, user.role)
+        // axios.post(organizationsURL, formData, { headers: { Authorization: `Bearer ${token}` } })
             .then((response) => {
                 // Redirect to organization page
                 const { data } = response;

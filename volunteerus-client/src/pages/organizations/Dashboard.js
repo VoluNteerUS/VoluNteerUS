@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
@@ -13,6 +12,7 @@ import CommitteeMemberProtected from "../../common/protection/CommitteeMemberPro
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
 import { setResponses } from "../../actions/responsesActions";
+import { api } from "../../services/api-service";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -70,20 +70,17 @@ function OrganizationDashboard() {
   useEffect(() => {
     const getOrganization = async () => {
       try {
-        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(organizationURL);
-        const organization = res.data;
+        const organization = await api.getOrganization(id).then((res) => res.data);
         setOrganization(organization);
         dispatch(setCurrentOrganization(organization));
 
         // Check if user is a committee member
-        const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
         const checkCommitteeMemberRequestBody = {
           userId: user.id,
           organizationId: id
         }
-    
-        const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+
+        const response = await api.checkCommitteeMember(localStorage.getItem('token'), checkCommitteeMemberRequestBody);
       
         if (response.data) {
           setRole('COMMITTEE MEMBER');
@@ -95,11 +92,7 @@ function OrganizationDashboard() {
   
     const getUpcomingEvents = async () => {
       try {
-        const upcomingEventsURL = new URL(
-          `/events/upcoming?organization_id=${id}&page=${upcomingEventsPagination.currentPage}&limit=${upcomingEventsPagination.limit}`, 
-          process.env.REACT_APP_BACKEND_API
-        );
-        const res = await axios.get(upcomingEventsURL);
+        const res = await api.getUpcomingEventsByOrganization(id, upcomingEventsPagination.currentPage, upcomingEventsPagination.limit);
         const paginatedEvents = { ...res.data };
         console.log(paginatedEvents.result);
         setUpcomingEvents(paginatedEvents.result);
@@ -117,10 +110,7 @@ function OrganizationDashboard() {
   
     const getPastEvents = async () => {
       try {
-        const pastEventsURL = new URL(
-          `/events/past?organization_id=${id}&page=${pastEventsPagination.currentPage}&limit=${pastEventsPagination.limit}`, 
-          process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(pastEventsURL);
+        const res = await api.getPastEventsByOrganization(id, pastEventsPagination.currentPage, pastEventsPagination.limit);
         const paginatedEvents = { ...res.data };
 
         setPastEvents(paginatedEvents.result);
@@ -154,14 +144,16 @@ function OrganizationDashboard() {
 
   const handleConfirmDelete = async () => {
     // Send DELETE request to delete event, sign up form questions and responses for this event (if any)
-    const eventURL = new URL(`/events/${eventToDelete?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
-    const questionURL = new URL(`/questions/${eventToDelete?.questions}?role=${role}`, process.env.REACT_APP_BACKEND_API);
-    const responseURL = new URL(`/responses?event_id=${eventToDelete?._id}`, process.env.REACT_APP_BACKEND_API);
-    await axios.get(responseURL).then((res) => {
+    // const eventURL = new URL(`/events/${eventToDelete?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    // const questionURL = new URL(`/questions/${eventToDelete?.questions}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    // const responseURL = new URL(`/responses?event_id=${eventToDelete?._id}`, process.env.REACT_APP_BACKEND_API);
+    // await axios.get(responseURL).then((res) => {
+    await api.getResponsesByEvent(localStorage.getItem('token'), eventToDelete?._id).then((res) => {
       console.log(res);
       res.data.forEach(async (response) => {
-        const deleteResponseURL = new URL(`/responses/${response?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
-        await axios.delete(deleteResponseURL)
+        // const deleteResponseURL = new URL(`/responses/${response?._id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
+        await api.deleteResponse(localStorage.getItem('token'), response?._id, role)
+        // await axios.delete(deleteResponseURL)
         .then((res) => {
           console.log(res);
         }).catch((err) => {
@@ -176,7 +168,8 @@ function OrganizationDashboard() {
       console.error(err);
     });
 
-    await axios.delete(eventURL)
+    // await axios.delete(eventURL)
+    await api.deleteEvent(localStorage.getItem('token'), eventToDelete?._id, role)
     .then((res) => {
       console.log(res);
       if (!res.data) {
@@ -186,7 +179,8 @@ function OrganizationDashboard() {
     }).catch((err) => {
       console.error(err);
     });
-    await axios.delete(questionURL)
+    await api.deleteQuestion(localStorage.getItem('token'), eventToDelete?.questions, role)
+    // await axios.delete(questionURL)
     .then((res) => {
       console.log(res);
     }).catch((err) => {
@@ -197,14 +191,9 @@ function OrganizationDashboard() {
     setIsDialogOpen(false);
             
     // Send GET request to get updated event details, sign up form questions and responses
-    const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-    const updatedDetails = axios.get(eventsURL).then((res) => res.data);
-
-    const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
-    const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
-
-    const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(responsesURL).then((res) => res.data);
+    const updatedDetails = api.getAllEvents().then((res) => res.data);
+    const updatedQuestions = api.getAllQuestions().then((res) => res.data);
+    const updatedResponses = api.getResponses().then((res) => res.data);
 
     // Update event details, sign up form questions and responses in redux store
     dispatch(setEvents(updatedDetails));

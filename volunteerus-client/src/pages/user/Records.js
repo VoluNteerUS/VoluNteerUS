@@ -2,9 +2,9 @@ import AuthProtected from "../../common/protection/AuthProtected";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Pagination from "../../components/navigation/Pagination";
-import axios from "axios";
 import moment from "moment";
 import { Link } from "react-router-dom";
+import { api } from "../../services/api-service";
 
 function Records() {
   const persistedUserState = useSelector((state) => state.user);
@@ -22,8 +22,12 @@ function Records() {
 
   const getHistory = async () => {
     try {
-      const historyURL = new URL(`/responses/history?user_id=${user?.id}&page=${paginationState.history.currentPage}&limit=${paginationState.history.limit}`, process.env.REACT_APP_BACKEND_API);
-      const historyRes = await axios.get(historyURL);
+      const historyRes = await api.getVolunteeringHistory(
+        localStorage.getItem("token"), 
+        user?.id, 
+        paginationState.history.currentPage, 
+        paginationState.history.limit
+      );
       const paginatedHistory = { ...historyRes.data };
       setHistory(paginatedHistory);
       setPaginationState({
@@ -33,8 +37,11 @@ function Records() {
           totalPages: paginatedHistory.totalPages,
         },
       })
-      const totalHoursURL = new URL(`/responses/totalHours?user_id=${user?.id}`, process.env.REACT_APP_BACKEND_API);
-      const totalHoursRes = await axios.get(totalHoursURL);
+      const totalHoursRes = await api.getVolunteeringHours(
+        localStorage.getItem("token"), 
+        user?.id
+      );
+      console.log(totalHoursRes);
       const totalHours = totalHoursRes.data;
       const hours = Math.floor(totalHours / 1);
       const mins = Math.round(totalHours % 1 * 60);

@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../components/navigation/Navbar";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { ArrowsUpDownIcon, CheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useDispatch } from "react-redux";
@@ -8,6 +6,7 @@ import { setOrganizations } from "../../actions/organizationActions";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import Pagination from "../../components/navigation/Pagination";
 import { Listbox } from '@headlessui/react'
+import { api } from "../../services/api-service";
 
 function OrganizationsPage() {
     const dispatch = useDispatch();
@@ -39,8 +38,7 @@ function OrganizationsPage() {
                     sortBy = "ASC"
                     break;
                 }
-                const organizationsURL = new URL(`/organizations?search=${state.searchQuery}&page=${state.currentPage}&limit=${state.limit}&sort=${sortBy}`, process.env.REACT_APP_BACKEND_API);
-                const res = await axios.get(organizationsURL);
+                const res = await api.getAllOrganizations(state.searchQuery, state.currentPage, state.limit, sortBy);
                 const paginatedOrganizations = { ...res.data };
                 dispatch(setOrganizations(paginatedOrganizations.result));
                 setState({

@@ -1,8 +1,6 @@
 import { useParams, Link } from "react-router-dom";
-import Navbar from "../../components/navigation/Navbar";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import axios from "axios";
 import { setCurrentOrganization } from "../../actions/organizationActions";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import emailIcon from "../../assets/social_media_icons/email.ico"
@@ -13,6 +11,7 @@ import twitterIcon from "../../assets/social_media_icons/twitter.ico"
 import websiteIcon from "../../assets/social_media_icons/website.ico"
 import youtubeIcon from "../../assets/social_media_icons/youtube.ico"
 import EventCard from "../../components/EventCard";
+import { api } from "../../services/api-service";
 
 function OrganizationDetailsPage(){
     const { id } = useParams();
@@ -41,9 +40,7 @@ function OrganizationDetailsPage(){
 
     const getOrganization = async () => {
         try {
-            const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-            const res = await axios.get(organizationURL);
-            const organization = res.data;
+            const organization = await api.getOrganization(id).then(res => res.data);
             setOrganization(organization);
             dispatch(setCurrentOrganization(organization));
         } catch (err) {
@@ -53,8 +50,7 @@ function OrganizationDetailsPage(){
 
     const getEventsByOrganization = async () => {
         try {
-            const upcomingEventsByOrganizationURL = new URL(`/events/upcoming?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
-            const res = await axios.get(upcomingEventsByOrganizationURL);
+            const res = await api.getUpcomingEventsByOrganization(id);
             const paginatedEvents = { ...res.data };
             setUpcomingEvents(paginatedEvents.result);
         } catch (err) {

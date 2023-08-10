@@ -2,9 +2,9 @@ import { Menu, Transition } from "@headlessui/react";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import moment from "moment";
 import { socket } from "../../socket";
+import { api } from "../../services/api-service";
 
 export default function NotificationsDropdown() {
     const { user } = useSelector((state) => state.user);
@@ -13,12 +13,10 @@ export default function NotificationsDropdown() {
 
     const getUserNotifications = async () => {
         try {
-            const userNotificationsURL = new URL(`/notifications/${user.id}`, process.env.REACT_APP_BACKEND_API);
-            const res = await axios.get(userNotificationsURL);
-            console.log("called getUserNotifications()");
+            const res = await api.getNotificationsForUser(localStorage.getItem("token"), user.id);
             setNotifications(res.data.reverse());
         } catch (err) {
-            console.log(err.response.data.message);
+            console.log(err);
         }
     }
 
@@ -28,9 +26,7 @@ export default function NotificationsDropdown() {
             return;
         }
         try {
-            const markReadURL = new URL(`/notifications/${notification._id}`, process.env.REACT_APP_BACKEND_API);
-            await axios.patch(markReadURL);
-            console.log("called handleMarkRead()");
+            await api.markNotificationAsRead(localStorage.getItem("token"), notification._id);
             getUserNotifications();
         } catch (err) {
             console.log(err);

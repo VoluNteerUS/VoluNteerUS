@@ -1,9 +1,7 @@
-import Navbar from "../../components/navigation/Navbar";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvents } from "../../actions/eventActions";
-import axios from "axios";
 import { setQuestions } from "../../actions/questionsActions";
 import EditEventPart1 from "../../components/form/EditEventPart1";
 import EditEventPart2 from "../../components/form/EditEventPart2";
@@ -12,6 +10,7 @@ import EditEventPart4 from "../../components/form/EditEventPart4";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
 import EditEventPart5 from "../../components/form/EditEventPart5";
 import moment from "moment";
+import { api } from "../../services/api-service";
 
 function EditEventDetails() {
   const { id, eventId } = useParams();
@@ -46,16 +45,13 @@ function EditEventDetails() {
   useEffect(() => {
       const getEvent = async () => {
         try {
-          const eventURL = new URL(`/events/${eventId}`, process.env.REACT_APP_BACKEND_API);
-          const res = await axios.get(eventURL);
-          const event = res.data;
+          const event = await api.getEvent(eventId).then(res => res.data);
           // check user
-          const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
           const checkCommitteeMemberRequestBody = {
             userId: user.id,  
             organizationId: id
           }
-          const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+          const response = await api.checkCommitteeMember(localStorage.getItem("token"), checkCommitteeMemberRequestBody);
           setDetails(
             { ...details,
               "title": event.title,
@@ -79,13 +75,9 @@ function EditEventDetails() {
       }
       const getQuestions = async () => {
         try {
-          const eventURL = new URL(`/events/${eventId}`, process.env.REACT_APP_BACKEND_API);
-          const res = await axios.get(eventURL);
-          const event = res.data;
+          const event = await api.getEvent(eventId).then(res => res.data);
           const questionId = event.questions;
-          const questionsURL = new URL(`/questions/${questionId}`, process.env.REACT_APP_BACKEND_API);
-          const response = await axios.get(questionsURL);
-          const questions = response.data;
+          const questions = await api.getQuestions(localStorage.getItem("token"), questionId).then(res => res.data);
           const finalQuestions = Object.values(questions).filter(q => q.length > 2 && q !== questionId);
           let newFormQuestions = { ...formQuestions };
           finalQuestions.forEach((question) => {
@@ -144,33 +136,22 @@ function EditEventDetails() {
     const requestBody = questionObject;
 
     // Send PATCH request to update event and sign up form questions
-    const eventURL = new URL(`/events/${eventId}?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
-    const questionURL = new URL(`/questions/${details.questions}?role=${details.role}`, process.env.REACT_APP_BACKEND_API);
-    await axios.patch(eventURL, eventData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }).then((res) => {
-      console.log(res);
-      if (!res.data) {
-        alert('You do not have permission to edit.');
-        navigate('/');
-      }
-    }).catch((err) => {
-      console.error(err);
-    });
+    await api.updateEvent(localStorage.getItem("token"), eventId, eventData, details.role)
+      .then((res) => {
+        console.log(res);
+        if (!res.data) {
+          alert('You do not have permission to edit.');
+          navigate('/');
+        }
+      })
+      .catch((err) => console.error(err));
 
-    await axios.patch(questionURL, requestBody).then((res) => {
-      console.log(res);
-    }).catch((err) => {
-      console.error(err);
-    });
-            
-    // Send GET request to get updated event details and sign up form questions
-    const eventsURL = new URL("/events", process.env.REACT_APP_BACKEND_API);
-    const questionsURL = new URL("/questions", process.env.REACT_APP_BACKEND_API);
-    const updatedDetails = axios.get(eventsURL).then((res) => res.data);
-    const updatedQuestions = axios.get(questionsURL).then((res) => res.data);
+    await api.updateQuestion(localStorage.getItem("token"), details.questions, requestBody, details.role)
+      .then(res => res.data)
+      .catch(err => console.error(err));
+
+    const updatedDetails = await api.getAllEvents().then(res => res.data);
+    const updatedQuestions = await api.getAllQuestions(localStorage.getItem("token")).then(res => res.data);
 
     // Update event details and sign up form questions in redux store
     dispatch(setEvents(updatedDetails));

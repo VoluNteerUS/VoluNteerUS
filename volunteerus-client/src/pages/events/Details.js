@@ -1,10 +1,9 @@
-import Navbar from "../../components/navigation/Navbar";
 import { useParams } from "react-router-dom";
 import { Fragment, useEffect, useState } from "react";
-import axios from "axios";
 import moment from "moment";
 import { Tab } from "@headlessui/react";
 import { Link } from "react-router-dom";
+import { api } from "../../services/api-service";
 
 const Details = ({ event }) => {
     return (
@@ -151,11 +150,7 @@ function EventDetails() {
 
     const getEvent = async () => {
         try {
-            const eventURL = new URL(`/events/${id}`, process.env.REACT_APP_BACKEND_API);
-            await axios.get(eventURL).then((res) => {
-                console.log(res.data);
-                setEvent(res.data);
-            });
+            await api.getEvent(id).then((res) => setEvent(res.data));
         } catch (err) {
             console.error({ err });
         }

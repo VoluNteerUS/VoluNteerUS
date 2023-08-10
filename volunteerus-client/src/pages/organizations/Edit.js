@@ -3,21 +3,21 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import defaultOrganizationImage from "../../assets/images/organization-icon.png";
 import { MinusIcon } from "@heroicons/react/24/outline";
-import axios from "axios";
 import { setOrganizations, setCurrentOrganization } from "../../actions/organizationActions";
 import TagInput from "../../components/TagInput";
 import AdminVisible from "../../common/protection/AdminVisible";
 import CommitteeMemberProtected from "../../common/protection/CommitteeMemberProtected";
+import { api } from "../../services/api-service";
 
 function EditOrganizationPage() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   // Get user from redux store
   const persistedUserState = useSelector((state) => state.user);
   const user = persistedUserState?.user || "Unknown";
-  
+
   // State variables for component
   const [organization, setOrganization] = useState({});
   const [profilePicture, setProfilePicture] = useState(organization?.image_url || defaultOrganizationImage);
@@ -42,8 +42,8 @@ function EditOrganizationPage() {
 
   const getOrganization = async () => {
     let currentOrganization;
-    const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-    await axios.get(organizationURL).then((res) => {
+
+    await api.getOrganization(id).then((res) => {
       setOrganization(res.data);
       currentOrganization = res.data;
       setProfilePicture(res.data.image_url || defaultOrganizationImage);
@@ -66,13 +66,12 @@ function EditOrganizationPage() {
     });
 
     // Check if user is a committee member
-    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
     const checkCommitteeMemberRequestBody = {
       userId: user.id,
       organizationId: currentOrganization?._id
     }
 
-    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    const response = await api.checkCommitteeMember(localStorage.getItem("token"), checkCommitteeMemberRequestBody);
     if (response.data) {
       setRole('COMMITTEE MEMBER');
     }
@@ -173,12 +172,7 @@ function EditOrganizationPage() {
     formData.append("description", state.profile.description);
 
     // Send PATCH request to update organization
-    const organizationURL = new URL(`/organizations/${id}?role=${role}`, process.env.REACT_APP_BACKEND_API);
-    await axios.patch(organizationURL, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }).then((res) => {
+    await api.updateOrganization(localStorage.getItem("token"), id, formData, role).then((res) => {
       console.log(res);
       if (!res.data) {
         alert('You do not have permission to update profile.');
@@ -198,9 +192,8 @@ function EditOrganizationPage() {
     });
 
     // Send GET request to get updated organization
-    const updatedOrganization = await axios.get(organizationURL).then((res) => res.data);
-    const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
-    const organizations = await axios.get(organizationsURL).then((res) => res.data);
+    const updatedOrganization = await api.getOrganization(id).then((res) => res.data);
+    const organizations = await api.getAllOrganizations().then((res) => res.data);
 
     // Update organization in redux store
     dispatch(setOrganizations(organizations));
@@ -304,8 +297,7 @@ function EditOrganizationPage() {
 
     if (organization?.contact === null || organization?.contact === undefined) {
       // Send POST request to create contact
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${role}`, process.env.REACT_APP_BACKEND_API);
-      await axios.post(organizationContactsURL, state.contacts).then((res) => {
+      await api.createOrganizationContact(localStorage.getItem("token"), id, state.contacts, role).then((res) => {
         console.log(res);
         if (!res.data) {
           alert('You do not have permission to create contact.');
@@ -330,8 +322,7 @@ function EditOrganizationPage() {
       });
     } else {
       // Send PATCH request to update organization
-      const organizationContactsURL = new URL(`/organizations/${id}/contacts?role=${role}`, process.env.REACT_APP_BACKEND_API);
-      await axios.patch(organizationContactsURL, state.contacts).then((res) => {
+      await api.updateOrganizationContact(localStorage.getItem("token"), id, state.contacts, role).then((res) => {
         console.log(res);
         if (!res.data) {
           alert('You do not have permission to update contacts.')
@@ -356,10 +347,8 @@ function EditOrganizationPage() {
     }
 
     // Send GET request to get updated organization
-    const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-    const organizationsURL = new URL("/organizations", process.env.REACT_APP_BACKEND_API);
-    const updatedOrganization = await axios.get(organizationURL).then((res) => res.data);
-    const organizations = await axios.get(organizationsURL).then((res) => res.data);
+    const updatedOrganization = await api.getOrganization(id).then((res) => res.data);
+    const organizations = await api.getAllOrganizations().then((res) => res.data);
 
     // Update organization in redux store
     dispatch(setOrganizations(organizations));
@@ -370,7 +359,7 @@ function EditOrganizationPage() {
   const handleChildData = (data) => {
     // Clear success message
     setCommitteeMembersSuccessMessage("");
-    
+
     const committeeMembersURL = new URL(`/organizations/${id}/committeeMembers?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
     const committeeMembers = getCommitteeMembers();
     console.log(data)
@@ -383,8 +372,29 @@ function EditOrganizationPage() {
       return;
     } else if (committeeMembers.length === 0) {
       // Send POST request to create committee members
-      axios.post(committeeMembersURL, body).then((res) => {
+      api.createOrganizationCommitteeMembers(localStorage.getItem("token"), id, body, role).then((res) => {
         console.log(res);
+        // Send GET request to get updated organization
+        api.getOrganization(id).then((res) => {
+          setOrganization(res.data);
+          setProfilePicture(res.data.image_url || defaultOrganizationImage);
+          setState({
+            profile: {
+              name: res.data.name,
+              description: res.data.description,
+              file: null,
+              errors: [],
+            },
+            contacts: {
+              email: res.data.contact?.email || "",
+              social_media: res.data.contact?.social_media || [],
+              errors: [],
+            },
+            committeeMembers: res.data?.committee_members || [],
+          });
+        }).catch((err) => {
+          console.error({ err });
+        });
         setCommitteeMembersSuccessMessage("Successfully created committee members!");
       }).catch((err) => {
         console.log(err);
@@ -392,11 +402,10 @@ function EditOrganizationPage() {
     } else {
       console.log(body)
       // Send PATCH request to update committee members
-      axios.patch(committeeMembersURL, body).then((res) => {
+      api.updateOrganizationCommitteeMembers(localStorage.getItem("token"), id, body, role).then((res) => {
         console.log(res);
         // Send GET request to get updated organization
-        const organizationURL = new URL(`/organizations/${id}`, process.env.REACT_APP_BACKEND_API);
-        axios.get(organizationURL).then((res) => {
+        api.getOrganization(id).then((res) => {
           setOrganization(res.data);
           setProfilePicture(res.data.image_url || defaultOrganizationImage);
           setState({
@@ -424,15 +433,11 @@ function EditOrganizationPage() {
   }
 
   const searchUsers = async (search) => {
-    const usersURL = new URL(`/users/search?query=${search}`, process.env.REACT_APP_BACKEND_API);
-    const users = await axios.get(usersURL).then((res) => res.data);
+    const users = await api.searchUsers(localStorage.getItem("token"), search).then((res) => res.data);
     return users;
   }
 
   const getCommitteeMembers = () => {
-    // const committeeMembersURL = new URL(`/committeeMembers?organization_id=${id}`, process.env.REACT_APP_BACKEND_API);
-    // const committeeMembers = await axios.get(committeeMembersURL).then((res) => res.data);
-    // return committeeMembers;
     return state.committeeMembers;
   }
 
@@ -649,26 +654,26 @@ function EditOrganizationPage() {
                   <label className="block text-gray-700 text-sm lg:text-base font-bold mb-2" htmlFor="description">
                     Committee Members
                   </label>
-                  <TagInput 
-                    onChildData = { handleChildData }
-                    searchCallback={ searchUsers }
-                    getTag={ (item) => `${item.full_name} <${item.email}>` }
-                    getData={ (item) => item._id }
-                    populateDataCallback = { getCommitteeMembers }
+                  <TagInput
+                    onChildData={handleChildData}
+                    searchCallback={searchUsers}
+                    getTag={(item) => `${item.full_name} <${item.email}>`}
+                    getData={(item) => item._id}
+                    populateDataCallback={getCommitteeMembers}
                     buttonLabel="Save Committee Members"
                   />
                 </div>
               </div>
               {/* Display success message */}
-                {
-                  committeeMembersSuccessMessage !== "" && (
-                    <div className="col-span-2">
-                      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                        <span className="block sm:inline">{committeeMembersSuccessMessage}</span>
-                      </div>
+              {
+                committeeMembersSuccessMessage !== "" && (
+                  <div className="col-span-2">
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                      <span className="block sm:inline">{committeeMembersSuccessMessage}</span>
                     </div>
-                  )
-                }
+                  </div>
+                )
+              }
             </div>
           </div>
         </AdminVisible>

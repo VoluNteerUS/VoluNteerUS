@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Tab } from "@headlessui/react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import moment from "moment"; 
 import { useDispatch, useSelector } from "react-redux";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { setResponses as updateResponses } from "../../actions/responsesActions";
 import AppDialog from "../../components/AppDialog";
 import Pagination from "../../components/navigation/Pagination";
+import { api } from "../../services/api-service";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ');
@@ -104,9 +104,7 @@ function Submissions() {
 
   const getEventByResponse = async (responseForEvent) => {
     try {
-      const eventURL = new URL(`/events/${ responseForEvent.event }`, process.env.REACT_APP_BACKEND_API);
-      const res = await axios.get(eventURL);
-      const event = res.data;
+      const event = await api.getEvent(responseForEvent.event).then(res => res.data);
       return event
     } catch (err) {
       console.error({ err });
@@ -115,25 +113,36 @@ function Submissions() {
 
   const getResponsesByUser = async () => {
     try {
-      const responsesByUserURL = new URL(`/responses?user_id=${userId}`, process.env.REACT_APP_BACKEND_API);
-      const res = await axios.get(responsesByUserURL);
-      const responses = res.data;
+      const responses = await api.getResponsesByUser(localStorage.getItem("token"), userId).then(res => res.data);
       setResponses(responses);
 
-      const acceptedResponsesURL = new URL(`/responses/accepted?user_id=${userId}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
-      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const acceptedResponsesRes = await api.getAcceptedResponsesByUser(
+        localStorage.getItem("token"), 
+        userId, 
+        paginationState.accepted.currentPage, 
+        paginationState.accepted.limit
+      );
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
       setAcceptedResponses(paginatedAcceptedResponses.result);
 
-      const rejectedResponsesURL = new URL(`/responses/rejected?user_id=${userId}&page=${paginationState.rejected.currentPage}&limit=${paginationState.rejected.limit}`, process.env.REACT_APP_BACKEND_API);
-      const rejectedResponsesRes = await axios.get(rejectedResponsesURL);
+      const rejectedResponsesRes = await api.getRejectedResponsesByUser(
+        localStorage.getItem("token"),
+        userId,
+        paginationState.rejected.currentPage,
+        paginationState.rejected.limit
+      );
       const paginatedRejectedResponses = { ...rejectedResponsesRes.data };
       setRejectedResponses(paginatedRejectedResponses.result);
 
-      const pendingResponsesURL = new URL(`/responses/pending?user_id=${userId}&page=${paginationState.pending.currentPage}&limit=${paginationState.pending.limit}`, process.env.REACT_APP_BACKEND_API);
-      const pendingResponsesRes = await axios.get(pendingResponsesURL);
+      const pendingResponsesRes = await api.getPendingResponsesByUser(
+        localStorage.getItem("token"),
+        userId,
+        paginationState.pending.currentPage,
+        paginationState.pending.limit
+      );
       const paginatedPendingResponses = { ...pendingResponsesRes.data };
       setPendingResponses(paginatedPendingResponses.result);
+
       setPaginationState({
         accepted: {
           ...paginationState.accepted,
@@ -191,9 +200,7 @@ function Submissions() {
 
   const handleConfirmDelete = async () => {
     // Send DELETE request to delete response
-    const responseURL = new URL(`/responses/${responseToDelete?.response?._id}?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
-
-    await axios.delete(responseURL)
+    await api.deleteResponse(localStorage.getItem("token"), responseToDelete?.response?._id, user.role)
     .then((res) => {
       console.log(res);
       if (!res.data) {
@@ -208,8 +215,7 @@ function Submissions() {
     setIsDialogOpen(false);
             
     // Send GET request to get updated responses
-    const responsesURL = new URL("/responses", process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(responsesURL).then((res) => res.data);
+    const updatedResponses = api.getResponses(localStorage.getItem("token")).then((res) => res.data);
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));

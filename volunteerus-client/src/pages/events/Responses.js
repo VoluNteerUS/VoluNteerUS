@@ -1,7 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import Navbar from "../../components/navigation/Navbar";
 import { Fragment, useEffect, useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Disclosure, Tab } from "@headlessui/react";
@@ -15,6 +13,7 @@ import { Listbox, Transition, Dialog } from "@headlessui/react";
 import Alert from "../../components/Alert";
 import SelectInput from "../../components/SelectInput";
 import { exportExcel } from "../../helpers/excelExport";
+import { api } from "../../services/api-service";
 
 const groupingOptions = [
   "Random",
@@ -109,18 +108,15 @@ function Responses() {
 
   const getResponseInformation = async () => {
     try {
-      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&page=${paginationState.accepted.currentPage}&limit=${paginationState.accepted.limit}`, process.env.REACT_APP_BACKEND_API);
-      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const acceptedResponsesRes = await api.getAcceptedResponsesByEvent(localStorage.getItem("token"), eventId, paginationState.accepted.currentPage, paginationState.accepted.limit);
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
       setAcceptedResponses(paginatedAcceptedResponses.result);
 
-      const rejectedResponsesURL = new URL(`/responses/rejected?event_id=${eventId}&page=${paginationState.rejected.currentPage}&limit=${paginationState.rejected.limit}`, process.env.REACT_APP_BACKEND_API);
-      const rejectedResponsesRes = await axios.get(rejectedResponsesURL);
+      const rejectedResponsesRes = await api.getRejectedResponsesByEvent(localStorage.getItem("token"), eventId, paginationState.rejected.currentPage, paginationState.rejected.limit);
       const paginatedRejectedResponses = { ...rejectedResponsesRes.data };
       setRejectedResponses(paginatedRejectedResponses.result);
 
-      const pendingResponsesURL = new URL(`/responses/pending?event_id=${eventId}&page=${paginationState.pending.currentPage}&limit=${paginationState.pending.limit}`, process.env.REACT_APP_BACKEND_API);
-      const pendingResponsesRes = await axios.get(pendingResponsesURL);
+      const pendingResponsesRes = await api.getPendingResponsesByEvent(localStorage.getItem("token"), eventId, paginationState.pending.currentPage, paginationState.pending.limit);
       const paginatedPendingResponses = { ...pendingResponsesRes.data };
       setPendingResponses(paginatedPendingResponses.result);
 
@@ -152,8 +148,7 @@ function Responses() {
 
   const getShiftInformation = async () => {
     try {
-      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&page=${shiftPaginationState.currentPage}&limit=${shiftPaginationState.limit}`, process.env.REACT_APP_BACKEND_API);
-      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const acceptedResponsesRes = await api.getAcceptedResponsesByEvent(localStorage.getItem("token"), eventId, shiftPaginationState.currentPage, shiftPaginationState.limit);
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
       setShiftPaginationState({
         ...shiftPaginationState,
@@ -172,8 +167,7 @@ function Responses() {
 
   const getAttendanceInformation = async () => {
     try {
-      const acceptedResponsesURL = new URL(`/responses/accepted?event_id=${eventId}&numberOfDays=${attendanceNumberOfDays}&page=${attendancePaginationState.currentPage}&limit=${attendancePaginationState.limit}`, process.env.REACT_APP_BACKEND_API);
-      const acceptedResponsesRes = await axios.get(acceptedResponsesURL);
+      const acceptedResponsesRes = await api.getAttendanceForEvent(localStorage.getItem("token"), eventId, attendanceNumberOfDays, attendancePaginationState.currentPage, attendancePaginationState.limit);
       const paginatedAcceptedResponses = { ...acceptedResponsesRes.data };
       setAttendancePaginationState({
         ...attendancePaginationState,
@@ -191,9 +185,7 @@ function Responses() {
   }, [attendancePaginationState.currentPage, attendanceNumberOfDays, acceptedResponses])
 
   const getEventDetails = async () => {
-    const eventURL = new URL(`/events/${eventId}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
-    const eventRes = await axios.get(eventURL);
-    const event = eventRes.data;
+    const event = await api.getEvent(eventId).then(res => res.data);
     setEvent(event);
     setGroupingEnabled(event?.groupSettings[0] === 'Yes' ? true : false);
     setGroupingType(event?.groupSettings[1]);
@@ -238,19 +230,16 @@ function Responses() {
       setMinutes(m);
     }
 
-    const questionsURL = new URL(`/questions/${event?.questions}?role=${user?.role}`, process.env.REACT_APP_BACKEND_API);
-    const questionsRes = await axios.get(questionsURL);
-    const questions = questionsRes.data;
+    const questions = await api.getQuestions(localStorage.getItem("token"), event?.questions).then(res => res.data);
     setQuestions(questions);
 
     // Check if user is a committee member
-    const checkCommitteeMemberURL = new URL(`/organizations/checkCommitteeMember`, process.env.REACT_APP_BACKEND_API);
     const checkCommitteeMemberRequestBody = {
       userId: user.id,
       organizationId: id
     }
 
-    const response = await axios.post(checkCommitteeMemberURL, checkCommitteeMemberRequestBody);
+    const response = await api.checkCommitteeMember(localStorage.getItem("token"), checkCommitteeMemberRequestBody);
     if (response.data) {
       setRole('COMMITTEE MEMBER');
     }
@@ -316,27 +305,19 @@ function Responses() {
     } else {
       requestBody = { ...responseToUpdate, status: `Rejected`, attendance: newAttendance, hours: newHours.fill(0), shifts: newShifts };
     }
-    
-    // Endpoint for responses
-    const responsesURL = new URL(`/responses/${ responseToUpdate?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
 
-    // Send PATCH request to update response
-    await axios.patch(responsesURL, requestBody).then((res) => {
+    await api.updateResponse(localStorage.getItem("token"), responseToUpdate?._id, requestBody, role).then(res => {
       console.log(res);
       if (!res.data) {
         alert(`You do not have permission to ${ action }.`);
         navigate('/');
       }
-    }).catch((err) => {
-      console.error(err);
-    });
+    }).catch(err => console.error(err));
 
     setResponseToUpdate({});
     setIsDialogOpen(false);
-            
-    // Send GET request to get updated responses
-    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+
+    const updatedResponses = await api.getResponses(localStorage.getItem("token")).then(res => res.data);
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));
@@ -517,23 +498,21 @@ function Responses() {
 
   const handleGroupings = async (event) => {
     event.preventDefault();
-    const groupingURL = new URL(`/events/groupings/create?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    // const groupingURL = new URL(`/events/groupings/create?role=${role}`, process.env.REACT_APP_BACKEND_API);
     const body = { 
       eventId: eventId,
       groupSize: groupSize,
       groupingType: groupingType 
     };
-    await axios.post(groupingURL, body).then((res) => {
+    await api.createEventGrouping(localStorage.getItem('token'), body, role).then((res) => {
       console.log(res);
       // Call event endpoint to get updated event
-      const eventURL = new URL(`/events/${eventId}?role=${role}`, process.env.REACT_APP_BACKEND_API);
-      axios.get(eventURL).then((res) => {
-        console.log(res);
-        setEvent(res.data);
-        window.location.reload();
-      }).catch((err) => {
-        console.error(err);
-      });
+      api.getEvent(eventId)
+        .then((res) => {
+          setEvent(res.data);
+          window.location.reload();
+        })
+        .catch((err) => console.error(err));
     }).catch((err) => {
       console.error(err);
     });
@@ -582,25 +561,21 @@ function Responses() {
     const requestBody = { ...response, attendance: newAttendance, hours: newHours };
 
     // Endpoint for responses
-    const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    // const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
 
     // Send PATCH request to update response
-    await axios.patch(responsesURL, requestBody).then((res) => {
-      console.log(res);
+    await api.updateResponse(localStorage.getItem("token"), response?._id, requestBody, role).then((res) => {
       if (!res.data) {
         alert(`You do not have permission to ${ action }.`);
         navigate('/');
       }
-    }).catch((err) => {
-      console.error(err);
-    });
+    }).catch((err) => console.error(err));
 
     setResponseToUpdate({});
     setIsDialogOpen(false);
             
     // Send GET request to get updated responses
-    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+    const updatedResponses = api.getResponses(localStorage.getItem("token")).then((res) => res.data);
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));
@@ -625,11 +600,10 @@ function Responses() {
       setMinutes(0);
     }
 
-    const eventURL = new URL(`/events/${ event?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
     const newHours = hours + (minutes === 0 ? 0 : minutes / 60);
     let newDefaultHours = event.defaultHours;
     newDefaultHours[attendanceNumberOfDays] = newHours
-    axios.patch(eventURL, { defaultHours: newDefaultHours }).then((response) => {
+    api.updateEvent(localStorage.getItem('token'), event?._id, { defaultHours: newDefaultHours }, role).then((response) => {
       setAlertMessages([
         {
           type: "success",
@@ -734,22 +708,18 @@ function Responses() {
     const requestBody = { ...response, shifts: newShifts, attendance: newAttendance };
 
     // Endpoint for responses
-    const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    // const responsesURL = new URL(`/responses/${ response?._id }?role=${role}`, process.env.REACT_APP_BACKEND_API);
 
     // Send PATCH request to update response
-    await axios.patch(responsesURL, requestBody).then((res) => {
-      console.log(res);
+    await api.updateResponse(localStorage.getItem("token"), response?._id, requestBody, role).then((res) => {
       if (!res.data) {
         alert(`You do not have permission to ${ action }.`);
         navigate('/');
       }
-    }).catch((err) => {
-      console.error(err);
-    });
+    }).catch((err) => console.error(err));
             
     // Send GET request to get updated responses
-    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+    const updatedResponses = api.getResponses(localStorage.getItem("token")).then((res) => res.data);
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));
@@ -763,22 +733,18 @@ function Responses() {
     requestBody[`attendance.${shiftNumberOfDays}`] = "Present";
 
     // Endpoint for responses
-    const responsesURL = new URL(`/responses?role=${role}`, process.env.REACT_APP_BACKEND_API);
+    // const responsesURL = new URL(`/responses?role=${role}`, process.env.REACT_APP_BACKEND_API);
 
     // Send PATCH request to update response
-    await axios.patch(responsesURL, requestBody).then((res) => {
+    await api.updateResponses(localStorage.getItem("token"), requestBody, role).then((res) => {
       console.log(res);
       if (!res.data) {
         alert(`You do not have permission to ${ action }.`);
         navigate('/');
       }
-    }).catch((err) => {
-      console.error(err);
-    });
-            
-    // Send GET request to get updated responses
-    const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-    const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+    }).catch((err) => console.error(err));
+
+    const updatedResponses = api.getResponses(localStorage.getItem("token")).then((res) => res.data);
 
     // Update responses in redux store
     dispatch(updateResponses(updatedResponses));

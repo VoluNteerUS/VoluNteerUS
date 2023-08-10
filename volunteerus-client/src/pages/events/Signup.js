@@ -1,7 +1,5 @@
-import Navbar from "../../components/navigation/Navbar"; 
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setEvent } from "../../actions/eventActions";
 import { setResponses } from "../../actions/responsesActions";
@@ -9,6 +7,7 @@ import SignUpPart1 from "../../components/form/SignUpPart1";
 import SignUpPart2 from "../../components/form/SignUpPart2";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
+import { api } from "../../services/api-service";
 
 const FormSubmittedMessage = ({event, submission}) => {
   return (
@@ -55,18 +54,13 @@ function EventSignup() {
     // check if user has submitted a response
     const getResponse = async () => {
       try {
-        const responseURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(responseURL);
-        const response = res.data;
-        // user has submitted a response, go back to homepage
-        const userResponse = response.filter(response => response.user === user_id);
+        const responses = await api.getResponses(localStorage.getItem("token")).then(res => res.data);
+        // user has submitted a response, show submission received page
+        const userResponse = responses.filter(response => response.user === user_id);
         const submittedResponse = userResponse.filter(response => response.event === id);
         if (submittedResponse.length > 0) {
-          // console.log(submittedResponse);
           setSubmitted(true);
           setSubmission(submittedResponse[0]);
-          // alert("You have already submitted a response.")
-          // navigate('/');
         }
       } catch (err) {
         console.log({ err });
@@ -74,9 +68,7 @@ function EventSignup() {
     }
     const getEvent = async () => {
       try {
-          const eventURL = new URL(`/events/${id}`, process.env.REACT_APP_BACKEND_API);
-          const res = await axios.get(eventURL);
-          const event = res.data;
+          const event = await api.getEvent(id).then(res => res.data);
           dispatch(setEvent(event));
           setCurrentEvent(event);
           setResponse({ ...response, event: event._id })
@@ -86,13 +78,9 @@ function EventSignup() {
     }
     const getQuestions = async () => {
       try {
-        const eventURL = new URL(`/events/${id}`, process.env.REACT_APP_BACKEND_API);
-        const res = await axios.get(eventURL);
-        const event = res.data;
+        const event = await api.getEvent(id).then(res => res.data);
         const questionId = event.questions;
-        const questionsURL = new URL(`/questions/${questionId}`, process.env.REACT_APP_BACKEND_API);
-        const response = await axios.get(questionsURL);
-        const questions = response.data;
+        const questions = await api.getQuestions(localStorage.getItem("token"), questionId).then(res => res.data);
         const finalQuestions = Object.values(questions).filter(q => q.length > 2 && q[1] !== "" && q !== questionId);
         setQuestions(finalQuestions);
       } catch (err) {
@@ -153,16 +141,13 @@ function EventSignup() {
     })
 
     // Endpoint for responses
-    const responsesURL = new URL(`/responses?role=${user.role}`, process.env.REACT_APP_BACKEND_API);
-
-    await axios.post(responsesURL, requestBody).then((response) => {
+    await api.createResponse(localStorage.getItem("token"), requestBody, user.role).then(async (response) => {
       // User is not logged in -> redirect to login page
       if (!response.data) {
         navigate('/login');
       } else {
         // Send GET request to get updated responses
-        const allResponsesURL = new URL(`/responses`, process.env.REACT_APP_BACKEND_API);
-        const updatedResponses = axios.get(allResponsesURL).then((res) => res.data);
+        const updatedResponses = await api.getResponses(localStorage.getItem("token")).then((res) => res.data);
 
         // Update responses in redux store
         dispatch(setResponses(updatedResponses));
@@ -177,7 +162,6 @@ function EventSignup() {
   if (submitted) {
     return (
       <div className="bg-pink-100 min-h-screen">
-        <Navbar />
         <FormSubmittedMessage event={event} submission={submission}/>
       </div>
     )
